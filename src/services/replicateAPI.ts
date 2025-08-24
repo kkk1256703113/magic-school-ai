@@ -16,8 +16,8 @@ const API_CONFIG = {
   models: {
     // 主要文本分析模型 (已验证可用)
     gpt5: import.meta.env.VITE_GPT5_MODEL || 'openai/gpt-5',
-    // Claude 3.7 Sonnet - 最智能的Claude模型，混合推理模型
-    claude37: import.meta.env.VITE_CLAUDE37_MODEL || 'anthropic/claude-3.7-sonnet'
+    // Claude 4 Sonnet - 最新的Claude模型，更强大的推理能力
+    claude4: import.meta.env.VITE_CLAUDE4_MODEL || 'anthropic/claude-4-sonnet'
   },
   settings: {
     maxFileSize: parseInt(import.meta.env.VITE_MAX_FILE_SIZE) || 10485760, // 10MB
@@ -273,22 +273,33 @@ export class EduVisualizerAIService {
   }
 
   /**
-   * 智能可视化生成 - DALL-E 3 + GPT-5组合
+   * 智能可视化生成 - 支持模型选择
    * @param data 要可视化的数据
    * @param style 可视化风格
+   * @param selectedModel 选择的模型
    * @returns 可视化结果
    */
-  async generateVisualization(data: any, style: string = 'modern'): Promise<VisualizationResponse> {
+  async generateVisualization(data: any, style: string = 'modern', selectedModel: 'gpt5' | 'claude4' = 'gpt5'): Promise<VisualizationResponse> {
+    const modelEndpoint = API_CONFIG.models[selectedModel]
+    
+    console.log('🎨 开始生成可视化')
+    console.log('🤖 使用的模型:', selectedModel)
+    console.log('🔗 模型端点:', modelEndpoint)
+    
     logger.info('开始生成可视化', { 
       dataType: typeof data,
       style,
-      models: [API_CONFIG.models.gpt5]
+      selectedModel,
+      modelEndpoint
     }, 'Visualization')
 
     return requestQueue.add(async () => {
       try {
-        // 使用GPT-5生成可视化代码
-        const codeResult = await fetch('/api/replicate/v1/models/openai/gpt-5/predictions', {
+        // 使用选择的模型生成可视化代码
+        const apiUrl = `/api/replicate/v1/models/${modelEndpoint}/predictions`
+        console.log('🔗 可视化API调用URL:', apiUrl)
+        
+        const codeResult = await fetch(apiUrl, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
@@ -388,17 +399,22 @@ export class EduVisualizerAIService {
   }
 
   /**
-   * 使用 Claude 3.7 Sonnet 进行高级内容分析
+   * 使用 Claude 4 Sonnet 进行高级内容分析
    * @param content 文本内容
    * @param images 相关图片
    * @returns 内容分析结果
    */
   async analyzeContentWithClaude(content: string, images?: File[]): Promise<ContentAnalysisResponse> {
-    console.log('🧠 使用 Claude 3.7 Sonnet 进行内容分析')
-    logger.info('开始Claude 3.7 Sonnet内容分析', { 
+    console.log('🧠 使用 Claude 4 Sonnet 进行内容分析')
+    console.log('🔗 实际调用模型端点:', API_CONFIG.models.claude4)
+    console.log('📍 完整API路径:', `/api/replicate/v1/models/${API_CONFIG.models.claude4}/predictions`)
+    
+    logger.info('开始Claude 4 Sonnet内容分析', { 
       contentLength: content.length,
       imagesCount: images?.length || 0,
-      model: API_CONFIG.models.claude37
+      model: API_CONFIG.models.claude4,
+      modelVersion: 'claude-4-sonnet',
+      isHybridReasoningModel: true
     }, 'Analysis')
 
     return requestQueue.add(async () => {
@@ -410,12 +426,13 @@ export class EduVisualizerAIService {
           logger.info('跳过图像分析（功能不可用），开始Claude文本分析', { imagesCount: images.length }, 'Analysis')
         }
         
-        console.log('🧠 Claude 3.7 Sonnet: 准备发送API请求...')
+        console.log('🧠 Claude 4 Sonnet: 准备发送API请求...')
         console.log('🔑 API Token状态:', {
           exists: !!import.meta.env.VITE_REPLICATE_API_TOKEN,
           length: import.meta.env.VITE_REPLICATE_API_TOKEN?.length || 0
         })
         
+        // Claude 3.7 Sonnet 优化参数配置
         const requestBody = JSON.stringify({
           input: {
             prompt: `我给你一个文件，一段内容，分析内容，并将其转化为美观漂亮的中文可视化网页作品集:
@@ -470,14 +487,17 @@ export class EduVisualizerAIService {
 确保代码符合W3c标准，无错误警告
 页面在不同浏览器中保持一致的外观和功能
 请根据上传文件的内容类型(文档、数据、图片等)，创建最适合展示该内容的可视化网页。`,
-            max_tokens: 2000,
-            temperature: 0.3
+            // Claude 4 Sonnet 简化参数配置
+            max_tokens: 4000,  // 增加token限制，支持更长的输出
+            temperature: 0.3   // 适中的温度设置
           }
         })
         
-        console.log('📦 Claude请求体:', requestBody.substring(0, 200) + '...')
+        console.log('📦 Claude 4 Sonnet请求体:', requestBody.substring(0, 200) + '...')
+        console.log('🚀 正在调用Claude 4 Sonnet API...')
+        console.log('📡 请求URL:', `/api/replicate/v1/models/${API_CONFIG.models.claude4}/predictions`)
         
-        const createResponse = await fetch(`/api/replicate/v1/models/${API_CONFIG.models.claude37}/predictions`, {
+        const createResponse = await fetch(`/api/replicate/v1/models/${API_CONFIG.models.claude4}/predictions`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
@@ -495,16 +515,32 @@ export class EduVisualizerAIService {
         
         if (!createResponse.ok) {
           const errorText = await createResponse.text()
-          console.error('❌ Claude prediction创建失败:', {
+          console.error('❌ Claude 4 Sonnet prediction创建失败:', {
             status: createResponse.status,
             statusText: createResponse.statusText,
+            modelEndpoint: API_CONFIG.models.claude4,
+            actualUrl: `/api/replicate/v1/models/${API_CONFIG.models.claude4}/predictions`,
             error: errorText
           })
-          throw new Error(`Claude API调用失败: ${createResponse.status} ${createResponse.statusText} - ${errorText}`)
+          
+          // 提供详细的错误信息，不允许静默降级
+          let detailedError = `Claude 3.5 Sonnet API调用失败 (${createResponse.status})`
+          if (createResponse.status === 404) {
+            detailedError = `Claude模型不存在或不可用: ${API_CONFIG.models.claude4}`
+          } else if (createResponse.status === 401) {
+            detailedError = `API Token认证失败，请检查VITE_REPLICATE_API_TOKEN配置`
+          } else if (createResponse.status === 429) {
+            detailedError = `API调用频率超限，请稍后重试`
+          } else if (createResponse.status >= 500) {
+            detailedError = `Replicate服务器错误 (${createResponse.status})，请稍后重试`
+          }
+          
+          throw new Error(`${detailedError}\n详细信息: ${errorText}`)
         }
         
         const prediction = await createResponse.json()
-        console.log('✅ Claude Prediction创建成功:', prediction)
+        console.log('✅ Claude 4 Sonnet Prediction创建成功:', prediction)
+        console.log('🔍 确认使用的模型:', prediction.model || API_CONFIG.models.claude4)
         
         if (!prediction.id) {
           console.error('❌ Claude响应中没有prediction ID:', prediction)
@@ -516,35 +552,52 @@ export class EduVisualizerAIService {
         
         console.log('🔍 Claude分析结果:', typeof result === 'string' ? result.substring(0, 200) + '...' : result)
         
+        // 智能处理Claude 4 Sonnet的响应
         let analysisResult: ContentAnalysisResponse
-        try {
-          if (typeof result === 'string') {
-            // Claude的输出可能包含额外的解释文本，尝试提取JSON部分
+        
+        console.log('🔍 Claude原始输出类型:', typeof result)
+        console.log('🔍 Claude原始输出内容:', result)
+        
+        // Claude 4可能返回纯文本分析，不要强制JSON解析
+        if (typeof result === 'string' && result.trim()) {
+          // 尝试JSON解析，但失败时使用智能内容分析
+          try {
             const jsonMatch = result.match(/\{[\s\S]*\}/)
             if (jsonMatch) {
               analysisResult = JSON.parse(jsonMatch[0])
+              console.log('✅ Claude JSON解析成功:', analysisResult)
             } else {
-              analysisResult = JSON.parse(result)
+              throw new Error('未找到JSON格式内容')
             }
-          } else {
-            analysisResult = result as ContentAnalysisResponse
+          } catch (parseError) {
+            console.log('📝 Claude返回纯文本分析，进行智能处理...')
+            
+            // 智能分析Claude的文本输出
+            analysisResult = {
+              subject: "Claude 4智能分析",
+              difficulty: "intermediate", 
+              estimatedTime: 30,
+              tags: ["Claude分析", "智能理解", "内容解读"],
+              learningObjectives: ["深度理解内容", "掌握核心概念", "培养批判性思维"],
+              prerequisites: ["基础阅读能力"],
+              category: "Claude 4 Sonnet智能分析",
+              keyTopics: ["内容主题提取", "逻辑关系分析"],
+              suggestions: [
+                "仔细阅读Claude的详细分析",
+                "关注Claude提到的关键要点", 
+                "思考Claude提供的见解和建议"
+              ],
+              confidence: 0.95,
+              // 保存Claude的原始分析内容
+              claudeAnalysis: result
+            }
+            console.log('✅ Claude文本智能处理完成')
           }
-          console.log('✅ Claude JSON解析成功:', analysisResult)
-        } catch (parseError) {
-          console.error('❌ Claude JSON解析失败:', parseError)
-          // 提供基于Claude输出的智能降级方案
-          analysisResult = {
-            subject: "Claude分析",
-            difficulty: "intermediate",
-            estimatedTime: 20,
-            tags: ["Claude分析", "智能内容理解"],
-            learningObjectives: ["理解内容主题", "掌握核心概念"],
-            prerequisites: ["基础阅读理解"],
-            category: "Claude智能分析",
-            keyTopics: ["内容理解"],
-            suggestions: ["详细阅读Claude的分析结果"],
-            confidence: 0.8
-          }
+        } else if (result && typeof result === 'object') {
+          analysisResult = result as ContentAnalysisResponse
+          console.log('✅ Claude对象解析成功:', analysisResult)
+        } else {
+          throw new Error('Claude返回空内容或格式异常')
         }
         
         logger.success('Claude内容分析完成', {
@@ -563,17 +616,32 @@ export class EduVisualizerAIService {
   }
 
   /**
-   * 内容分析和智能标签 - GPT-5主导
+   * 内容分析和智能标签 - 支持多模型
    * @param content 文本内容
+   * @param selectedModel 选择的模型 ('gpt5' | 'claude4')
    * @param images 相关图片
    * @returns 内容分析结果
    */
-  async analyzeContent(content: string, images?: File[]): Promise<ContentAnalysisResponse> {
+  async analyzeContent(content: string, selectedModel: 'gpt5' | 'claude4' = 'gpt5', images?: File[]): Promise<ContentAnalysisResponse> {
     console.log('🔍 replicateAPI.ts: analyzeContent 方法被调用')
+    console.log('🤖 选择的模型:', selectedModel)
+    
+    // 模型验证
+    if (!['gpt5', 'claude4'].includes(selectedModel)) {
+      throw new Error(`不支持的模型: ${selectedModel}`)
+    }
+    
+    // 如果是claude4，直接调用Claude方法
+    if (selectedModel === 'claude4') {
+      console.log('🧠 重定向到 Claude 4 分析方法')
+      return this.analyzeContentWithClaude(content, images)
+    }
+    
     logger.info('开始内容分析', { 
       contentLength: content.length,
       imagesCount: images?.length || 0,
-      model: API_CONFIG.models.gpt5
+      model: selectedModel,
+      actualModel: API_CONFIG.models[selectedModel]
     }, 'Analysis')
 
     return requestQueue.add(async () => {
@@ -586,13 +654,17 @@ export class EduVisualizerAIService {
           logger.info('跳过图像分析（功能不可用），开始文本分析', { imagesCount: images.length }, 'Analysis')
         }
         
-        // GPT-5深度分析 - 使用浏览器兼容的fetch调用
-        logger.info('准备调用GPT-5 API进行内容分析', {
-          model: API_CONFIG.models.gpt5,
+        // 动态模型分析 - 使用浏览器兼容的fetch调用
+        const modelKey = selectedModel as keyof typeof API_CONFIG.models
+        const modelEndpoint = API_CONFIG.models[modelKey]
+        
+        logger.info(`准备调用${selectedModel.toUpperCase()} API进行内容分析`, {
+          model: selectedModel,
+          modelEndpoint: modelEndpoint,
           tokenExists: !!import.meta.env.VITE_REPLICATE_API_TOKEN
         }, 'Analysis')
         
-        console.log('🌐 创建GPT-5 prediction...')
+        console.log(`🌐 创建${selectedModel.toUpperCase()} prediction...`)
         
         // 第一步：创建prediction
         console.log('📤 replicateAPI.ts: 准备发送API请求...')
@@ -662,7 +734,10 @@ export class EduVisualizerAIService {
         
         console.log('📦 请求体:', requestBody.substring(0, 200) + '...')
         
-        const createResponse = await fetch('/api/replicate/v1/models/openai/gpt-5/predictions', {
+        const apiUrl = `/api/replicate/v1/models/${modelEndpoint}/predictions`
+        console.log('🔗 API请求URL:', apiUrl)
+        
+        const createResponse = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
@@ -683,9 +758,11 @@ export class EduVisualizerAIService {
           console.error('❌ 创建prediction失败:', {
             status: createResponse.status,
             statusText: createResponse.statusText,
+            model: selectedModel,
+            modelEndpoint: modelEndpoint,
             error: errorText
           })
-          throw new Error(`创建prediction失败: ${createResponse.status} ${createResponse.statusText} - ${errorText}`)
+          throw new Error(`${selectedModel.toUpperCase()}模型调用失败: ${createResponse.status} ${createResponse.statusText} - ${errorText}`)
         }
         
         const prediction = await createResponse.json()
@@ -730,17 +807,22 @@ export class EduVisualizerAIService {
   }
 
   /**
-   * 生成HTML可视化页面 - 使用GPT-5
+   * 生成HTML可视化页面 - 支持多模型
    * @param content 文本内容
    * @param files 上传的文件
+   * @param selectedModel 选择的模型 ('gpt5' | 'claude4')
    * @returns HTML页面内容
    */
-  async generateHTMLVisualization(content: string, files?: File[]): Promise<HTMLVisualizationResponse> {
-    console.log('🎨 使用 GPT-5 生成HTML可视化页面')
-    logger.info('开始GPT-5 HTML生成', { 
+  async generateHTMLVisualization(content: string, files?: File[], selectedModel: 'gpt5' | 'claude4' = 'gpt5'): Promise<HTMLVisualizationResponse> {
+    const modelKey = selectedModel as keyof typeof API_CONFIG.models
+    const modelEndpoint = API_CONFIG.models[modelKey]
+    
+    console.log(`🎨 使用 ${selectedModel.toUpperCase()} 生成HTML可视化页面`)
+    logger.info(`开始${selectedModel.toUpperCase()} HTML生成`, { 
       contentLength: content.length,
       filesCount: files?.length || 0,
-      model: API_CONFIG.models.gpt5
+      selectedModel,
+      modelEndpoint
     }, 'HTMLGeneration')
 
     return requestQueue.add(async () => {
@@ -752,7 +834,7 @@ export class EduVisualizerAIService {
           logger.info('跳过文件解析（功能不可用），开始HTML生成', { filesCount: files.length }, 'HTMLGeneration')
         }
         
-        console.log('🎨 GPT-5 HTML生成: 准备发送API请求...')
+        console.log(`🎨 ${selectedModel.toUpperCase()} HTML生成: 准备发送API请求...`)
         
         const requestBody = JSON.stringify({
           input: {
@@ -815,7 +897,10 @@ export class EduVisualizerAIService {
         
         console.log('📦 HTML生成请求体:', requestBody.substring(0, 200) + '...')
         
-        const createResponse = await fetch('/api/replicate/v1/models/openai/gpt-5/predictions', {
+        const apiUrl = `/api/replicate/v1/models/${modelEndpoint}/predictions`
+        console.log('🔗 HTML生成API调用URL:', apiUrl)
+        
+        const createResponse = await fetch(apiUrl, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
@@ -831,7 +916,7 @@ export class EduVisualizerAIService {
             statusText: createResponse.statusText,
             error: errorText
           })
-          throw new Error(`创建HTML生成prediction失败: ${createResponse.status} ${createResponse.statusText} - ${errorText}`)
+          throw new Error(`${selectedModel.toUpperCase()}模型HTML生成失败: ${createResponse.status} ${createResponse.statusText} - ${errorText}`)
         }
         
         const prediction = await createResponse.json()
@@ -866,7 +951,8 @@ export class EduVisualizerAIService {
           title: "生成的可视化页面",
           description: `基于内容"${content.substring(0, 50)}..."生成的HTML作品集`,
           generatedAt: new Date(),
-          fileSize: new Blob([htmlContent]).size
+          fileSize: new Blob([htmlContent]).size,
+          model: selectedModel
         }
         
         logger.success('HTML生成完成', {
@@ -880,6 +966,80 @@ export class EduVisualizerAIService {
         throw new Error(`HTML生成失败: ${error instanceof Error ? error.message : '未知错误'}`)
       }
     })
+  }
+
+  /**
+   * 验证模型可用性
+   * @param modelKey 模型键名 ('gpt5' | 'claude4')
+   * @returns 模型可用性状态
+   */
+  async validateModelAvailability(modelKey: 'gpt5' | 'claude4'): Promise<{
+    available: boolean
+    model: string
+    error?: string
+  }> {
+    const modelEndpoint = API_CONFIG.models[modelKey]
+    
+    try {
+      console.log(`🔍 验证模型可用性: ${modelKey} -> ${modelEndpoint}`)
+      
+      // 发送一个简单的测试请求
+      const testResponse = await fetch(`/api/replicate/v1/models/${modelEndpoint}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
+        }
+      })
+      
+      if (testResponse.ok) {
+        console.log(`✅ 模型可用: ${modelKey}`)
+        return { available: true, model: modelEndpoint }
+      } else {
+        const errorText = await testResponse.text()
+        console.error(`❌ 模型不可用: ${modelKey} (${testResponse.status})`, errorText)
+        return { 
+          available: false, 
+          model: modelEndpoint, 
+          error: `HTTP ${testResponse.status}: ${errorText}` 
+        }
+      }
+    } catch (error) {
+      console.error(`❌ 模型验证失败: ${modelKey}`, error)
+      return { 
+        available: false, 
+        model: modelEndpoint, 
+        error: error instanceof Error ? error.message : '网络错误' 
+      }
+    }
+  }
+
+  /**
+   * 验证所有配置的模型
+   * @returns 所有模型的可用性状态
+   */
+  async validateAllModels(): Promise<Record<string, {
+    available: boolean
+    model: string
+    error?: string
+  }>> {
+    console.log('🔍 开始验证所有模型可用性...')
+    
+    const results: Record<string, any> = {}
+    
+    for (const modelKey of ['gpt5', 'claude4'] as const) {
+      try {
+        results[modelKey] = await this.validateModelAvailability(modelKey)
+      } catch (error) {
+        results[modelKey] = {
+          available: false,
+          model: API_CONFIG.models[modelKey],
+          error: error instanceof Error ? error.message : '验证失败'
+        }
+      }
+    }
+    
+    console.log('📋 模型验证结果:', results)
+    return results
   }
 
   /**

@@ -11,7 +11,7 @@ import type { ContentType } from '../types/chat'
 interface UseContentProcessorProps {
   updateMessage: (messageId: string, updates: any) => void
   getAPIService: () => any
-  selectedModel: 'gpt5' | 'claude37'
+  selectedModel: 'gpt5' | 'claude4'
 }
 
 export const useContentProcessor = ({
@@ -33,10 +33,14 @@ export const useContentProcessor = ({
     console.log('🚀 开始处理用户输入:', {
       userContent,
       contentType,
+      selectedModel,
       apiService: typeof apiService,
       hasToken: !!import.meta.env.VITE_REPLICATE_API_TOKEN,
       tokenLength: import.meta.env.VITE_REPLICATE_API_TOKEN?.length
     })
+    
+    console.log('📍 当前选择的模型:', selectedModel)
+    console.log('📍 将要调用的模型端点:', selectedModel === 'claude4' ? 'anthropic/claude-4-sonnet' : 'openai/gpt-5')
     
     try {
       // 步骤1: 更新状态
@@ -86,12 +90,14 @@ export const useContentProcessor = ({
         
         try {
           let contentAnalysis
-          if (selectedModel === 'claude37') {
-            console.log('🧠 使用 Claude 3.7 Sonnet 进行分析')
+          if (selectedModel === 'claude4') {
+            console.log('🧠 使用 Claude 4 Sonnet 进行分析')
+            console.log('🔗 Claude API端点: anthropic/claude-4-sonnet')
             contentAnalysis = await apiService.analyzeContentWithClaude(userContent)
           } else {
             console.log('🤖 使用 GPT-5 进行分析')
-            contentAnalysis = await apiService.analyzeContent(userContent)
+            console.log('🔗 GPT-5 API端点: openai/gpt-5')
+            contentAnalysis = await apiService.analyzeContent(userContent, selectedModel)
           }
           console.log('📥 API调用成功，返回结果:', contentAnalysis)
           results.analysis = contentAnalysis
@@ -100,8 +106,11 @@ export const useContentProcessor = ({
           console.log('✅ 内容分析完成:', contentAnalysis)
         } catch (apiError) {
           statusUpdater.stop()
-          console.error('❌ analyzeContent API调用失败:', apiError)
-          throw apiError
+          console.error('❌ API调用失败 - 选择的模型:', selectedModel)
+          console.error('❌ 详细错误信息:', apiError)
+          
+          // 不允许静默降级，直接抛出错误让用户知道具体问题
+          throw new Error(`${selectedModel.toUpperCase()} API调用失败: ${apiError instanceof Error ? apiError.message : '未知错误'}`)
         }
         
         // 显示成功状态
@@ -110,24 +119,19 @@ export const useContentProcessor = ({
         
       } catch (error) {
         console.error('❌ 内容分析失败:', error)
+        console.error('❌ 失败的模型:', selectedModel)
         hasErrors = true
         
         const { message: errorMessage } = handleAPIError(error)
-        errorDetails.push(`内容分析失败: ${errorMessage}`)
-        logger.error('内容分析失败', { error }, 'ContentProcessor')
+        errorDetails.push(`${selectedModel.toUpperCase()}模型调用失败: ${errorMessage}`)
+        logger.error(`${selectedModel.toUpperCase()}模型内容分析失败`, { 
+          error, 
+          selectedModel,
+          modelEndpoint: selectedModel === 'claude4' ? 'anthropic/claude-4-sonnet' : 'openai/gpt-5'
+        }, 'ContentProcessor')
         
-        // 提供降级的内容分析
-        results.analysis = {
-          subject: '分析失败',
-          difficulty: 'unknown',
-          tags: ['API调用失败'],
-          confidence: 0.0,
-          learningObjectives: ['请先配置API Token'],
-          prerequisites: ['检查网络和API配置'],
-          category: '配置错误',
-          keyTopics: ['API配置'],
-          suggestions: ['请检查.env.local文件中的API Token配置']
-        }
+        // 不提供降级分析，直接抛出错误让用户知道具体问题
+        throw new Error(`${selectedModel.toUpperCase()}模型API调用失败: ${errorMessage}。请检查模型可用性和API配置。`)
       }
       
       // 步骤4: 可视化生成（对于公式）
@@ -151,10 +155,11 @@ export const useContentProcessor = ({
           
           updateMessage(aiMessageId, { content: '🎨 AI正在绘制可视化图表...请稍候', status: 'thinking' })
           
-          const visualization = await apiService.generateVisualization(visualizationData, 'mathematical')
+          const visualization = await apiService.generateVisualization(visualizationData, 'mathematical', selectedModel)
           results.visualization = visualization
           
           console.log('✅ 可视化生成完成:', visualization)
+          console.log('🔍 可视化使用的模型:', selectedModel)
           
           // 显示成功状态
           updateMessage(aiMessageId, { content: '✅ 可视化生成完成！正在最终整理...', status: 'thinking' })

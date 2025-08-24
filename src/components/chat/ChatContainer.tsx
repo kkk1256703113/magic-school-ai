@@ -53,7 +53,8 @@ export const ChatContainer = () => {
     updateMessage,
     processUserInput,
     detectContentType,
-    hasApiToken: apiConfig.hasToken
+    hasApiToken: apiConfig.hasToken,
+    selectedModel
   })
 
   // 页面加载日志记录
@@ -88,12 +89,12 @@ export const ChatContainer = () => {
             {/* AI模型选择 */}
             <select
               value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value as 'gpt5' | 'claude37')}
+              onChange={(e) => setSelectedModel(e.target.value as 'gpt5' | 'claude4')}
               className="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200"
               disabled={isProcessing}
             >
               <option value="gpt5">🤖 GPT-5</option>
-              <option value="claude37">🧠 Claude 3.7</option>
+              <option value="claude4">🧠 Claude 4 Sonnet</option>
             </select>
             
             {/* 主题切换按钮 */}

@@ -179,6 +179,7 @@ export interface HTMLVisualizationResponse {
   description?: string
   generatedAt: Date
   fileSize: number
+  model?: 'gpt5' | 'claude4'
 }
 
 // Processing status types

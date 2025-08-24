@@ -4,13 +4,20 @@ import { aiService } from '../services/replicateAPI'
 import type { APIConfig } from '../types/chat'
 
 export const useAPIService = () => {
-  const [selectedModel, setSelectedModel] = useState<'gpt5' | 'claude37'>('gpt5')
+  const [selectedModel, setSelectedModel] = useState<'gpt5' | 'claude4'>('gpt5')
   const [apiConfig, setApiConfig] = useState<APIConfig>({
     hasToken: false
   })
+  const [modelStatus, setModelStatus] = useState<Record<string, {
+    available: boolean
+    model: string
+    error?: string
+  }>>({})
 
   useEffect(() => {
     checkAPIAvailability()
+    // 可选：启动时验证模型（可能比较慢，先注释掉）
+    // validateModels()
   }, [])
 
   const checkAPIAvailability = () => {
@@ -34,6 +41,25 @@ export const useAPIService = () => {
     return { hasToken, tokenValue }
   }
 
+  const validateModels = async () => {
+    try {
+      console.log('🔍 开始验证模型可用性...')
+      const results = await aiService.validateAllModels()
+      setModelStatus(results)
+      
+      // 如果当前选择的模型不可用，自动切换到可用的模型
+      if (results[selectedModel] && !results[selectedModel].available) {
+        const availableModel = Object.keys(results).find(key => results[key].available) as 'gpt5' | 'claude4'
+        if (availableModel && availableModel !== selectedModel) {
+          console.log(`⚠️ 自动切换模型: ${selectedModel} -> ${availableModel}`)
+          setSelectedModel(availableModel)
+        }
+      }
+    } catch (error) {
+      console.error('❌ 模型验证失败:', error)
+    }
+  }
+
   const getAPIService = () => {
     return aiService
   }
@@ -42,7 +68,9 @@ export const useAPIService = () => {
     selectedModel,
     setSelectedModel,
     apiConfig,
+    modelStatus,
     checkAPIAvailability,
+    validateModels,
     getAPIService
   }
 }

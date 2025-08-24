@@ -151,7 +151,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
           )}
           {!isUser && !isSystem && message.data?.model && (
             <span className="ml-2 text-blue-500">
-              {message.data.model === 'claude37' ? '🧠 Claude 3.7' : '🤖 GPT-5'}
+              {message.data.model === 'claude4' ? '🧠 Claude 4' : '🤖 GPT-5'}
             </span>
           )}
         </div>

@@ -8,6 +8,7 @@ interface UseChatInputProps {
   processUserInput: (content: string, contentType: any, messageId: string) => Promise<void>
   detectContentType: (content: string) => any
   hasApiToken: boolean
+  selectedModel: 'gpt5' | 'claude4'
 }
 
 export const useChatInput = ({
@@ -16,7 +17,8 @@ export const useChatInput = ({
   updateMessage,
   processUserInput,
   detectContentType,
-  hasApiToken
+  hasApiToken,
+  selectedModel
 }: UseChatInputProps) => {
   const [inputText, setInputText] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -78,15 +80,15 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
               status: 'thinking' 
             })
             
-            // 调用HTML生成方法
-            const htmlResult = await aiService.generateHTMLVisualization(userContent)
+            // 调用HTML生成方法，传递选择的模型
+            const htmlResult = await aiService.generateHTMLVisualization(userContent, undefined, selectedModel)
             
             // 更新消息显示HTML内容
             updateMessage(aiMessageId, {
               content: htmlResult.htmlContent,
               status: 'complete',
               data: {
-                model: 'gpt5',
+                model: selectedModel,
                 htmlGenerated: true,
                 fileSize: htmlResult.fileSize,
                 generatedAt: htmlResult.generatedAt

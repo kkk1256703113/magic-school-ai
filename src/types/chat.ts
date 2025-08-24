@@ -14,7 +14,7 @@ export interface Message {
     hasApiToken?: boolean
     hasErrors?: boolean
     errorDetails?: string[]
-    model?: 'gpt5' | 'claude37'
+    model?: 'gpt5' | 'claude4'
     generatedImage?: string
     codeOptions?: {
       chartjs?: {
@@ -39,7 +39,7 @@ export interface ChatState {
   messages: Message[]
   inputText: string
   isProcessing: boolean
-  selectedModel: 'gpt5' | 'claude37'
+  selectedModel: 'gpt5' | 'claude4'
 }
 
 export interface APIConfig {
