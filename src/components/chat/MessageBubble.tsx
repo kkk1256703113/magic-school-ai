@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Message } from '../../types/chat'
+import { HTMLPreview } from '../html/HTMLPreview'
 
 interface MessageBubbleProps {
   message: Message
@@ -9,6 +10,15 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
   const isUser = message.type === 'user'
   const isSystem = message.type === 'system'
   
+  // 检测消息是否包含HTML内容
+  const isHTMLContent = (content: string): boolean => {
+    // 检测完整HTML文档结构
+    return content.includes('<!DOCTYPE html>') || 
+           (content.includes('<html') && content.includes('</html>'))
+  }
+  
+  const hasHTMLContent = !isUser && isHTMLContent(message.content)
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -16,7 +26,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
       transition={{ duration: 0.4 }}
       className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
     >
-      <div className={`max-w-3xl ${isUser ? 'order-2' : 'order-1'}`}>
+      <div className={`${hasHTMLContent ? 'max-w-6xl' : 'max-w-3xl'} ${isUser ? 'order-2' : 'order-1'}`}>
         {/* 消息气泡 */}
         <div
           className={`px-4 py-3 rounded-2xl ${
@@ -43,10 +53,42 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
             </div>
           )}
           
+          {/* 文件信息展示 */}
+          {isUser && message.data?.files && message.data.files.length > 0 && (
+            <div className="mb-3 pb-3 border-b border-gray-200 dark:border-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                📎 附件文件：
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {message.data.files.map((file, index) => (
+                  <div key={index} className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded px-2 py-1 text-xs">
+                    <span className="font-medium">{file.name}</span>
+                    <span className="ml-1 text-gray-500">
+                      ({(file.size / 1024).toFixed(1)}KB)
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* 消息内容 */}
-          <div className="whitespace-pre-wrap">
-            {message.content}
-          </div>
+          {hasHTMLContent ? (
+            <div>
+              <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+                🎨 已生成可视化HTML页面：
+              </div>
+              <HTMLPreview 
+                htmlContent={message.content}
+                title="生成的可视化页面"
+                description="基于您的内容生成的HTML作品集"
+              />
+            </div>
+          ) : (
+            <div className="whitespace-pre-wrap">
+              {message.content}
+            </div>
+          )}
           
           {/* 可视化内容展示 */}
           {message.data?.visualization && (

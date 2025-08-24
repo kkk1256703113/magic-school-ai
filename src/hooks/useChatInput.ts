@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { isSimpleGreeting, generateGreetingResponse, sleep } from '../utils/chatHelpers'
 
 interface UseChatInputProps {
@@ -20,17 +20,16 @@ export const useChatInput = ({
 }: UseChatInputProps) => {
   const [inputText, setInputText] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
 
-  const handleSendMessage = async () => {
-    if (!inputText.trim() || isProcessing) return
+  const handleSendMessage = async (message: string = inputText, files?: File[]) => {
+    if ((!message.trim() && (!files || files.length === 0)) || isProcessing) return
     
-    const userContent = inputText.trim()
+    const userContent = message.trim()
     setInputText('')
     setIsProcessing(true)
     
     // 添加用户消息
-    addUserMessage(userContent)
+    addUserMessage(userContent, files)
     
     // 检查是否是简单问候
     const isGreeting = isSimpleGreeting(userContent)
@@ -69,8 +68,35 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
             status: 'error'
           })
         } else {
-          // 如果配置了API Token，尝试调用真实API
-          await processUserInput(userContent, contentType, aiMessageId)
+          // 如果配置了API Token，调用HTML生成API
+          try {
+            // 导入API服务
+            const { aiService } = await import('../services/replicateAPI')
+            
+            updateMessage(aiMessageId, { 
+              content: '🎨 正在生成可视化HTML页面...', 
+              status: 'thinking' 
+            })
+            
+            // 调用HTML生成方法
+            const htmlResult = await aiService.generateHTMLVisualization(userContent)
+            
+            // 更新消息显示HTML内容
+            updateMessage(aiMessageId, {
+              content: htmlResult.htmlContent,
+              status: 'complete',
+              data: {
+                model: 'gpt5',
+                htmlGenerated: true,
+                fileSize: htmlResult.fileSize,
+                generatedAt: htmlResult.generatedAt
+              }
+            })
+          } catch (htmlError) {
+            console.error('HTML生成失败，尝试降级到原有流程:', htmlError)
+            // 如果HTML生成失败，回退到原有的内容分析流程
+            await processUserInput(userContent, contentType, aiMessageId)
+          }
         }
       }
     } catch (error) {
@@ -83,19 +109,11 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
-  }
 
   return {
     inputText,
     setInputText,
     isProcessing,
-    inputRef,
-    handleSendMessage,
-    handleKeyPress
+    handleSendMessage
   }
 }

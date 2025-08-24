@@ -172,6 +172,15 @@ export interface ContentAnalysisResponse {
   confidence: number
 }
 
+// 新增HTML生成响应类型
+export interface HTMLVisualizationResponse {
+  htmlContent: string
+  title?: string
+  description?: string
+  generatedAt: Date
+  fileSize: number
+}
+
 // Processing status types
 export interface ProcessingStep {
   id: string

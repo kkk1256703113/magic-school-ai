@@ -4,6 +4,7 @@ import {
   FormulaResponse, 
   VisualizationResponse, 
   ContentAnalysisResponse,
+  HTMLVisualizationResponse,
   TemporaryFileStorage 
 } from '../types'
 import { logger } from '../utils/logger'
@@ -417,28 +418,58 @@ export class EduVisualizerAIService {
         
         const requestBody = JSON.stringify({
           input: {
-            prompt: `作为一位资深教育专家和内容分析师，请深度分析以下教育内容：
+            prompt: `我给你一个文件，一段内容，分析内容，并将其转化为美观漂亮的中文可视化网页作品集:
 
 文本内容：${content}
 图像分析：${visualContext}
 
-请提供详细的教育内容分析，包括学科分类、难度评估、学习目标、前置知识等。
+## 内容要求
+保持原文件的核心信息，但以更易读、可视化的方式呈现
+在页面底部添加作者信息区域，包含:
+*作者姓名:[EduVisualizer AI]
+*社交媒体链接:至少包含Twitter/x:
+版权信息和年份
 
-输出JSON格式：
-{
-  "subject": "具体学科名称",
-  "difficulty": "beginner|intermediate|advanced",
-  "estimatedTime": 学习时间(分钟),
-  "tags": ["相关标签"],
-  "learningObjectives": ["具体的学习目标"],
-  "prerequisites": ["需要的前置知识"],
-  "category": "内容分类",
-  "keyTopics": ["关键主题"],
-  "suggestions": ["学习建议和方法"],
-  "confidence": 置信度(0-1)
-}
+## 设计风格
+整体风格参考Linear App的简约现代设计
+使用清晰的视觉层次结构，突出重要内容
+配色方案应专业、和谐，适合长时间阅读
 
-请确保分析准确、详细，为教育者和学习者提供有价值的见解。`,
+##技术规范
+使用HTML5、Tailwindcss 3.0+(通过CDN引入)和必要的Javascript
+实现完整的深色/浅色模式切换功能，默认跟随系统设置
+代码结构清晰，包含适当注释，便于理解和维护
+
+## 响应式设计
+页面必须在所有设备上(手机、平板、桌面)完美展示
+针对不同屏幕尺寸优化布局和字体大小
+确保移动端有良好的触控体验
+
+## 媒体资源
+使用文档中的Markdown图片链接(如果有的话)
+使用文档中的视频嵌入代码(如果有的话)
+
+## 图标与视觉元素
+使用专业图标库如Font Awesome或Material Icons(通过CDN引入)
+根据内容主题选择合适的插图或图表展示数据
+避免使用emoji作为主要图标
+
+## 交互体验
+添加适当的微交互效果提升用户体验
+按钮悬停时有轻微放大和颜色变化
+卡片元素悬停时有精致的阴影和边框效果
+页面滚动时有平滑过渡效果
+内容区块加载时有优雅的淡入动画
+
+##性能优化
+确保页面加载速度快，避免不必要的大型资源
+实现懒加载技术用于长页面内容
+
+## 输出要求
+提供完整可运行的单一HTML文件，包含所有必要的css和Javascript
+确保代码符合W3c标准，无错误警告
+页面在不同浏览器中保持一致的外观和功能
+请根据上传文件的内容类型(文档、数据、图片等)，创建最适合展示该内容的可视化网页。`,
             max_tokens: 2000,
             temperature: 0.3
           }
@@ -572,23 +603,58 @@ export class EduVisualizerAIService {
         
         const requestBody = JSON.stringify({
           input: {
-            prompt: `作为教育专家，深度分析以下内容：
-            
-            文本内容：${content}
-            图像分析：${visualContext}
-            
-            输出JSON格式：{
-              "subject": "学科名称",
-              "difficulty": "beginner",
-              "estimatedTime": 30,
-              "tags": ["标签1", "标签2"],
-              "learningObjectives": ["学习目标1", "学习目标2"],
-              "prerequisites": ["前置知识1", "前置知识2"],
-              "category": "内容分类",
-              "keyTopics": ["关键主题1", "关键主题2"],
-              "suggestions": ["学习建议1", "学习建议2"],
-              "confidence": 0.92
-            }`,
+            prompt: `我给你一个文件，一段内容，分析内容，并将其转化为美观漂亮的中文可视化网页作品集:
+
+文本内容：${content}
+图像分析：${visualContext}
+
+## 内容要求
+保持原文件的核心信息，但以更易读、可视化的方式呈现
+在页面底部添加作者信息区域，包含:
+*作者姓名:[EduVisualizer AI]
+*社交媒体链接:至少包含Twitter/x:
+版权信息和年份
+
+## 设计风格
+整体风格参考Linear App的简约现代设计
+使用清晰的视觉层次结构，突出重要内容
+配色方案应专业、和谐，适合长时间阅读
+
+##技术规范
+使用HTML5、Tailwindcss 3.0+(通过CDN引入)和必要的Javascript
+实现完整的深色/浅色模式切换功能，默认跟随系统设置
+代码结构清晰，包含适当注释，便于理解和维护
+
+## 响应式设计
+页面必须在所有设备上(手机、平板、桌面)完美展示
+针对不同屏幕尺寸优化布局和字体大小
+确保移动端有良好的触控体验
+
+## 媒体资源
+使用文档中的Markdown图片链接(如果有的话)
+使用文档中的视频嵌入代码(如果有的话)
+
+## 图标与视觉元素
+使用专业图标库如Font Awesome或Material Icons(通过CDN引入)
+根据内容主题选择合适的插图或图表展示数据
+避免使用emoji作为主要图标
+
+## 交互体验
+添加适当的微交互效果提升用户体验
+按钮悬停时有轻微放大和颜色变化
+卡片元素悬停时有精致的阴影和边框效果
+页面滚动时有平滑过渡效果
+内容区块加载时有优雅的淡入动画
+
+##性能优化
+确保页面加载速度快，避免不必要的大型资源
+实现懒加载技术用于长页面内容
+
+## 输出要求
+提供完整可运行的单一HTML文件，包含所有必要的css和Javascript
+确保代码符合W3c标准，无错误警告
+页面在不同浏览器中保持一致的外观和功能
+请根据上传文件的内容类型(文档、数据、图片等)，创建最适合展示该内容的可视化网页。`,
             reasoning_effort: "high",
             verbosity: "medium"
           }
@@ -659,6 +725,159 @@ export class EduVisualizerAIService {
       } catch (error) {
         logger.error('内容分析失败', { error }, 'Analysis')
         throw new Error(`内容分析失败: ${error instanceof Error ? error.message : '未知错误'}`)
+      }
+    })
+  }
+
+  /**
+   * 生成HTML可视化页面 - 使用GPT-5
+   * @param content 文本内容
+   * @param files 上传的文件
+   * @returns HTML页面内容
+   */
+  async generateHTMLVisualization(content: string, files?: File[]): Promise<HTMLVisualizationResponse> {
+    console.log('🎨 使用 GPT-5 生成HTML可视化页面')
+    logger.info('开始GPT-5 HTML生成', { 
+      contentLength: content.length,
+      filesCount: files?.length || 0,
+      model: API_CONFIG.models.gpt5
+    }, 'HTMLGeneration')
+
+    return requestQueue.add(async () => {
+      try {
+        let fileContext = ""
+        
+        if (files?.length) {
+          fileContext = `检测到${files.length}个文件，但文件内容解析功能当前不可用。建议直接输入文件中的内容进行分析。`
+          logger.info('跳过文件解析（功能不可用），开始HTML生成', { filesCount: files.length }, 'HTMLGeneration')
+        }
+        
+        console.log('🎨 GPT-5 HTML生成: 准备发送API请求...')
+        
+        const requestBody = JSON.stringify({
+          input: {
+            prompt: `我给你一个文件，一段内容，分析内容，并将其转化为美观漂亮的中文可视化网页作品集:
+
+文本内容：${content}
+文件信息：${fileContext}
+
+## 内容要求
+保持原文件的核心信息，但以更易读、可视化的方式呈现
+在页面底部添加作者信息区域，包含:
+*作者姓名:[EduVisualizer AI]
+*社交媒体链接:至少包含Twitter/x:
+版权信息和年份
+
+## 设计风格
+整体风格参考Linear App的简约现代设计
+使用清晰的视觉层次结构，突出重要内容
+配色方案应专业、和谐，适合长时间阅读
+
+##技术规范
+使用HTML5、Tailwindcss 3.0+(通过CDN引入)和必要的Javascript
+实现完整的深色/浅色模式切换功能，默认跟随系统设置
+代码结构清晰，包含适当注释，便于理解和维护
+
+## 响应式设计
+页面必须在所有设备上(手机、平板、桌面)完美展示
+针对不同屏幕尺寸优化布局和字体大小
+确保移动端有良好的触控体验
+
+## 媒体资源
+使用文档中的Markdown图片链接(如果有的话)
+使用文档中的视频嵌入代码(如果有的话)
+
+## 图标与视觉元素
+使用专业图标库如Font Awesome或Material Icons(通过CDN引入)
+根据内容主题选择合适的插图或图表展示数据
+避免使用emoji作为主要图标
+
+## 交互体验
+添加适当的微交互效果提升用户体验
+按钮悬停时有轻微放大和颜色变化
+卡片元素悬停时有精致的阴影和边框效果
+页面滚动时有平滑过渡效果
+内容区块加载时有优雅的淡入动画
+
+##性能优化
+确保页面加载速度快，避免不必要的大型资源
+实现懒加载技术用于长页面内容
+
+## 输出要求
+提供完整可运行的单一HTML文件，包含所有必要的css和Javascript
+确保代码符合W3c标准，无错误警告
+页面在不同浏览器中保持一致的外观和功能
+请根据上传文件的内容类型(文档、数据、图片等)，创建最适合展示该内容的可视化网页。`,
+            reasoning_effort: "high",
+            verbosity: "medium"
+          }
+        })
+        
+        console.log('📦 HTML生成请求体:', requestBody.substring(0, 200) + '...')
+        
+        const createResponse = await fetch('/api/replicate/v1/models/openai/gpt-5/predictions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: requestBody
+        })
+        
+        if (!createResponse.ok) {
+          const errorText = await createResponse.text()
+          console.error('❌ HTML生成prediction创建失败:', {
+            status: createResponse.status,
+            statusText: createResponse.statusText,
+            error: errorText
+          })
+          throw new Error(`创建HTML生成prediction失败: ${createResponse.status} ${createResponse.statusText} - ${errorText}`)
+        }
+        
+        const prediction = await createResponse.json()
+        console.log('✅ HTML生成Prediction创建成功:', prediction)
+        
+        if (!prediction.id) {
+          throw new Error('API响应中缺少prediction ID')
+        }
+        
+        // 轮询获取结果
+        const result = await this.pollPredictionResult(prediction.id)
+        
+        console.log('🎨 生成的HTML内容:', typeof result === 'string' ? result.substring(0, 200) + '...' : result)
+        
+        // 处理HTML响应
+        let htmlContent: string
+        if (typeof result === 'string') {
+          htmlContent = result
+        } else if (Array.isArray(result)) {
+          htmlContent = result.join('')
+        } else {
+          throw new Error('无法解析HTML内容')
+        }
+        
+        // 验证HTML内容
+        if (!htmlContent.includes('<!DOCTYPE html>') && !htmlContent.includes('<html')) {
+          throw new Error('生成的内容不是有效的HTML文档')
+        }
+        
+        const htmlResponse: HTMLVisualizationResponse = {
+          htmlContent,
+          title: "生成的可视化页面",
+          description: `基于内容"${content.substring(0, 50)}..."生成的HTML作品集`,
+          generatedAt: new Date(),
+          fileSize: new Blob([htmlContent]).size
+        }
+        
+        logger.success('HTML生成完成', {
+          contentLength: htmlContent.length,
+          fileSize: htmlResponse.fileSize
+        }, 'HTMLGeneration')
+
+        return htmlResponse
+      } catch (error) {
+        logger.error('HTML生成失败', { error }, 'HTMLGeneration')
+        throw new Error(`HTML生成失败: ${error instanceof Error ? error.message : '未知错误'}`)
       }
     })
   }
