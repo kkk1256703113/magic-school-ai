@@ -31,53 +31,6 @@ export const analyzeFormulaText = async (text: string) => {
   }
 }
 
-export const generateLocalAnalysisResponse = (userContent: string, contentType: ContentType): string => {
-  let response = ''
-  
-  if (contentType === 'formula') {
-    response = `我来帮你分析这个数学公式："${userContent}"。\n\n`
-    
-    // 公式分析
-    response += `📐 **公式分析**\n`
-    if (userContent.toLowerCase().includes('y=x')) {
-      response += `• LaTeX格式: \`y = x\`\n`
-      response += `• 说明: 这是一个简单的线性函数，表示y与x相等\n`
-      response += `• 特点: 通过原点的45度直线，斜率为1\n\n`
-    } else {
-      response += `• LaTeX格式: \`${userContent}\`\n`
-      response += `• 说明: 这是一个数学表达式\n\n`
-    }
-    
-    // 内容分析
-    response += `📊 **内容分析**\n`
-    response += `• 学科: 数学\n`
-    response += `• 难度: 基础\n`
-    response += `• 标签: 线性函数, 基础代数\n`
-    response += `• 学习目标: 理解线性关系的基本概念\n\n`
-    
-    // 可视化信息
-    response += `🎨 **可视化建议**\n`
-    response += `• 建议绘制坐标系图表\n`
-    response += `• 标记几个关键点 (0,0), (1,1), (2,2)\n`
-    response += `• 观察直线的斜率和截距\n\n`
-    
-  } else {
-    response = `我来分析这段内容："${userContent}"。\n\n`
-    
-    response += `📊 **内容分析**\n`
-    response += `• 内容类型: 文本内容\n`
-    response += `• 长度: ${userContent.length} 字符\n`
-    response += `• 建议: 可以进一步详细分析\n\n`
-  }
-  
-  response += `⚠️ **注意**: 当前使用本地分析模式。要获得完整的AI分析功能，请配置API Token:\n\n`
-  response += `1. 在项目根目录创建 \`.env.local\` 文件\n`
-  response += `2. 添加: \`VITE_REPLICATE_API_TOKEN=你的API密钥\`\n`
-  response += `3. 重启服务器\n\n`
-  response += `有什么问题可以继续问我！😊`
-  
-  return response
-}
 
 export const generateResponseContent = (
   userContent: string, 

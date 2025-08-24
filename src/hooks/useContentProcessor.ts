@@ -2,7 +2,6 @@ import { logger } from '../utils/logger'
 import { 
   detectContentType, 
   analyzeFormulaText, 
-  generateLocalAnalysisResponse, 
   generateResponseContent,
   handleAPIError
 } from '../utils/contentAnalysis'
@@ -13,46 +12,13 @@ interface UseContentProcessorProps {
   updateMessage: (messageId: string, updates: any) => void
   getAPIService: () => any
   selectedModel: 'gpt5' | 'claude37'
-  useMockAPI: boolean
 }
 
 export const useContentProcessor = ({
   updateMessage,
   getAPIService,
-  selectedModel,
-  useMockAPI
+  selectedModel
 }: UseContentProcessorProps) => {
-
-  const handleLocalAnalysis = async (
-    userContent: string, 
-    contentType: ContentType, 
-    aiMessageId: string
-  ) => {
-    console.log('🔧 使用本地分析模式（无API Token）')
-    
-    // 步骤1: 内容识别
-    updateMessage(aiMessageId, { content: '🔍 正在分析内容...', status: 'thinking' })
-    await sleep(800)
-    
-    // 步骤2: 生成本地分析结果
-    updateMessage(aiMessageId, { content: '📊 正在生成分析报告...', status: 'thinking' })
-    await sleep(1000)
-    
-    const response = generateLocalAnalysisResponse(userContent, contentType)
-    
-    // 更新最终结果
-    updateMessage(aiMessageId, {
-      content: response,
-      status: 'complete',
-      data: { 
-        contentType,
-        isLocalAnalysis: true,
-        hasApiToken: false
-      }
-    })
-    
-    console.log('✅ 本地分析完成')
-  }
 
   const processUserInput = async (
     userContent: string, 
@@ -67,7 +33,6 @@ export const useContentProcessor = ({
     console.log('🚀 开始处理用户输入:', {
       userContent,
       contentType,
-      useMockAPI,
       apiService: typeof apiService,
       hasToken: !!import.meta.env.VITE_REPLICATE_API_TOKEN,
       tokenLength: import.meta.env.VITE_REPLICATE_API_TOKEN?.length
@@ -121,7 +86,7 @@ export const useContentProcessor = ({
         
         try {
           let contentAnalysis
-          if (selectedModel === 'claude37' && !useMockAPI) {
+          if (selectedModel === 'claude37') {
             console.log('🧠 使用 Claude 3.7 Sonnet 进行分析')
             contentAnalysis = await apiService.analyzeContentWithClaude(userContent)
           } else {
@@ -237,7 +202,6 @@ export const useContentProcessor = ({
 
   return {
     detectContentType,
-    handleLocalAnalysis,
     processUserInput
   }
 }

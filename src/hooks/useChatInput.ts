@@ -5,7 +5,6 @@ interface UseChatInputProps {
   addUserMessage: (content: string, files?: File[]) => string
   addAssistantMessage: (content: string, status?: any) => string
   updateMessage: (messageId: string, updates: any) => void
-  handleLocalAnalysis: (content: string, contentType: any, messageId: string) => Promise<void>
   processUserInput: (content: string, contentType: any, messageId: string) => Promise<void>
   detectContentType: (content: string) => any
   hasApiToken: boolean
@@ -15,7 +14,6 @@ export const useChatInput = ({
   addUserMessage,
   addAssistantMessage,
   updateMessage,
-  handleLocalAnalysis,
   processUserInput,
   detectContentType,
   hasApiToken
@@ -53,8 +51,23 @@ export const useChatInput = ({
         const contentType = detectContentType(userContent)
         
         if (!hasApiToken) {
-          // 如果没有配置API Token，使用本地分析
-          await handleLocalAnalysis(userContent, contentType, aiMessageId)
+          // 如果没有配置API Token，直接显示错误
+          updateMessage(aiMessageId, {
+            content: `❌ **API配置缺失**
+
+需要配置Replicate API Token才能使用AI功能：
+
+**步骤1**: 在项目根目录创建 \`.env.local\` 文件
+**步骤2**: 添加以下内容：
+\`\`\`
+VITE_REPLICATE_API_TOKEN=你的API密钥
+\`\`\`
+
+**获取API密钥**: 访问 https://replicate.com/account
+
+配置完成后刷新页面即可使用完整功能！`,
+            status: 'error'
+          })
         } else {
           // 如果配置了API Token，尝试调用真实API
           await processUserInput(userContent, contentType, aiMessageId)

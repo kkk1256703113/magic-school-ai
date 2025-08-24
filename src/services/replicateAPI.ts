@@ -16,11 +16,7 @@ const API_CONFIG = {
     // 主要文本分析模型 (已验证可用)
     gpt5: import.meta.env.VITE_GPT5_MODEL || 'openai/gpt-5',
     // Claude 3.7 Sonnet - 最智能的Claude模型，混合推理模型
-    claude37: import.meta.env.VITE_CLAUDE37_MODEL || 'anthropic/claude-3.7-sonnet',
-    // 图像生成模型 (已验证可用)
-    dalleE3: import.meta.env.VITE_DALLE_MODEL || 'openai/dall-e-3',
-    // 备选文本分析模型 (已验证可用)
-    llama2: import.meta.env.VITE_LLAMA2_MODEL || 'meta/llama-2-70b-chat'
+    claude37: import.meta.env.VITE_CLAUDE37_MODEL || 'anthropic/claude-3.7-sonnet'
   },
   settings: {
     maxFileSize: parseInt(import.meta.env.VITE_MAX_FILE_SIZE) || 10485760, // 10MB
@@ -285,38 +281,13 @@ export class EduVisualizerAIService {
     logger.info('开始生成可视化', { 
       dataType: typeof data,
       style,
-      models: [API_CONFIG.models.dalleE3, API_CONFIG.models.gpt5]
+      models: [API_CONFIG.models.gpt5]
     }, 'Visualization')
 
     return requestQueue.add(async () => {
       try {
-        // 并行执行两种方案
-        const [imageResult, codeResult] = await Promise.all([
-          // 方案1: DALL-E 3生成数学图像
-          fetch('/api/replicate/v1/models/openai/dall-e-3/predictions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
-              'Content-Type': 'application/json',
-              'Prefer': 'wait'
-            },
-            body: JSON.stringify({
-              input: {
-                prompt: `Create a clean, educational visualization of mathematical function: ${data.text || 'y=x'}. 
-                Style: ${style}. 
-                Requirements: clear axis labels, grid lines, clean design suitable for education`,
-                size: "1024x1024",
-                quality: "standard"
-              }
-            })
-          }).then(async (res) => {
-            if (!res.ok) throw new Error(`DALL-E 3 failed: ${res.status}`)
-            const result = await res.json()
-            return result.output
-          }),
-          
-          // 方案2: GPT-5生成代码
-          fetch('/api/replicate/v1/models/openai/gpt-5/predictions', {
+        // 使用GPT-5生成可视化代码
+        const codeResult = await fetch('/api/replicate/v1/models/openai/gpt-5/predictions', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
@@ -352,10 +323,9 @@ export class EduVisualizerAIService {
             const output = Array.isArray(result.output) ? result.output.join('') : result.output
             return JSON.parse(output)
           })
-        ])
 
         const result: VisualizationResponse = {
-          generatedImage: imageResult as string,
+          generatedImage: undefined,
           codeOptions: codeResult
         }
         

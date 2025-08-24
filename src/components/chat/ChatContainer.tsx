@@ -24,7 +24,6 @@ export const ChatContainer = () => {
 
   // API服务管理
   const {
-    useMockAPI,
     selectedModel,
     setSelectedModel,
     apiConfig,
@@ -35,13 +34,11 @@ export const ChatContainer = () => {
   // 内容处理
   const {
     detectContentType,
-    handleLocalAnalysis,
     processUserInput
   } = useContentProcessor({
     updateMessage,
     getAPIService,
-    selectedModel,
-    useMockAPI
+    selectedModel
   })
 
   // 聊天输入处理
@@ -56,7 +53,6 @@ export const ChatContainer = () => {
     addUserMessage,
     addAssistantMessage,
     updateMessage,
-    handleLocalAnalysis,
     processUserInput,
     detectContentType,
     hasApiToken: apiConfig.hasToken

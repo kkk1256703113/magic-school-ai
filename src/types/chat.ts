@@ -39,12 +39,10 @@ export interface ChatState {
   messages: Message[]
   inputText: string
   isProcessing: boolean
-  useMockAPI: boolean
   selectedModel: 'gpt5' | 'claude37'
 }
 
 export interface APIConfig {
   hasToken: boolean
   tokenValue?: string
-  useMockAPI: boolean
 }
