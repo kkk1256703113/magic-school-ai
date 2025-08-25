@@ -8,12 +8,27 @@ interface MessageListProps {
 
 export const MessageList = ({ messages, messagesEndRef }: MessageListProps) => {
   return (
-    <main className="flex-1 overflow-y-auto p-4">
-      <div className="max-w-4xl mx-auto space-y-4">
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
-        <div ref={messagesEndRef} />
+    <main className="flex-1 overflow-y-auto py-6">
+      <div className="max-w-4xl mx-auto px-6">
+        {/* 当没有消息时显示欢迎界面 */}
+        {messages.length === 1 && messages[0].type === 'system' && (
+          <div className="flex flex-col items-center justify-center min-h-[400px]">
+            <h2 className="text-4xl font-normal text-blue-500 mb-4">
+              你好！欢迎使用 EduVisualizer
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 text-lg">
+              我可以帮你分析教育内容、生成可视化图表
+            </p>
+          </div>
+        )}
+        
+        {/* 消息列表 */}
+        <div className="space-y-6">
+          {messages.map((message) => (
+            <MessageBubble key={message.id} message={message} />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
     </main>
   )

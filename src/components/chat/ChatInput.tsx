@@ -86,18 +86,18 @@ export const ChatInput = ({
   }
 
   return (
-    <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-4">
+    <div className="p-6">
       <div className="max-w-4xl mx-auto">
         {/* 文件预览区域 */}
         {files.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-2">
             {files.map((file, index) => (
-              <div key={index} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-md px-3 py-2 text-sm">
+              <div key={index} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-sm">
                 <Paperclip className="h-4 w-4 text-gray-500" />
                 <span className="truncate max-w-[200px] text-gray-700 dark:text-gray-300">{file.name}</span>
                 <button
                   type="button"
-                  className="h-4 w-4 p-0 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-400 rounded transition-colors"
+                  className="ml-1 p-0.5 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900 dark:hover:text-red-400 rounded transition-colors"
                   onClick={() => removeFile(index)}
                 >
                   <X className="h-3 w-3" />
@@ -107,12 +107,12 @@ export const ChatInput = ({
           </div>
         )}
 
-        {/* 输入区域 */}
+        {/* 输入区域 - 类似Gemini的圆角卡片设计 */}
         <div
-          className={`relative flex items-end gap-3 rounded-2xl border transition-colors ${
+          className={`relative bg-white dark:bg-gray-800 rounded-3xl border shadow-sm transition-all ${
             isDragging 
               ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" 
-              : "border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700"
+              : "border-gray-200 dark:border-gray-700"
           } ${isProcessing ? "opacity-50" : ""}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -127,14 +127,14 @@ export const ChatInput = ({
             onChange={(e) => handleFileSelect(e.target.files)}
           />
 
-          <div className="flex-1 p-2">
+          <div className="flex items-center gap-3 p-4">
             <textarea
               ref={textareaRef}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="输入消息或拖拽文件到这里..."
-              className="min-h-[40px] max-h-[120px] w-full resize-none border-0 bg-transparent p-2 text-gray-800 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none"
+              placeholder="向 EduVisualizer 提问..."
+              className="flex-1 min-h-[24px] max-h-[120px] resize-none border-0 bg-transparent text-base text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none"
               disabled={isProcessing}
               rows={1}
               style={{
@@ -147,41 +147,43 @@ export const ChatInput = ({
                 target.style.height = Math.min(target.scrollHeight, 120) + 'px'
               }}
             />
-          </div>
 
-          {/* 按钮区域 */}
-          <div className="flex items-center gap-1 p-2">
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={isProcessing || (!inputText.trim() && files.length === 0)}
-              className="p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
-            >
-              <Send className="h-4 w-4" />
-            </button>
+            {/* 按钮区域 */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isProcessing}
+                className="h-8 w-8 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="上传文件"
+              >
+                <Paperclip className="h-4 w-4" />
+              </button>
 
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isProcessing}
-              className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Paperclip className="h-4 w-4" />
-            </button>
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={isProcessing || (!inputText.trim() && files.length === 0)}
+                className="h-8 w-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-full transition-colors"
+                title="发送消息"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {/* 拖拽提示 */}
           {isDragging && (
-            <div className="absolute inset-0 flex items-center justify-center bg-blue-50 dark:bg-blue-900/20 rounded-2xl border-2 border-dashed border-blue-500">
+            <div className="absolute inset-0 flex items-center justify-center bg-blue-50 dark:bg-blue-900/20 rounded-3xl border-2 border-dashed border-blue-500">
               <p className="text-blue-600 dark:text-blue-400 font-medium">拖拽文件到这里上传</p>
             </div>
           )}
         </div>
 
         <div className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-          支持上传 TXT, MD, PDF, CSV, JSON, HTML, DOC, DOCX 文件。Enter 发送，Shift + Enter 换行
+          支持 TXT, MD, PDF, CSV, JSON, HTML, DOC, DOCX · Enter 发送 · Shift+Enter 换行
         </div>
       </div>
-    </footer>
+    </div>
   )
 }

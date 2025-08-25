@@ -10,6 +10,7 @@ import {
 import { logger } from '../utils/logger'
 // 缓存相关的导入已移除，因为当前使用简化的API调用方式
 import { temporaryStorage } from '../utils/temporaryStorage'
+import { cleanHTMLContent, isValidHTMLDocument } from '../utils/contentAnalysis'
 
 // API配置
 const API_CONFIG = {
@@ -932,18 +933,46 @@ export class EduVisualizerAIService {
         console.log('🎨 生成的HTML内容:', typeof result === 'string' ? result.substring(0, 200) + '...' : result)
         
         // 处理HTML响应
-        let htmlContent: string
+        let rawHtmlContent: string
         if (typeof result === 'string') {
-          htmlContent = result
+          rawHtmlContent = result
         } else if (Array.isArray(result)) {
-          htmlContent = result.join('')
+          rawHtmlContent = result.join('')
         } else {
           throw new Error('无法解析HTML内容')
         }
         
-        // 验证HTML内容
-        if (!htmlContent.includes('<!DOCTYPE html>') && !htmlContent.includes('<html')) {
-          throw new Error('生成的内容不是有效的HTML文档')
+        console.log('🧹 清理HTML内容前:', {
+          length: rawHtmlContent.length,
+          preview: rawHtmlContent.substring(0, 300),
+          hasDoctype: rawHtmlContent.includes('<!DOCTYPE html>'),
+          hasHtmlTag: rawHtmlContent.includes('<html'),
+          hasCodeBlock: rawHtmlContent.includes('```html')
+        })
+        
+        // 清理HTML内容，移除解释性文字
+        const htmlContent = cleanHTMLContent(rawHtmlContent)
+        
+        console.log('✨ 清理HTML内容后:', {
+          length: htmlContent.length,
+          preview: htmlContent.substring(0, 300),
+          hasDoctype: htmlContent.includes('<!DOCTYPE html>'),
+          hasHtmlTag: htmlContent.includes('<html'),
+          lengthDiff: rawHtmlContent.length - htmlContent.length
+        })
+        
+        // 验证清理后的HTML内容
+        if (!isValidHTMLDocument(htmlContent)) {
+          logger.warn('生成的内容可能不是完整的HTML文档，尝试直接使用原始内容', {
+            hasDoctype: htmlContent.includes('<!DOCTYPE html>'),
+            hasHtml: htmlContent.includes('<html'),
+            hasBody: htmlContent.includes('<body')
+          }, 'HTMLGeneration')
+          
+          // 如果验证失败但包含基本的HTML结构，仍然使用清理后的内容
+          if (!htmlContent.includes('<html') && !htmlContent.includes('<body')) {
+            throw new Error('生成的内容不是有效的HTML文档')
+          }
         }
         
         const htmlResponse: HTMLVisualizationResponse = {

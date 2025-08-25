@@ -11,6 +11,116 @@ export const detectContentType = (content: string): ContentType => {
   return 'text'
 }
 
+/**
+ * 清理HTML内容，移除HTML标签之前的解释性文字
+ * @param content 原始内容（可能包含解释性文字+HTML代码）
+ * @returns 纯净的HTML内容
+ */
+export const cleanHTMLContent = (content: string): string => {
+  logger.info('开始清理HTML内容', { 
+    originalLength: content.length,
+    preview: content.substring(0, 100)
+  }, 'ContentAnalysis')
+  
+  // 首先检查是否已经是纯净的HTML（以<!DOCTYPE开头）
+  if (content.trimStart().startsWith('<!DOCTYPE html>') || content.trimStart().startsWith('<!doctype html>')) {
+    logger.info('内容已是纯净HTML（以DOCTYPE开头），无需清理', {}, 'ContentAnalysis')
+    return content
+  }
+  
+  // 检查是否在```html代码块中
+  const codeBlockMatch = content.match(/```html\s*\n?([\s\S]*?)(?:```|$)/)
+  if (codeBlockMatch && codeBlockMatch[1]) {
+    const extractedContent = codeBlockMatch[1].trim()
+    logger.info('从代码块中提取HTML内容', { 
+      extractedLength: extractedContent.length 
+    }, 'ContentAnalysis')
+    return extractedContent // 直接返回提取的内容，不再递归
+  }
+  
+  // 查找HTML文档的开始位置
+  let htmlStartIndex = -1
+  
+  // 优先查找<!DOCTYPE html>
+  const doctypeIndex = content.indexOf('<!DOCTYPE html>')
+  if (doctypeIndex === -1) {
+    const doctypeLowerIndex = content.indexOf('<!doctype html>')
+    if (doctypeLowerIndex !== -1) {
+      htmlStartIndex = doctypeLowerIndex
+    }
+  } else {
+    htmlStartIndex = doctypeIndex
+  }
+  
+  // 如果没有DOCTYPE，查找<html标签
+  if (htmlStartIndex === -1) {
+    const htmlMatch = content.match(/<html[^>]*>/i)
+    if (htmlMatch && htmlMatch.index !== undefined) {
+      htmlStartIndex = htmlMatch.index
+    }
+  }
+  
+  // 如果找到了HTML的开始位置，提取内容
+  if (htmlStartIndex !== -1) {
+    let cleanedContent = content.substring(htmlStartIndex).trim()
+    
+    // 移除可能的结尾```标记
+    const endMarkerIndex = cleanedContent.lastIndexOf('```')
+    if (endMarkerIndex > 0) {
+      // 确保```是在HTML结束标签之后
+      const htmlEndIndex = cleanedContent.lastIndexOf('</html>')
+      if (htmlEndIndex === -1 || endMarkerIndex > htmlEndIndex) {
+        cleanedContent = cleanedContent.substring(0, endMarkerIndex).trim()
+      }
+    }
+    
+    logger.success('HTML内容清理完成', { 
+      originalLength: content.length,
+      cleanedLength: cleanedContent.length,
+      removedChars: content.length - cleanedContent.length
+    }, 'ContentAnalysis')
+    
+    return cleanedContent
+  }
+  
+  // 如果没有找到标准的HTML开始，但包含基本的HTML结构，返回原内容
+  if (content.includes('<body') && content.includes('</body>')) {
+    logger.info('内容包含HTML body标签，保持原样', {}, 'ContentAnalysis')
+    return content
+  }
+  
+  logger.warn('未找到有效的HTML内容标记，返回原内容', { 
+    contentPreview: content.substring(0, 100) 
+  }, 'ContentAnalysis')
+  return content
+}
+
+/**
+ * 验证HTML内容的完整性
+ * @param htmlContent HTML内容
+ * @returns 是否为有效的HTML文档
+ */
+export const isValidHTMLDocument = (htmlContent: string): boolean => {
+  // 检查必要的HTML标签
+  const hasDoctype = htmlContent.includes('<!DOCTYPE html>') || htmlContent.includes('<!doctype html>')
+  const hasHtmlTag = /<html[^>]*>/.test(htmlContent) && htmlContent.includes('</html>')
+  const hasBodyTag = /<body[^>]*>/.test(htmlContent) && htmlContent.includes('</body>')
+  const hasHeadTag = /<head[^>]*>/.test(htmlContent) && htmlContent.includes('</head>')
+  
+  // 至少需要html和body标签
+  const isValid = (hasDoctype || hasHtmlTag) && hasBodyTag
+  
+  logger.info('HTML文档验证', {
+    hasDoctype,
+    hasHtmlTag,
+    hasBodyTag,
+    hasHeadTag,
+    isValid
+  }, 'ContentAnalysis')
+  
+  return isValid
+}
+
 export const analyzeFormulaText = async (text: string) => {
   try {
     const file = new File([text], 'formula.txt', { type: 'text/plain' })

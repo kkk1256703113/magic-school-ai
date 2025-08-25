@@ -14,8 +14,23 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
   // 检测消息是否包含HTML内容
   const isHTMLContent = (content: string): boolean => {
     // 检测完整HTML文档结构
-    return content.includes('<!DOCTYPE html>') || 
-           (content.includes('<html') && content.includes('</html>'))
+    const hasDoctype = content.includes('<!DOCTYPE html>') || content.includes('<!doctype html>')
+    const hasHtmlTags = content.includes('<html') && content.includes('</html>')
+    const result = hasDoctype || hasHtmlTags
+    
+    // 调试日志
+    if (!isUser && !isSystem) {
+      console.log('🔍 HTML内容检测:', {
+        messageId: message.id,
+        contentLength: content.length,
+        contentPreview: content.substring(0, 100),
+        hasDoctype,
+        hasHtmlTags,
+        isHTML: result
+      })
+    }
+    
+    return result
   }
   
   // 检测用户消息是否包含PDF文件
@@ -30,15 +45,27 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
       transition={{ duration: 0.4 }}
       className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
     >
-      <div className={`${hasHTMLContent ? 'max-w-6xl' : 'max-w-3xl'} ${isUser ? 'order-2' : 'order-1'}`}>
-        {/* 消息气泡 */}
+      {/* AI头像（类似Gemini的蓝色方块） */}
+      {!isUser && !isSystem && (
+        <div className="flex items-start gap-3">
+          <div className="w-6 h-6 bg-blue-500 rounded-sm flex items-center justify-center flex-shrink-0 mt-1">
+            <div 
+              className="w-3 h-3 bg-white"
+              style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className={`${hasHTMLContent ? 'max-w-6xl' : 'max-w-3xl'} ${!isUser && !isSystem ? 'ml-3' : ''}`}>
+        {/* 消息内容 */}
         <div
-          className={`px-4 py-3 rounded-2xl ${
+          className={`${
             isSystem
-              ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200'
+              ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200 px-4 py-3 rounded-2xl'
               : isUser
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200'
+                ? 'bg-gray-200 dark:bg-gray-700 rounded-2xl px-4 py-3 text-gray-800 dark:text-gray-200 max-w-2xl'
+                : 'text-gray-800 dark:text-gray-200 leading-relaxed'
           }`}
         >
           {/* 思考状态指示器 */}

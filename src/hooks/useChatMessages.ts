@@ -70,12 +70,18 @@ export const useChatMessages = () => {
     ))
   }
 
+  // 清空消息（新建对话）
+  const clearMessages = () => {
+    setMessages(INITIAL_MESSAGES)
+  }
+
   return {
     messages,
     messagesEndRef,
     addUserMessage,
     addAssistantMessage,
     addSystemMessage,
-    updateMessage
+    updateMessage,
+    clearMessages
   }
 }
