@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { isSimpleGreeting, generateGreetingResponse, sleep } from '../utils/chatHelpers'
+import { pdfService } from '../services/pdfService'
 
 interface UseChatInputProps {
   addUserMessage: (content: string, files?: File[]) => string
@@ -26,9 +27,39 @@ export const useChatInput = ({
   const handleSendMessage = async (message: string = inputText, files?: File[]) => {
     if ((!message.trim() && (!files || files.length === 0)) || isProcessing) return
     
-    const userContent = message.trim()
+    let userContent = message.trim()
     setInputText('')
     setIsProcessing(true)
+    
+    // 处理PDF文件
+    let pdfContent = ''
+    if (files && files.length > 0) {
+      for (const file of files) {
+        if (file.type === 'application/pdf') {
+          try {
+            // 使用PDF服务处理文件
+            const result = await pdfService.processPDF(file)
+            pdfContent += `\n\n--- PDF文件: ${file.name} ---\n`
+            pdfContent += `页数: ${result.pageCount}\n`
+            if (result.metadata?.title) {
+              pdfContent += `标题: ${result.metadata.title}\n`
+            }
+            if (result.metadata?.author) {
+              pdfContent += `作者: ${result.metadata.author}\n`
+            }
+            pdfContent += `处理方式: ${result.processedBy === 'api' ? 'iLovePDF API (高精度)' : 'PDF.js (快速处理)'}\n`
+            pdfContent += `\n内容:\n${result.text}\n`
+          } catch (error) {
+            console.error('PDF处理失败:', error)
+          }
+        }
+      }
+    }
+    
+    // 如果有PDF内容，添加到用户消息中
+    if (pdfContent) {
+      userContent = userContent ? `${userContent}\n\n附件内容：${pdfContent}` : `请分析以下PDF内容：${pdfContent}`
+    }
     
     // 添加用户消息
     addUserMessage(userContent, files)

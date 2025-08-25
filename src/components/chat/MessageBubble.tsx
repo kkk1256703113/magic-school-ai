@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Message } from '../../types/chat'
 import { HTMLPreview } from '../html/HTMLPreview'
+import { PDFViewer } from '../pdf/PDFViewer'
 
 interface MessageBubbleProps {
   message: Message
@@ -16,6 +17,9 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
     return content.includes('<!DOCTYPE html>') || 
            (content.includes('<html') && content.includes('</html>'))
   }
+  
+  // 检测用户消息是否包含PDF文件
+  const hasPDFFiles = isUser && message.data?.files?.some((file: File) => file.type === 'application/pdf')
   
   const hasHTMLContent = !isUser && isHTMLContent(message.content)
   
@@ -59,15 +63,27 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
               <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                 📎 附件文件：
               </div>
-              <div className="flex flex-wrap gap-2">
-                {message.data.files.map((file, index) => (
-                  <div key={index} className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded px-2 py-1 text-xs">
-                    <span className="font-medium">{file.name}</span>
-                    <span className="ml-1 text-gray-500">
-                      ({(file.size / 1024).toFixed(1)}KB)
-                    </span>
-                  </div>
-                ))}
+              <div className="space-y-2">
+                {message.data.files.map((file, index) => {
+                  // 如果是PDF文件，显示预览组件
+                  if (file.type === 'application/pdf') {
+                    return (
+                      <PDFViewer 
+                        key={index}
+                        file={file}
+                      />
+                    )
+                  }
+                  // 其他文件显示简单信息
+                  return (
+                    <div key={index} className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded px-2 py-1 text-xs">
+                      <span className="font-medium">{file.name}</span>
+                      <span className="ml-1 text-gray-500">
+                        ({(file.size / 1024).toFixed(1)}KB)
+                      </span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -85,9 +101,12 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
               />
             </div>
           ) : (
-            <div className="whitespace-pre-wrap">
-              {message.content}
-            </div>
+            // 仅当没有PDF文件时显示用户的文本内容
+            !hasPDFFiles && message.content && (
+              <div className="whitespace-pre-wrap">
+                {message.content}
+              </div>
+            )
           )}
           
           {/* 可视化内容展示 */}
