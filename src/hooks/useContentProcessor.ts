@@ -23,8 +23,15 @@ export const useContentProcessor = ({
   const processUserInput = async (
     userContent: string, 
     contentType: ContentType, 
-    aiMessageId: string
+    aiMessageId: string,
+    signal?: AbortSignal
   ) => {
+    // 立即检查signal状态
+    if (signal?.aborted) {
+      console.log('⚠️ processUserInput: Signal已被abort，不执行处理')
+      throw new DOMException('Aborted', 'AbortError')
+    }
+    
     const apiService = getAPIService()
     const results: any = {}
     let hasErrors = false
@@ -93,11 +100,11 @@ export const useContentProcessor = ({
           if (selectedModel === 'claude4') {
             console.log('🧠 使用 Claude 4 Sonnet 进行分析')
             console.log('🔗 Claude API端点: anthropic/claude-4-sonnet')
-            contentAnalysis = await apiService.analyzeContentWithClaude(userContent)
+            contentAnalysis = await apiService.analyzeContentWithClaude(userContent, undefined, signal)
           } else {
             console.log('🤖 使用 GPT-5 进行分析')
             console.log('🔗 GPT-5 API端点: openai/gpt-5')
-            contentAnalysis = await apiService.analyzeContent(userContent, selectedModel)
+            contentAnalysis = await apiService.analyzeContent(userContent, selectedModel, undefined, signal)
           }
           console.log('📥 API调用成功，返回结果:', contentAnalysis)
           results.analysis = contentAnalysis
@@ -155,7 +162,7 @@ export const useContentProcessor = ({
           
           updateMessage(aiMessageId, { content: '🎨 AI正在绘制可视化图表...请稍候', status: 'thinking' })
           
-          const visualization = await apiService.generateVisualization(visualizationData, 'mathematical', selectedModel)
+          const visualization = await apiService.generateVisualization(visualizationData, 'mathematical', selectedModel, signal)
           results.visualization = visualization
           
           console.log('✅ 可视化生成完成:', visualization)

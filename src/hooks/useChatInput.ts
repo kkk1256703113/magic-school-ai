@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { isSimpleGreeting, generateGreetingResponse, sleep } from '../utils/chatHelpers'
 import { pdfService } from '../services/pdfService'
 
@@ -6,7 +6,7 @@ interface UseChatInputProps {
   addUserMessage: (content: string, files?: File[]) => string
   addAssistantMessage: (content: string, status?: any) => string
   updateMessage: (messageId: string, updates: any) => void
-  processUserInput: (content: string, contentType: any, messageId: string) => Promise<void>
+  processUserInput: (content: string, contentType: any, messageId: string, signal?: AbortSignal) => Promise<void>
   detectContentType: (content: string) => any
   hasApiToken: boolean
   selectedModel: 'gpt5' | 'claude4'
@@ -23,6 +23,20 @@ export const useChatInput = ({
 }: UseChatInputProps) => {
   const [inputText, setInputText] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
+
+  // 取消处理函数
+  const cancelProcessing = () => {
+    console.log('🛑 终止按钮被点击，准备取消处理')
+    if (abortControllerRef.current) {
+      console.log('🛑 AbortController存在，发送abort信号')
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+      setIsProcessing(false)
+    } else {
+      console.log('⚠️ AbortController不存在')
+    }
+  }
 
   const handleSendMessage = async (message: string = inputText, files?: File[]) => {
     if ((!message.trim() && (!files || files.length === 0)) || isProcessing) return
@@ -30,6 +44,9 @@ export const useChatInput = ({
     let userContent = message.trim()
     setInputText('')
     setIsProcessing(true)
+    
+    // 创建新的AbortController
+    abortControllerRef.current = new AbortController()
     
     // 处理PDF文件
     let pdfContent = ''
@@ -111,8 +128,8 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
               status: 'thinking' 
             })
             
-            // 调用HTML生成方法，传递选择的模型
-            const htmlResult = await aiService.generateHTMLVisualization(userContent, undefined, selectedModel)
+            // 调用HTML生成方法，传递选择的模型和取消信号
+            const htmlResult = await aiService.generateHTMLVisualization(userContent, undefined, selectedModel, abortControllerRef.current?.signal)
             
             // 更新消息显示HTML内容
             updateMessage(aiMessageId, {
@@ -126,19 +143,45 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
               }
             })
           } catch (htmlError) {
+            // 检查多种AbortError情况
+            if (htmlError instanceof Error && 
+                (htmlError.name === 'AbortError' || 
+                 htmlError.message.includes('abort') || 
+                 htmlError.message.includes('Aborted') ||
+                 htmlError.message.includes('signal is aborted'))) {
+              console.log('🛑 用户取消了处理，不执行降级流程')
+              throw htmlError
+            }
+            
             console.error('HTML生成失败，尝试降级到原有流程:', htmlError)
-            // 如果HTML生成失败，回退到原有的内容分析流程
-            await processUserInput(userContent, contentType, aiMessageId)
+            
+            // 检查signal是否已经被abort
+            if (abortControllerRef.current?.signal.aborted) {
+              console.log('🛑 Signal已被abort，不执行降级流程')
+              throw new Error('处理已被用户取消')
+            }
+            
+            // 如果HTML生成失败，回退到原有的内容分析流程，传递signal
+            await processUserInput(userContent, contentType, aiMessageId, abortControllerRef.current?.signal)
           }
         }
       }
     } catch (error) {
-      updateMessage(aiMessageId, {
-        content: `抱歉，处理过程中出现错误：${error instanceof Error ? error.message : '未知错误'}`,
-        status: 'error'
-      })
+      // 检查是否是用户主动取消
+      if (error instanceof Error && error.name === 'AbortError') {
+        updateMessage(aiMessageId, {
+          content: '处理已被终止',
+          status: 'complete'
+        })
+      } else {
+        updateMessage(aiMessageId, {
+          content: `抱歉，处理过程中出现错误：${error instanceof Error ? error.message : '未知错误'}`,
+          status: 'error'
+        })
+      }
     } finally {
       setIsProcessing(false)
+      abortControllerRef.current = null
     }
   }
 
@@ -147,6 +190,7 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
     inputText,
     setInputText,
     isProcessing,
-    handleSendMessage
+    handleSendMessage,
+    cancelProcessing
   }
 }

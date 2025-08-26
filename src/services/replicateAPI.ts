@@ -94,7 +94,7 @@ export class EduVisualizerAIService {
    * @param predictionId prediction ID
    * @returns API结果
    */
-  private async pollPredictionResult(predictionId: string): Promise<any> {
+  private async pollPredictionResult(predictionId: string, signal?: AbortSignal): Promise<any> {
     const maxAttempts = 50  // 最大50次，每次3秒，总共150秒 (2.5分钟)
     const intervalMs = 3000  // 每3秒检查一次
     
@@ -109,7 +109,8 @@ export class EduVisualizerAIService {
           headers: {
             'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
             'Content-Type': 'application/json'
-          }
+          },
+          signal  // 添加取消信号
         })
         
         if (!response.ok) {
@@ -136,15 +137,36 @@ export class EduVisualizerAIService {
         // 如果状态是 starting, processing，继续等待
         if (attempt < maxAttempts) {
           console.log(`⏳ 状态: ${result.status}, ${intervalMs/1000}秒后重试...`)
-          await new Promise(resolve => setTimeout(resolve, intervalMs))
+          // 支持中断的等待
+          await new Promise((resolve, reject) => {
+            const timer = setTimeout(resolve, intervalMs)
+            signal?.addEventListener('abort', () => {
+              clearTimeout(timer)
+              reject(new DOMException('Aborted', 'AbortError'))
+            })
+          })
         }
         
       } catch (error) {
         console.error(`❌ 轮询失败 (尝试 ${attempt}/${maxAttempts}):`, error)
+        
+        // 如果是用户主动取消，立即抛出错误
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          throw error
+        }
+        
         if (attempt === maxAttempts) {
           throw error
         }
-        await new Promise(resolve => setTimeout(resolve, intervalMs))
+        
+        // 支持中断的等待
+        await new Promise((resolve, reject) => {
+          const timer = setTimeout(resolve, intervalMs)
+          signal?.addEventListener('abort', () => {
+            clearTimeout(timer)
+            reject(new DOMException('Aborted', 'AbortError'))
+          })
+        })
       }
     }
     
@@ -280,7 +302,13 @@ export class EduVisualizerAIService {
    * @param selectedModel 选择的模型
    * @returns 可视化结果
    */
-  async generateVisualization(data: any, style: string = 'modern', selectedModel: 'gpt5' | 'claude4' = 'gpt5'): Promise<VisualizationResponse> {
+  async generateVisualization(data: any, style: string = 'modern', selectedModel: 'gpt5' | 'claude4' = 'gpt5', signal?: AbortSignal): Promise<VisualizationResponse> {
+    // 立即检查signal是否已经被abort
+    if (signal?.aborted) {
+      console.log('⚠️ generateVisualization: Signal已经被abort，不执行API调用')
+      throw new DOMException('Aborted', 'AbortError')
+    }
+    
     const modelEndpoint = API_CONFIG.models[selectedModel]
     
     console.log('🎨 开始生成可视化')
@@ -405,7 +433,13 @@ export class EduVisualizerAIService {
    * @param images 相关图片
    * @returns 内容分析结果
    */
-  async analyzeContentWithClaude(content: string, images?: File[]): Promise<ContentAnalysisResponse> {
+  async analyzeContentWithClaude(content: string, images?: File[], signal?: AbortSignal): Promise<ContentAnalysisResponse> {
+    // 立即检查signal是否已经被abort
+    if (signal?.aborted) {
+      console.log('⚠️ analyzeContentWithClaude: Signal已经被abort，不执行API调用')
+      throw new DOMException('Aborted', 'AbortError')
+    }
+    
     console.log('🧠 使用 Claude 4 Sonnet 进行内容分析')
     console.log('🔗 实际调用模型端点:', API_CONFIG.models.claude4)
     console.log('📍 完整API路径:', `/api/replicate/v1/models/${API_CONFIG.models.claude4}/predictions`)
@@ -504,7 +538,8 @@ export class EduVisualizerAIService {
             'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
             'Content-Type': 'application/json'
           },
-          body: requestBody
+          body: requestBody,
+          signal  // 添加取消信号
         })
         
         // 检查响应状态
@@ -548,8 +583,8 @@ export class EduVisualizerAIService {
           throw new Error('Claude API响应中缺少prediction ID')
         }
         
-        // 轮询获取结果
-        const result = await this.pollPredictionResult(prediction.id)
+        // 轮询获取结果，传递取消信号
+        const result = await this.pollPredictionResult(prediction.id, signal)
         
         console.log('🔍 Claude分析结果:', typeof result === 'string' ? result.substring(0, 200) + '...' : result)
         
@@ -623,7 +658,13 @@ export class EduVisualizerAIService {
    * @param images 相关图片
    * @returns 内容分析结果
    */
-  async analyzeContent(content: string, selectedModel: 'gpt5' | 'claude4' = 'gpt5', images?: File[]): Promise<ContentAnalysisResponse> {
+  async analyzeContent(content: string, selectedModel: 'gpt5' | 'claude4' = 'gpt5', images?: File[], signal?: AbortSignal): Promise<ContentAnalysisResponse> {
+    // 立即检查signal是否已经被abort
+    if (signal?.aborted) {
+      console.log('⚠️ analyzeContent: Signal已经被abort，不执行API调用')
+      throw new DOMException('Aborted', 'AbortError')
+    }
+    
     console.log('🔍 replicateAPI.ts: analyzeContent 方法被调用')
     console.log('🤖 选择的模型:', selectedModel)
     
@@ -744,7 +785,8 @@ export class EduVisualizerAIService {
             'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
             'Content-Type': 'application/json'
           },
-          body: requestBody
+          body: requestBody,
+          signal  // 添加取消信号
         })
         
         // 检查响应状态
@@ -774,8 +816,8 @@ export class EduVisualizerAIService {
           throw new Error('API响应中缺少prediction ID')
         }
         
-        // 第二步：轮询获取结果
-        const result = await this.pollPredictionResult(prediction.id)
+        // 第二步：轮询获取结果，传递取消信号
+        const result = await this.pollPredictionResult(prediction.id, signal)
         
         console.log('🔍 解析的分析内容:', typeof result === 'string' ? result.substring(0, 200) + '...' : result)
         
@@ -814,7 +856,7 @@ export class EduVisualizerAIService {
    * @param selectedModel 选择的模型 ('gpt5' | 'claude4')
    * @returns HTML页面内容
    */
-  async generateHTMLVisualization(content: string, files?: File[], selectedModel: 'gpt5' | 'claude4' = 'gpt5'): Promise<HTMLVisualizationResponse> {
+  async generateHTMLVisualization(content: string, files?: File[], selectedModel: 'gpt5' | 'claude4' = 'gpt5', signal?: AbortSignal): Promise<HTMLVisualizationResponse> {
     const modelKey = selectedModel as keyof typeof API_CONFIG.models
     const modelEndpoint = API_CONFIG.models[modelKey]
     
@@ -827,6 +869,12 @@ export class EduVisualizerAIService {
     }, 'HTMLGeneration')
 
     return requestQueue.add(async () => {
+      // 立即检查signal是否已经被abort
+      if (signal?.aborted) {
+        console.log('⚠️ generateHTMLVisualization: Signal已经被abort，不执行API调用')
+        throw new DOMException('Aborted', 'AbortError')
+      }
+      
       try {
         let fileContext = ""
         
@@ -907,7 +955,8 @@ export class EduVisualizerAIService {
             'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
             'Content-Type': 'application/json'
           },
-          body: requestBody
+          body: requestBody,
+          signal  // 添加取消信号
         })
         
         if (!createResponse.ok) {
@@ -927,8 +976,8 @@ export class EduVisualizerAIService {
           throw new Error('API响应中缺少prediction ID')
         }
         
-        // 轮询获取结果
-        const result = await this.pollPredictionResult(prediction.id)
+        // 轮询获取结果，传递取消信号
+        const result = await this.pollPredictionResult(prediction.id, signal)
         
         console.log('🎨 生成的HTML内容:', typeof result === 'string' ? result.substring(0, 200) + '...' : result)
         
@@ -991,6 +1040,18 @@ export class EduVisualizerAIService {
 
         return htmlResponse
       } catch (error) {
+        // 检查是否是取消操作
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          console.log('🛑 HTML生成被用户取消')
+          throw new Error('Aborted')  // 统一错误消息
+        }
+        
+        // 检查其他abort情况
+        if (error instanceof Error && error.message.includes('abort')) {
+          console.log('🛑 处理被取消:', error.message)
+          throw new Error('Aborted')
+        }
+        
         logger.error('HTML生成失败', { error }, 'HTMLGeneration')
         throw new Error(`HTML生成失败: ${error instanceof Error ? error.message : '未知错误'}`)
       }
