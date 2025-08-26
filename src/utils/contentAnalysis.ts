@@ -191,9 +191,6 @@ export const generateResponseContent = (
     if (results.analysis.learningObjectives?.length > 0) {
       response += `• 学习目标: ${results.analysis.learningObjectives.join(', ')}\n`
     }
-    if (results.analysis.confidence !== undefined) {
-      response += `• 置信度: ${Math.round(results.analysis.confidence * 100)}%\n`
-    }
     response += `\n`
   }
   

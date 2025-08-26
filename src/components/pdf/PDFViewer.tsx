@@ -149,9 +149,8 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({ file, onTextExtracted }) =
           </div>
 
           {/* 处理统计 */}
-          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-            <span>字符数: {processResult.text.length}</span>
-            <span>置信度: {Math.round(processResult.confidence * 100)}%</span>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            字符数: {processResult.text.length}
           </div>
         </div>
       )}
