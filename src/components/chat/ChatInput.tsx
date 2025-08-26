@@ -24,6 +24,10 @@ export const ChatInput = ({
       onSendMessage(inputText.trim(), files)
       setInputText("")
       setFiles([])
+      // 重置文件输入框
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
       // 重置textarea高度
       if (textareaRef.current) {
         textareaRef.current.style.height = 'auto'
@@ -124,7 +128,11 @@ export const ChatInput = ({
             multiple
             accept=".txt,.md,.pdf,.csv,.json,.html,.doc,.docx,text/plain,text/markdown,application/pdf"
             className="hidden"
-            onChange={(e) => handleFileSelect(e.target.files)}
+            onChange={(e) => {
+              handleFileSelect(e.target.files)
+              // 重置input value以允许重复选择相同文件
+              e.target.value = ''
+            }}
           />
 
           <div className="flex items-center gap-3 p-4">
