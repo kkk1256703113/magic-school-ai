@@ -1,15 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Message } from '../types/chat'
 
-const INITIAL_MESSAGES: Message[] = [
-  {
-    id: '1',
-    type: 'system',
-    content: '👋 你好！我是EduVisualizer AI助手。我可以帮你分析数学公式、解读教育内容，并生成可视化图表。',
-    timestamp: new Date(),
-    status: 'complete'
-  }
-]
+const INITIAL_MESSAGES: Message[] = []
 
 export const useChatMessages = () => {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES)
