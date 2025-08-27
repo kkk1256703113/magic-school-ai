@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useTheme } from '../../context/ThemeContext'
+import { useAuth } from '../../context/AuthContext'
 import { logger } from '../../utils/logger'
 import { ChevronDown, Sparkles } from 'lucide-react'
+import { setAuthConfig } from '../../services/replicateAPI'
 
 import { useChatMessages } from '../../hooks/useChatMessages'
 import { useAPIService } from '../../hooks/useAPIService'
@@ -13,11 +15,14 @@ import { ChatInput } from './ChatInput'
 import { Sidebar } from '../Sidebar'
 import { UpgradeModal } from '../UpgradeModal'
 import { UserMenu } from '../UserMenu'
+import { AuthModal } from '../AuthModal'
 
 export const ChatContainer = () => {
   const { theme } = useTheme()
+  const { user, isAuthenticated, token, checkAPILimit, recordAPIUsage } = useAuth()
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showModelMenu, setShowModelMenu] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   
   // 消息管理
   const {
@@ -78,6 +83,11 @@ export const ChatContainer = () => {
   useEffect(() => {
     checkAPIAvailability()
   }, [])
+
+  // 配置API认证
+  useEffect(() => {
+    setAuthConfig(token, checkAPILimit, recordAPIUsage)
+  }, [token, checkAPILimit, recordAPIUsage])
 
   // 新建对话
   const handleNewChat = () => {

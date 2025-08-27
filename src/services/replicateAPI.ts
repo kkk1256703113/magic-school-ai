@@ -11,6 +11,22 @@ import { logger } from '../utils/logger'
 // 缓存相关的导入已移除，因为当前使用简化的API调用方式
 import { temporaryStorage } from '../utils/temporaryStorage'
 import { cleanHTMLContent, isValidHTMLDocument } from '../utils/contentAnalysis'
+import axios from 'axios'
+
+// 用户认证和API使用限制检查
+let authToken: string | null = null
+let apiLimitChecker: (() => Promise<{ canUse: boolean; remaining: number }>) | null = null
+let apiUsageRecorder: ((endpoint: string, model: string, cost: number, success: boolean) => Promise<void>) | null = null
+
+export const setAuthConfig = (
+  token: string | null,
+  checkLimit?: () => Promise<{ canUse: boolean; remaining: number }>,
+  recordUsage?: (endpoint: string, model: string, cost: number, success: boolean) => Promise<void>
+) => {
+  authToken = token
+  apiLimitChecker = checkLimit || null
+  apiUsageRecorder = recordUsage || null
+}
 
 // API配置
 const API_CONFIG = {
@@ -679,6 +695,15 @@ export class EduVisualizerAIService {
       return this.analyzeContentWithClaude(content, images)
     }
     
+    // 检查用户API使用限制
+    if (apiLimitChecker) {
+      const { canUse, remaining } = await apiLimitChecker()
+      if (!canUse) {
+        throw new Error(`API调用次数已达上限，剩余次数：${remaining}`)
+      }
+      logger.info('API限制检查通过', { remaining }, 'Analysis')
+    }
+
     logger.info('开始内容分析', { 
       contentLength: content.length,
       imagesCount: images?.length || 0,
@@ -840,6 +865,11 @@ export class EduVisualizerAIService {
           tagsCount: analysisResult.tags.length,
           confidence: analysisResult.confidence
         }, 'Analysis')
+
+        // 记录API使用
+        if (apiUsageRecorder) {
+          await apiUsageRecorder('analyzeContent', selectedModel, 0.5, true)
+        }
 
         return analysisResult
       } catch (error) {
