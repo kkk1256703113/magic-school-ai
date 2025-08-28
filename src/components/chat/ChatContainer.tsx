@@ -157,7 +157,7 @@ export const ChatContainer = () => {
             </button>
 
             {/* 用户菜单 */}
-            <UserMenu username="EduUser" />
+            <UserMenu onShowAuthModal={() => setShowAuthModal(true)} />
           </div>
         </header>
 
@@ -178,6 +178,12 @@ export const ChatContainer = () => {
       <UpgradeModal 
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
+      />
+
+      {/* 登录/注册弹窗 */}
+      <AuthModal 
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
       />
     </div>
   )
