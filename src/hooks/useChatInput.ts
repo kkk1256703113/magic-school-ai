@@ -117,10 +117,7 @@ export const useChatInput = ({
 - 🤖 GPT-5 和 Claude 4 智能分析
 - 📊 数据可视化生成  
 - 📄 PDF文档解析
-- 🎨 HTML页面生成
-
-**为什么需要登录？**
-为了防止滥用和确保服务质量，我们需要对每个用户的使用次数进行合理限制。`,
+- 🎨 HTML页面生成`,
             status: 'error'
           })
           return
