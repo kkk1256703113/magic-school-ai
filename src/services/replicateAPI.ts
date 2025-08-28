@@ -100,10 +100,10 @@ const getTemporaryFile = (id: string): TemporaryFileStorage | null => {
 }
 
 /**
- * EduVisualizer AI API 服务类
+ * Magic School AI API 服务类
  * 集成DeepSeek-VL2、Janus-Pro、GPT-5三个强大的AI模型
  */
-export class EduVisualizerAIService {
+export class MagicSchoolAIService {
   
   /**
    * 轮询获取prediction结果
@@ -494,7 +494,7 @@ export class EduVisualizerAIService {
 ## 内容要求
 保持原文件的核心信息，但以更易读、可视化的方式呈现
 在页面底部添加作者信息区域，包含:
-*作者姓名:[EduVisualizer AI]
+*作者姓名:[Magic School AI]
 *社交媒体链接:至少包含Twitter/x:
 版权信息和年份
 
@@ -750,7 +750,7 @@ export class EduVisualizerAIService {
 ## 内容要求
 保持原文件的核心信息，但以更易读、可视化的方式呈现
 在页面底部添加作者信息区域，包含:
-*作者姓名:[EduVisualizer AI]
+*作者姓名:[Magic School AI]
 *社交媒体链接:至少包含Twitter/x:
 版权信息和年份
 
@@ -925,7 +925,7 @@ export class EduVisualizerAIService {
 ## 内容要求
 保持原文件的核心信息，但以更易读、可视化的方式呈现
 在页面底部添加作者信息区域，包含:
-*作者姓名:[EduVisualizer AI]
+*作者姓名:[Magic School AI]
 *社交媒体链接:至少包含Twitter/x:
 版权信息和年份
 
@@ -1180,7 +1180,7 @@ export class EduVisualizerAIService {
 }
 
 // 导出服务实例
-export const aiService = new EduVisualizerAIService()
+export const aiService = new MagicSchoolAIService()
 
 // 导出临时存储管理函数
 export { storeTemporaryFile, getTemporaryFile }

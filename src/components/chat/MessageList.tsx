@@ -14,10 +14,10 @@ export const MessageList = ({ messages, messagesEndRef }: MessageListProps) => {
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center min-h-[400px]">
             <h2 className="text-4xl font-normal text-blue-500 mb-4">
-              你好！欢迎使用 EduVisualizer
+              Hello! Welcome to Magic School AI
             </h2>
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              我可以帮你分析教育内容、生成可视化图表
+              Turn Complex Into Clear - Professional document and formula visualization
             </p>
           </div>
         )}

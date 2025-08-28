@@ -105,7 +105,7 @@ export const ChatContainer = () => {
         {/* 顶部导航栏 */}
         <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-medium text-gray-900 dark:text-white">EduVisualizer</h1>
+            <h1 className="text-xl font-medium text-gray-900 dark:text-white">Magic School AI</h1>
             
             {/* AI模型选择下拉 */}
             <div className="relative">

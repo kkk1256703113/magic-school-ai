@@ -143,7 +143,7 @@ export const ChatInput = ({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="向 EduVisualizer 提问..."
+              placeholder="向 MagicS 提问..."
               className="flex-1 min-h-[24px] max-h-[120px] resize-none border-0 bg-transparent text-base text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none"
               disabled={isProcessing}
               rows={1}

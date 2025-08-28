@@ -1,6 +1,6 @@
-# EduVisualizer - 智能教育内容可视化工具
+# Magic School AI - Turn Complex Into Clear
 
-一个现代化的React教育工具网站，能够将PDF和图片内容转换为可视化卡片和动态公式图。
+A professional document and formula visualization platform powered by AI, serving both workplace professionals and educational users.
 
 ## 🚀 功能特性
 
@@ -199,16 +199,16 @@ MIT License
 - `SUCCESS`: 成功信息
 
 ### 全局访问
-在浏览器控制台中可以通过 `window.__EDU_LOGGER__` 访问日志器：
+在浏览器控制台中可以通过 `window.__MAGIC_LOGGER__` 访问日志器：
 ```javascript
 // 查看所有日志
-console.log(window.__EDU_LOGGER__.getLogs())
+console.log(window.__MAGIC_LOGGER__.getLogs())
 
 // 查看错误日志
-console.log(window.__EDU_LOGGER__.getErrors())
+console.log(window.__MAGIC_LOGGER__.getErrors())
 
 // 导出日志
-console.log(window.__EDU_LOGGER__.exportLogs())
+console.log(window.__MAGIC_LOGGER__.exportLogs())
 ```
 
 ### 已知问题记录

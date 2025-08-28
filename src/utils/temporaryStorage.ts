@@ -322,7 +322,7 @@ export class TemporaryStorageManager {
     }
 
     try {
-      const request = indexedDB.open('EduVisualizerTempStorage', 1)
+      const request = indexedDB.open('MagicSchoolAITempStorage', 1)
       
       request.onupgradeneeded = (event) => {
         const db = (event.target as IDBOpenDBRequest).result
