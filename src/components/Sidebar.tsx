@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { MessageSquarePlus, Settings, Sun, Moon } from 'lucide-react'
+import { MessageSquarePlus, Settings, Sun, Moon, Globe } from 'lucide-react'
 import { useTheme } from '../context/ThemeContext'
+import { useTranslation } from 'react-i18next'
 
 interface SidebarProps {
   onNewChat: () => void
@@ -8,6 +9,7 @@ interface SidebarProps {
 
 export const Sidebar = ({ onNewChat }: SidebarProps) => {
   const { theme, toggleTheme } = useTheme()
+  const { t, i18n } = useTranslation()
   const [showThemeMenu, setShowThemeMenu] = useState(false)
 
   return (
@@ -19,7 +21,7 @@ export const Sidebar = ({ onNewChat }: SidebarProps) => {
         <button
           onClick={onNewChat}
           className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
-          title="新建对话"
+          title={t('sidebar.newChat')}
         >
           <MessageSquarePlus className="h-5 w-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
         </button>
@@ -29,7 +31,7 @@ export const Sidebar = ({ onNewChat }: SidebarProps) => {
           <button
             onClick={() => setShowThemeMenu(!showThemeMenu)}
             className="p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
-            title="设置"
+            title={t('sidebar.settings')}
           >
             <Settings className="h-5 w-5 text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
           </button>
@@ -38,7 +40,7 @@ export const Sidebar = ({ onNewChat }: SidebarProps) => {
           {showThemeMenu && (
             <div className="absolute left-full ml-2 bottom-0 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
               <div className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
-                主题设置
+                {t('sidebar.themeSettings')}
               </div>
               <button
                 onClick={() => {
@@ -48,7 +50,7 @@ export const Sidebar = ({ onNewChat }: SidebarProps) => {
                 className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm"
               >
                 <Sun className="h-4 w-4" />
-                浅色模式
+                {t('sidebar.lightMode')}
                 {theme === 'light' && (
                   <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full" />
                 )}
@@ -61,8 +63,46 @@ export const Sidebar = ({ onNewChat }: SidebarProps) => {
                 className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm"
               >
                 <Moon className="h-4 w-4" />
-                深色模式
+                {t('sidebar.darkMode')}
                 {theme === 'dark' && (
+                  <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full" />
+                )}
+              </button>
+              
+              {/* 分隔线 */}
+              <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
+              
+              {/* 语言设置标题 */}
+              <div className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                {t('sidebar.languageSettings')}
+              </div>
+              
+              {/* 中文选项 */}
+              <button
+                onClick={() => {
+                  i18n.changeLanguage('zh')
+                  setShowThemeMenu(false)
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm"
+              >
+                <span className="text-base">🇨🇳</span>
+                <span>{t('sidebar.chineseName')}</span>
+                {i18n.language === 'zh' && (
+                  <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full" />
+                )}
+              </button>
+              
+              {/* 英文选项 */}
+              <button
+                onClick={() => {
+                  i18n.changeLanguage('en')
+                  setShowThemeMenu(false)
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm"
+              >
+                <span className="text-base">🇺🇸</span>
+                <span>{t('sidebar.englishName')}</span>
+                {i18n.language === 'en' && (
                   <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full" />
                 )}
               </button>

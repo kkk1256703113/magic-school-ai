@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { User, Settings, CreditCard, LogOut, UserPlus } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 
 interface UserMenuProps {
@@ -10,6 +11,7 @@ interface UserMenuProps {
 export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
   const [showMenu, setShowMenu] = useState(false)
   const { user, isAuthenticated, logout, isLoading } = useAuth()
+  const { t, i18n } = useTranslation()
   
   // 获取用户名首字母作为头像，未登录时使用默认图标
   const avatarLetter = user?.username 
@@ -22,9 +24,9 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
     setShowMenu(false)
     try {
       logout()
-      toast.success('已退出登录')
+      toast.success(t('userMenu.loggedOut'))
     } catch (error) {
-      toast.error('退出登录失败')
+      toast.error(t('userMenu.logoutFailed'))
     }
   }
 
@@ -55,7 +57,7 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
             ? 'bg-purple-600 hover:bg-purple-700' 
             : 'bg-gray-600 hover:bg-gray-700'
         } rounded-full flex items-center justify-center transition-colors`}
-        title={isAuthenticated ? `${user?.username || user?.email}` : '点击登录'}
+        title={isAuthenticated ? `${user?.username || user?.email}` : t('userMenu.clickToLogin')}
       >
         {isAuthenticated ? (
           <span className="text-white text-sm font-medium">{avatarLetter}</span>
@@ -84,13 +86,13 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
                     {user?.username || user?.email}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {user?.plan_type === 'free' ? '免费版用户' : 
-                     user?.plan_type === 'monthly' ? '月费用户' :
-                     user?.plan_type === 'yearly' ? '年费用户' : '免费用户'}
+                    {user?.plan_type === 'free' ? t('userMenu.plans.free') : 
+                     user?.plan_type === 'monthly' ? t('userMenu.plans.monthly') :
+                     user?.plan_type === 'yearly' ? t('userMenu.plans.yearly') : t('userMenu.plans.default')}
                   </p>
                   {user?.api_calls_today !== undefined && (
                     <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                      今日已使用: {user.api_calls_today} 次
+                      {t('userMenu.apiUsage', { count: user.api_calls_today })}
                     </p>
                   )}
                 </div>
@@ -101,36 +103,36 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
                     onClick={() => {
                       setShowMenu(false)
                       // TODO: 实现个人资料页面
-                      toast.info('个人资料功能开发中...')
+                      toast.info(t('userMenu.featureInDevelopment', { feature: t('userMenu.profile') }))
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     <User className="h-4 w-4" />
-                    个人资料
+                    {t('userMenu.profile')}
                   </button>
 
                   <button
                     onClick={() => {
                       setShowMenu(false)
                       // TODO: 实现账户管理页面
-                      toast.info('账户管理功能开发中...')
+                      toast.info(t('userMenu.featureInDevelopment', { feature: t('userMenu.accountManagement') }))
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     <Settings className="h-4 w-4" />
-                    账户管理
+                    {t('userMenu.accountManagement')}
                   </button>
 
                   <button
                     onClick={() => {
                       setShowMenu(false)
                       // TODO: 实现订阅管理页面
-                      toast.info('订阅管理功能开发中...')
+                      toast.info(t('userMenu.featureInDevelopment', { feature: t('userMenu.subscriptionManagement') }))
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     <CreditCard className="h-4 w-4" />
-                    订阅管理
+                    {t('userMenu.subscriptionManagement')}
                   </button>
                 </div>
 
@@ -141,7 +143,7 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
                     className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     <LogOut className="h-4 w-4" />
-                    退出登录
+                    {t('userMenu.logout')}
                   </button>
                 </div>
               </>
@@ -150,10 +152,10 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
                 {/* 未登录用户提示 */}
                 <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    未登录
+                    {t('userMenu.notLoggedIn')}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    登录以享受完整功能
+                    {t('userMenu.loginToEnjoy')}
                   </p>
                 </div>
 
@@ -164,7 +166,7 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
                     className="w-full flex items-center gap-3 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                   >
                     <UserPlus className="h-4 w-4" />
-                    登录 / 注册
+                    {t('userMenu.loginOrRegister')}
                   </button>
                 </div>
               </>
