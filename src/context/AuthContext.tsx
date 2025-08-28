@@ -25,7 +25,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // 配置axios默认设置
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://45.77.86.20/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 axios.defaults.baseURL = API_BASE_URL
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -76,7 +76,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       localStorage.setItem('token', newToken)
       setAuthHeader(newToken)
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || '登录失败')
+      // 处理不同类型的错误
+      if (error.response) {
+        // 服务器返回了错误响应
+        const errorMessage = error.response.data?.error || error.response.data?.message
+        if (errorMessage) {
+          throw new Error(errorMessage)
+        } else {
+          // 根据状态码提供更友好的错误信息
+          switch (error.response.status) {
+            case 401:
+              throw new Error('邮箱或密码错误')
+            case 404:
+              throw new Error('用户不存在')
+            case 500:
+              throw new Error('服务器错误，请稍后重试')
+            default:
+              throw new Error('登录失败，请检查网络连接')
+          }
+        }
+      } else if (error.request) {
+        // 网络错误
+        throw new Error('网络连接失败，请检查网络后重试')
+      } else {
+        // 其他错误
+        throw new Error('登录失败，请重试')
+      }
     }
   }
 

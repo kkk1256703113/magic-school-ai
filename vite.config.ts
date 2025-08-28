@@ -22,6 +22,14 @@ export default defineConfig({
         headers: {
           'Origin': 'https://api.replicate.com'
         }
+      },
+      '/api': {
+        target: 'http://45.77.86.20:3001',
+        changeOrigin: true,
+        secure: false,
+        headers: {
+          'Origin': 'http://localhost:3000'
+        }
       }
     }
   },
