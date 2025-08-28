@@ -10,6 +10,8 @@ interface UseChatInputProps {
   detectContentType: (content: string) => any
   hasApiToken: boolean
   selectedModel: 'gpt5' | 'claude4'
+  isAuthenticated: boolean
+  user: any
 }
 
 export const useChatInput = ({
@@ -19,7 +21,9 @@ export const useChatInput = ({
   processUserInput,
   detectContentType,
   hasApiToken,
-  selectedModel
+  selectedModel,
+  isAuthenticated,
+  user
 }: UseChatInputProps) => {
   const [inputText, setInputText] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -98,6 +102,29 @@ export const useChatInput = ({
       } else {
         // 检测内容类型并处理
         const contentType = detectContentType(userContent)
+        
+        // 首先检查用户是否已登录
+        if (!isAuthenticated || !user) {
+          updateMessage(aiMessageId, {
+            content: `🔐 **需要登录才能使用AI功能**
+
+请先登录您的账号以使用AI分析功能：
+
+✅ **已注册用户**: 点击右上角头像登录
+🆕 **新用户**: 点击右上角头像快速注册
+
+登录后即可享受：
+- 🤖 GPT-5 和 Claude 4 智能分析
+- 📊 数据可视化生成  
+- 📄 PDF文档解析
+- 🎨 HTML页面生成
+
+**为什么需要登录？**
+为了防止滥用和确保服务质量，我们需要对每个用户的使用次数进行合理限制。`,
+            status: 'error'
+          })
+          return
+        }
         
         if (!hasApiToken) {
           // 如果没有配置API Token，直接显示错误

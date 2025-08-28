@@ -327,6 +327,21 @@ export class MagicSchoolAIService {
     
     const modelEndpoint = API_CONFIG.models[selectedModel]
     
+    // 强制检查用户认证和API使用限制
+    if (!authToken) {
+      throw new Error('用户未登录，无法使用API功能')
+    }
+    
+    if (!apiLimitChecker) {
+      throw new Error('API使用限制检查器未配置')
+    }
+    
+    const { canUse, remaining } = await apiLimitChecker()
+    if (!canUse) {
+      throw new Error(`API调用次数已达上限，剩余次数：${remaining}`)
+    }
+    logger.info('可视化生成用户验证和API限制检查通过', { remaining }, 'Visualization')
+    
     console.log('🎨 开始生成可视化')
     console.log('🤖 使用的模型:', selectedModel)
     console.log('🔗 模型端点:', modelEndpoint)
@@ -455,6 +470,21 @@ export class MagicSchoolAIService {
       console.log('⚠️ analyzeContentWithClaude: Signal已经被abort，不执行API调用')
       throw new DOMException('Aborted', 'AbortError')
     }
+    
+    // 强制检查用户认证和API使用限制
+    if (!authToken) {
+      throw new Error('用户未登录，无法使用API功能')
+    }
+    
+    if (!apiLimitChecker) {
+      throw new Error('API使用限制检查器未配置')
+    }
+    
+    const { canUse, remaining } = await apiLimitChecker()
+    if (!canUse) {
+      throw new Error(`API调用次数已达上限，剩余次数：${remaining}`)
+    }
+    logger.info('Claude用户验证和API限制检查通过', { remaining }, 'Analysis')
     
     console.log('🧠 使用 Claude 4 Sonnet 进行内容分析')
     console.log('🔗 实际调用模型端点:', API_CONFIG.models.claude4)
@@ -695,14 +725,20 @@ export class MagicSchoolAIService {
       return this.analyzeContentWithClaude(content, images)
     }
     
-    // 检查用户API使用限制
-    if (apiLimitChecker) {
-      const { canUse, remaining } = await apiLimitChecker()
-      if (!canUse) {
-        throw new Error(`API调用次数已达上限，剩余次数：${remaining}`)
-      }
-      logger.info('API限制检查通过', { remaining }, 'Analysis')
+    // 强制检查用户认证和API使用限制
+    if (!authToken) {
+      throw new Error('用户未登录，无法使用API功能')
     }
+    
+    if (!apiLimitChecker) {
+      throw new Error('API使用限制检查器未配置')
+    }
+    
+    const { canUse, remaining } = await apiLimitChecker()
+    if (!canUse) {
+      throw new Error(`API调用次数已达上限，剩余次数：${remaining}`)
+    }
+    logger.info('用户验证和API限制检查通过', { remaining }, 'Analysis')
 
     logger.info('开始内容分析', { 
       contentLength: content.length,
@@ -889,6 +925,21 @@ export class MagicSchoolAIService {
   async generateHTMLVisualization(content: string, files?: File[], selectedModel: 'gpt5' | 'claude4' = 'gpt5', signal?: AbortSignal): Promise<HTMLVisualizationResponse> {
     const modelKey = selectedModel as keyof typeof API_CONFIG.models
     const modelEndpoint = API_CONFIG.models[modelKey]
+    
+    // 强制检查用户认证和API使用限制
+    if (!authToken) {
+      throw new Error('用户未登录，无法使用API功能')
+    }
+    
+    if (!apiLimitChecker) {
+      throw new Error('API使用限制检查器未配置')
+    }
+    
+    const { canUse, remaining } = await apiLimitChecker()
+    if (!canUse) {
+      throw new Error(`API调用次数已达上限，剩余次数：${remaining}`)
+    }
+    logger.info('HTML生成用户验证和API限制检查通过', { remaining }, 'HTMLGeneration')
     
     console.log(`🎨 使用 ${selectedModel.toUpperCase()} 生成HTML可视化页面`)
     logger.info(`开始${selectedModel.toUpperCase()} HTML生成`, { 

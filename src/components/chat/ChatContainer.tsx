@@ -67,7 +67,9 @@ export const ChatContainer = () => {
     processUserInput,
     detectContentType,
     hasApiToken: apiConfig.hasToken,
-    selectedModel
+    selectedModel,
+    isAuthenticated,
+    user
   })
 
   // 页面加载日志记录
