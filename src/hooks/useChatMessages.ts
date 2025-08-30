@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { Message } from '../types/chat'
+import { Message } from '@/types/chat'
 
 const INITIAL_MESSAGES: Message[] = []
 

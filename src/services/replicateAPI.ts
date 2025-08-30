@@ -6,11 +6,11 @@ import {
   ContentAnalysisResponse,
   HTMLVisualizationResponse,
   TemporaryFileStorage 
-} from '../types'
-import { logger } from '../utils/logger'
+} from '@/types'
+import { logger } from '@/utils/logger'
 // 缓存相关的导入已移除，因为当前使用简化的API调用方式
-import { temporaryStorage } from '../utils/temporaryStorage'
-import { cleanHTMLContent, isValidHTMLDocument } from '../utils/contentAnalysis'
+import { temporaryStorage } from '@/utils/temporaryStorage'
+import { cleanHTMLContent, isValidHTMLDocument } from '@/utils/contentAnalysis'
 import axios from 'axios'
 
 // 用户认证和API使用限制检查

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { User, Settings, CreditCard, LogOut, UserPlus } from 'lucide-react'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '@/context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 

@@ -1,12 +1,12 @@
-import { logger } from '../utils/logger'
+import { logger } from '@/utils/logger'
 import { 
   detectContentType, 
   analyzeFormulaText, 
   generateResponseContent,
   handleAPIError
-} from '../utils/contentAnalysis'
-import { createStatusUpdater, sleep } from '../utils/chatHelpers'
-import type { ContentType } from '../types/chat'
+} from '@/utils/contentAnalysis'
+import { createStatusUpdater, sleep } from '@/utils/chatHelpers'
+import type { ContentType } from '@/types/chat'
 
 interface UseContentProcessorProps {
   updateMessage: (messageId: string, updates: any) => void

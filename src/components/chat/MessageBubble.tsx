@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Message } from '@/types/chat'
-import { HTMLPreview } from '../html/HTMLPreview'
-import { PDFViewer } from '../pdf/PDFViewer'
+import { HTMLPreview } from '@/components/html/HTMLPreview'
+import { PDFViewer } from '@/components/pdf/PDFViewer'
 
 interface MessageBubbleProps {
   message: Message

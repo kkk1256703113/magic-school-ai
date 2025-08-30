@@ -13,10 +13,10 @@ import { useChatInput } from '@/hooks/useChatInput'
 
 import { MessageList } from './MessageList'
 import { ChatInput } from './ChatInput'
-import { Sidebar } from '../Sidebar'
-import { UpgradeModal } from '../UpgradeModal'
-import { UserMenu } from '../UserMenu'
-import { AuthModal } from '../AuthModal'
+import { Sidebar } from '@/components/Sidebar'
+import { UpgradeModal } from '@/components/UpgradeModal'
+import { UserMenu } from '@/components/UserMenu'
+import { AuthModal } from '@/components/AuthModal'
 
 export const ChatContainer = () => {
   const { theme } = useTheme()

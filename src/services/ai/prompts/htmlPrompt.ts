@@ -1,4 +1,4 @@
-import { PromptConfig } from '../types/ai.types'
+import { PromptConfig } from '@/services/ai/types/ai.types'
 import { promptVersionManager } from '../core/PromptVersionManager'
 
 /**

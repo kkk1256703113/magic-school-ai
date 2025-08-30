@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { CheckCircle, XCircle, AlertTriangle, Info, Download, RefreshCw } from 'lucide-react'
-import { logger, LogLevel } from '../utils/logger'
+import { logger, LogLevel } from '@/utils/logger'
 
 interface ProjectStatusProps {
   className?: string

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
-import { isSimpleGreeting, generateGreetingResponse, sleep } from '../utils/chatHelpers'
-import { pdfService } from '../services/pdfService'
+import { isSimpleGreeting, generateGreetingResponse, sleep } from '@/utils/chatHelpers'
+import { pdfService } from '@/services/pdfService'
 
 interface UseChatInputProps {
   addUserMessage: (content: string, files?: File[]) => string
