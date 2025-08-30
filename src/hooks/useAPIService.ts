@@ -4,7 +4,7 @@ import { aiService } from '@/services/ai'
 import type { APIConfig } from '@/types/chat'
 
 export const useAPIService = () => {
-  const [selectedModel, setSelectedModel] = useState<'gpt5' | 'claude4'>('gpt5')
+  const [selectedModel, setSelectedModel] = useState<'gpt5' | 'claude4'>('claude4')
   const [apiConfig, setApiConfig] = useState<APIConfig>({
     hasToken: false
   })

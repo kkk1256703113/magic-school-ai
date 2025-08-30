@@ -318,7 +318,7 @@ export class MagicSchoolAIService {
    * @param selectedModel 选择的模型
    * @returns 可视化结果
    */
-  async generateVisualization(data: any, style: string = 'modern', selectedModel: 'gpt5' | 'claude4' = 'gpt5', signal?: AbortSignal): Promise<VisualizationResponse> {
+  async generateVisualization(data: any, style: string = 'modern', selectedModel: 'gpt5' | 'claude4' = 'claude4', signal?: AbortSignal): Promise<VisualizationResponse> {
     // 立即检查signal是否已经被abort
     if (signal?.aborted) {
       console.log('⚠️ generateVisualization: Signal已经被abort，不执行API调用')
@@ -687,7 +687,7 @@ export class MagicSchoolAIService {
    * @param images 相关图片
    * @returns 内容分析结果
    */
-  async analyzeContent(content: string, selectedModel: 'gpt5' | 'claude4' = 'gpt5', images?: File[], signal?: AbortSignal): Promise<ContentAnalysisResponse> {
+  async analyzeContent(content: string, selectedModel: 'gpt5' | 'claude4' = 'claude4', images?: File[], signal?: AbortSignal): Promise<ContentAnalysisResponse> {
     // 立即检查signal是否已经被abort
     if (signal?.aborted) {
       console.log('⚠️ analyzeContent: Signal已经被abort，不执行API调用')
@@ -923,7 +923,7 @@ export class MagicSchoolAIService {
    * @param selectedModel 选择的模型 ('gpt5' | 'claude4')
    * @returns HTML页面内容
    */
-  async generateHTMLVisualization(content: string, files?: File[], selectedModel: 'gpt5' | 'claude4' = 'gpt5', signal?: AbortSignal): Promise<HTMLVisualizationResponse> {
+  async generateHTMLVisualization(content: string, files?: File[], selectedModel: 'gpt5' | 'claude4' = 'claude4', signal?: AbortSignal): Promise<HTMLVisualizationResponse> {
     const modelKey = selectedModel as keyof typeof API_CONFIG.models
     const modelEndpoint = API_CONFIG.models[modelKey]
     
