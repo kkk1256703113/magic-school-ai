@@ -146,7 +146,14 @@ export default {
     darkMode: 'Dark Mode',
     languageSettings: 'Language',
     chineseName: '简体中文',
-    englishName: 'English'
+    englishName: 'English',
+    promptVersion: {
+      title: 'AI Prompt Version',
+      stable: 'Stable',
+      enhanced: 'Enhanced',
+      stableDescription: 'Fast & stable basic features',
+      enhancedDescription: 'Detailed & comprehensive advanced features'
+    }
   },
 
   // Upgrade Modal

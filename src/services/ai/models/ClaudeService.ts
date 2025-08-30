@@ -3,6 +3,7 @@ import { AIServiceBase } from '../core/AIServiceBase'
 import { getModelEndpoint } from '../config/apiConfig'
 import { ContentInput } from '../types/ai.types'
 import { HTMLPrompts } from '../prompts/htmlPrompt'
+import { promptVersionManager } from '../core/PromptVersionManager'
 import { 
   ContentAnalysisResponse, 
   HTMLVisualizationResponse 
@@ -106,9 +107,9 @@ export class ClaudeService extends AIServiceBase {
   }
 
   /**
-   * 构建Claude分析提示词（更详细的分析要求）
+   * 构建Claude分析提示词（稳定版本）
    */
-  private buildClaudeAnalysisPrompt(content: string, files?: File[]) {
+  private buildClaudeAnalysisPromptStable(content: string, files?: File[]) {
     let fileContext = ''
     if (files?.length) {
       fileContext = `包含${files.length}个附加文件，需要综合分析。`
@@ -167,6 +168,253 @@ ${fileContext}
 确保代码符合W3c标准，无错误警告
 页面在不同浏览器中保持一致的外观和功能
 请根据上传文件的内容类型(文档、数据、图片等)，创建最适合展示该内容的可视化网页。`,
+      max_tokens: 8000,
+      temperature: 0.3
+    }
+  }
+
+  /**
+   * 构建Claude分析提示词（版本选择入口）
+   */
+  private buildClaudeAnalysisPrompt(content: string, files?: File[]) {
+    const version = promptVersionManager.getCurrentVersion()
+    
+    switch (version) {
+      case 'enhanced':
+        return this.buildClaudeAnalysisPromptEnhanced(content, files)
+      case 'stable':
+      default:
+        return this.buildClaudeAnalysisPromptStable(content, files)
+    }
+  }
+
+  /**
+   * 构建Claude分析提示词（增强版本 - 超详细版本）
+   */
+  private buildClaudeAnalysisPromptEnhanced(content: string, files?: File[]) {
+    let fileContext = ''
+    if (files?.length) {
+      fileContext = `包含${files.length}个附加文件，需要进行综合语义分析和深度理解。`
+    }
+    
+    return {
+      prompt: `我给你一个文件，一段内容，请发挥Claude的深度理解和语义分析能力，将其转化为美观漂亮的中文可视化网页作品集。
+
+文本内容：${content}
+${fileContext}
+
+## 🧠 Claude 4 Sonnet专属优势发挥
+作为Claude 4 Sonnet，你拥有卓越的语义理解和内容分析能力，请充分运用：
+
+1. **深度语义分析**：
+   - 理解文本的深层含义和隐含逻辑
+   - 识别文本的情感色彩和表达意图
+   - 准确把握作者的核心观点和论证结构
+
+2. **结构化思维**：
+   - 精确提取信息层次和逻辑关系
+   - 识别因果关系、并列关系、递进关系
+   - 构建清晰的信息架构图谱
+
+3. **批判性分析**：
+   - 评估信息的重要性和优先级
+   - 识别关键要点和支撑细节
+   - 确保信息的准确性和完整性
+
+## ⚠️ 内容完整性保障（零遗漏标准）
+基于Claude的精确理解能力，你必须确保：
+
+1. **逐项精确展示**：
+   - 步骤类内容（步骤1→2→3→4）：每个步骤都必须独立呈现，配有详细说明
+   - 列表类内容（项目A、B、C、D）：每个项目都必须有对应的视觉元素
+   - 分类类内容（类别①②③）：每个类别都必须创建专门的展示区域
+   - 要点类内容（要点1、2、3）：每个要点都必须有清晰的标识和解释
+
+2. **层次结构保持**：
+   - 主要章节 → 次级标题 → 具体要点 → 详细说明
+   - 严格按照原文的信息层级组织视觉层次
+   - 重要程度通过字体大小、颜色深浅、位置布局体现
+
+3. **语义连贯性**：
+   - 保持原文的逻辑流程和论证链条
+   - 确保上下文关系在视觉上清晰表达
+   - 维护专业术语和概念的准确性
+
+## ⚠️ 模块创建精确规范（严格对应）
+运用Claude的结构分析能力：
+
+1. **预分析阶段**：
+   - 第一步：识别原文有几个主要部分/章节/类别？
+   - 第二步：每个部分的核心内容和主要信息是什么？
+   - 第三步：是否存在子分类或层级结构？
+   - 第四步：验证模块划分的逻辑性和完整性
+
+2. **精确映射原则**：
+   - 原文结构 1:1 对应视觉模块
+   - 绝对禁止创建原文不存在的虚构模块
+   - 每个模块都必须有实质内容，不允许空模块
+   - 模块标题必须准确反映原文的章节标题或核心主题
+
+## ⚠️ 主题切换技术实现（完整方案）
+Claude的技术理解能力确保生成完美的主题切换功能：
+
+1. **完整CSS变量系统**：
+   
+   :root {
+     /* 浅色主题 */
+     --primary-bg: #ffffff;
+     --secondary-bg: #f8fafc;
+     --tertiary-bg: #f1f5f9;
+     --primary-text: #0f172a;
+     --secondary-text: #475569;
+     --accent-primary: #3b82f6;
+     --accent-secondary: #06b6d4;
+     --border-light: #e2e8f0;
+     --shadow-light: rgba(0, 0, 0, 0.1);
+   }
+   
+   body.dark-theme {
+     /* 深色主题 */
+     --primary-bg: #0f172a;
+     --secondary-bg: #1e293b;
+     --tertiary-bg: #334155;
+     --primary-text: #f8fafc;
+     --secondary-text: #cbd5e1;
+     --accent-primary: #60a5fa;
+     --accent-secondary: #22d3ee;
+     --border-light: #475569;
+     --shadow-light: rgba(0, 0, 0, 0.3);
+   }
+   
+   * {
+     transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+   }
+
+2. **健壮JavaScript逻辑**（必须完整实现）：
+   
+   class ThemeManager {
+     constructor() {
+       this.init();
+     }
+     
+     init() {
+       // 检测系统主题偏好
+       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+       const savedTheme = localStorage.getItem('theme');
+       const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+       
+       this.setTheme(initialTheme);
+       this.bindEvents();
+     }
+     
+     setTheme(theme) {
+       const body = document.body;
+       const themeToggle = document.getElementById('theme-toggle');
+       
+       if (theme === 'dark') {
+         body.classList.add('dark-theme');
+         if (themeToggle) themeToggle.innerHTML = '☀️ 浅色模式';
+       } else {
+         body.classList.remove('dark-theme');
+         if (themeToggle) themeToggle.innerHTML = '🌙 深色模式';
+       }
+       
+       localStorage.setItem('theme', theme);
+     }
+     
+     toggle() {
+       const isDark = document.body.classList.contains('dark-theme');
+       this.setTheme(isDark ? 'light' : 'dark');
+     }
+     
+     bindEvents() {
+       document.addEventListener('click', (e) => {
+         if (e.target.id === 'theme-toggle' || e.target.closest('#theme-toggle')) {
+           this.toggle();
+         }
+       });
+       
+       // 监听系统主题变化
+       window.matchMedia('(prefers-color-scheme: dark)').addListener((e) => {
+         if (!localStorage.getItem('theme')) {
+           this.setTheme(e.matches ? 'dark' : 'light');
+         }
+       });
+     }
+   }
+   
+   // 页面加载时初始化
+   document.addEventListener('DOMContentLoaded', () => {
+     new ThemeManager();
+   });
+
+## Claude特色：语义化设计增强
+基于深度语义理解，优化视觉呈现：
+
+1. **语义化布局**：
+   - 根据内容性质选择最佳布局方式
+   - 重要信息使用突出的视觉层次
+   - 次要信息用较轻的视觉权重
+
+2. **情感化设计**：
+   - 根据内容情感色彩选择合适的颜色方案
+   - 严肃内容使用稳重色调，活泼内容使用明快色调
+   - 通过视觉元素传达内容的情感倾向
+
+3. **逻辑化组织**：
+   - 因果关系用箭头和流程图表示
+   - 对比关系用并列和对照布局
+   - 递进关系用阶梯式或渐进式设计
+
+## 视觉体验专业化
+1. **步骤流程类**：
+   - 时间线设计：清晰的步骤标识和进度指示
+   - 流程箭头：引导用户视线流动
+   - 完成状态：已完成/进行中/未开始的视觉区分
+
+2. **分类对比类**：
+   - 卡片布局：每个类别独立成卡片
+   - 颜色编码：不同类别使用不同的主题色
+   - 图标系统：为每个类别设计专属图标
+
+3. **重点解释类**：
+   - 高亮标注：重要概念用特殊背景色
+   - 侧边说明：复杂概念添加详细解释框
+   - 交互提示：鼠标悬停显示更多信息
+
+## 交互体验优化
+1. **智能导航**：
+   - 自动生成目录结构
+   - 锚点链接快速跳转
+   - 进度指示显示阅读位置
+
+2. **内容探索**：
+   - 可展开/收起的详细说明
+   - 相关内容的交叉引用
+   - 搜索和筛选功能
+
+## 技术实现要求
+- **语义化HTML**：使用最恰当的HTML5标签
+- **现代CSS**：充分利用CSS Grid和Flexbox
+- **渐进增强**：确保在各种环境下都能正常显示
+- **性能优化**：代码简洁高效，加载速度快
+
+## 输出标准
+生成完整的HTML文件，包含：
+1. 语义化的HTML结构
+2. 完整的CSS样式系统（包含主题变量）
+3. 功能完整的JavaScript代码
+4. 详细的代码注释和文档
+5. 完美的跨浏览器兼容性
+
+## 🔍 Claude执行验证清单
+基于深度分析，请确认：
+□ 是否深入理解了文本的语义和结构？
+□ 所有信息要点是否都有对应的视觉呈现？
+□ 模块划分是否与原文结构完全一致？
+□ 主题切换功能是否技术实现完整？
+□ 视觉设计是否符合内容的语义特征？
+□ 用户体验是否考虑了认知习惯和使用场景？`,
       max_tokens: 8000,
       temperature: 0.3
     }

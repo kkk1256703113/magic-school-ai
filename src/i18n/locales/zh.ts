@@ -146,7 +146,14 @@ export default {
     darkMode: '深色模式',
     languageSettings: '语言设置',
     chineseName: '简体中文',
-    englishName: 'English'
+    englishName: 'English',
+    promptVersion: {
+      title: 'AI 提示词版本',
+      stable: '稳定版本',
+      enhanced: '增强版本',
+      stableDescription: '快速稳定的基础功能',
+      enhancedDescription: '详细全面的高级功能'
+    }
   },
 
   // 升级模态框

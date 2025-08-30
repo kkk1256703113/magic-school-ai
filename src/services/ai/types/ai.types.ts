@@ -8,6 +8,8 @@ export interface APIConfig {
     maxFileSize: number
     requestTimeout: number
     maxConcurrentRequests: number
+    maxTokens: number
+    promptVersion: 'stable' | 'enhanced'
     debugMode: boolean
   }
 }
