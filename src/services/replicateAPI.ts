@@ -640,41 +640,23 @@ export class MagicSchoolAIService {
         console.log('🔍 Claude原始输出类型:', typeof result)
         console.log('🔍 Claude原始输出内容:', result)
         
-        // Claude 4可能返回纯文本分析，不要强制JSON解析
+        // Claude 4返回HTML内容，直接保存
         if (typeof result === 'string' && result.trim()) {
-          // 尝试JSON解析，但失败时使用智能内容分析
-          try {
-            const jsonMatch = result.match(/\{[\s\S]*\}/)
-            if (jsonMatch) {
-              analysisResult = JSON.parse(jsonMatch[0])
-              console.log('✅ Claude JSON解析成功:', analysisResult)
-            } else {
-              throw new Error('未找到JSON格式内容')
-            }
-          } catch (parseError) {
-            console.log('📝 Claude返回纯文本分析，进行智能处理...')
-            
-            // 智能分析Claude的文本输出
-            analysisResult = {
-              subject: "Claude 4智能分析",
-              difficulty: "intermediate", 
-              estimatedTime: 30,
-              tags: ["Claude分析", "智能理解", "内容解读"],
-              learningObjectives: ["深度理解内容", "掌握核心概念", "培养批判性思维"],
-              prerequisites: ["基础阅读能力"],
-              category: "Claude 4 Sonnet智能分析",
-              keyTopics: ["内容主题提取", "逻辑关系分析"],
-              suggestions: [
-                "仔细阅读Claude的详细分析",
-                "关注Claude提到的关键要点", 
-                "思考Claude提供的见解和建议"
-              ],
-              confidence: 0.95,
-              // 保存Claude的原始分析内容
-              claudeAnalysis: result
-            }
-            console.log('✅ Claude文本智能处理完成')
-          }
+          console.log('📝 Claude返回HTML内容，直接保存...')
+          
+          // 直接返回HTML内容，不尝试JSON解析
+          analysisResult = {
+            claudeAnalysis: result  // 保存原始HTML内容
+          } as any
+          
+          console.log('✅ Claude HTML内容保存完成')
+        } else if (Array.isArray(result)) {
+          // 如果是数组，合并为字符串
+          const htmlContent = result.join('')
+          console.log('📝 Claude返回数组格式，合并为HTML')
+          analysisResult = {
+            claudeAnalysis: htmlContent
+          } as any
         } else if (result && typeof result === 'object') {
           analysisResult = result as ContentAnalysisResponse
           console.log('✅ Claude对象解析成功:', analysisResult)
@@ -683,10 +665,11 @@ export class MagicSchoolAIService {
         }
         
         logger.success('Claude内容分析完成', {
-          subject: analysisResult.subject,
-          difficulty: analysisResult.difficulty,
-          tagsCount: analysisResult.tags.length,
-          confidence: analysisResult.confidence
+          hasClaudeAnalysis: !!analysisResult.claudeAnalysis,
+          subject: analysisResult.subject || 'HTML内容',
+          difficulty: analysisResult.difficulty || 'N/A',
+          tagsCount: analysisResult.tags?.length || 0,
+          confidence: analysisResult.confidence || 1
         }, 'Analysis')
 
         return analysisResult
@@ -883,23 +866,41 @@ export class MagicSchoolAIService {
         console.log('🔍 解析的分析内容:', typeof result === 'string' ? result.substring(0, 200) + '...' : result)
         
         let analysisResult: ContentAnalysisResponse
-        try {
-          if (typeof result === 'string') {
-            analysisResult = JSON.parse(result)
+        
+        // GPT-5也可能返回HTML内容，像Claude一样处理
+        if (typeof result === 'string' && result.trim()) {
+          // 检查是否包含HTML标签
+          if (result.includes('<!DOCTYPE') || result.includes('<html') || result.includes('<body')) {
+            console.log('📝 GPT-5返回HTML内容，直接保存...')
+            analysisResult = result as any  // 直接返回HTML字符串
           } else {
-            analysisResult = result as ContentAnalysisResponse
+            // 尝试JSON解析
+            try {
+              analysisResult = JSON.parse(result)
+              console.log('✅ JSON解析成功:', analysisResult)
+            } catch (parseError) {
+              console.log('📝 GPT-5返回纯文本，作为HTML处理')
+              analysisResult = result as any  // 直接返回内容
+            }
           }
-          console.log('✅ JSON解析成功:', analysisResult)
-        } catch (parseError) {
-          console.error('❌ JSON解析失败:', parseError)
-          throw new Error(`API返回内容JSON解析失败: ${parseError}`)
+        } else if (Array.isArray(result)) {
+          // 如果是数组，合并为字符串
+          const htmlContent = result.join('')
+          console.log('📝 GPT-5返回数组格式，合并为HTML')
+          analysisResult = htmlContent as any
+        } else if (result && typeof result === 'object') {
+          analysisResult = result as ContentAnalysisResponse
+          console.log('✅ GPT-5对象解析成功:', analysisResult)
+        } else {
+          throw new Error('GPT-5返回空内容或格式异常')
         }
         
         logger.success('内容分析完成', {
-          subject: analysisResult.subject,
-          difficulty: analysisResult.difficulty,
-          tagsCount: analysisResult.tags.length,
-          confidence: analysisResult.confidence
+          isHTML: typeof analysisResult === 'string',
+          subject: typeof analysisResult === 'object' ? analysisResult.subject : 'HTML内容',
+          difficulty: typeof analysisResult === 'object' ? analysisResult.difficulty : 'N/A',
+          tagsCount: typeof analysisResult === 'object' ? analysisResult.tags?.length : 0,
+          confidence: typeof analysisResult === 'object' ? analysisResult.confidence : 1
         }, 'Analysis')
 
         // 记录API使用

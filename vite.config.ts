@@ -27,6 +27,7 @@ export default defineConfig({
         target: 'http://45.77.86.20:3001',
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''),
         headers: {
           'Origin': 'http://localhost:3000'
         }

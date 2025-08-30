@@ -1,6 +1,6 @@
 import { ContentType } from '../types/chat'
 import { logger } from './logger'
-import { aiService } from '../services/replicateAPI'
+import { aiService } from '@/services/ai'
 
 export const detectContentType = (content: string): ContentType => {
   const hasFormula = /[+\-*/=()x²³¹²³⁰⁴⁵⁶⁷⁸⁹∫∑√]|[a-zA-Z]\s*=|y\s*=|f\(|sin|cos|tan|log|ln|exp|\^|x\^/.test(content)
@@ -149,6 +149,16 @@ export const generateResponseContent = (
   hasErrors: boolean = false, 
   errorDetails: string[] = []
 ): string => {
+  // 如果Claude返回了HTML内容，直接返回HTML
+  if (results.analysis?.claudeAnalysis) {
+    return results.analysis.claudeAnalysis
+  }
+  
+  // 如果GPT-5返回了HTML内容（字符串格式），直接返回
+  if (typeof results.analysis === 'string' && results.analysis.includes('<')) {
+    return results.analysis
+  }
+  
   let response = ''
   
   // 根据内容类型生成个性化回复
@@ -180,8 +190,8 @@ export const generateResponseContent = (
     response += `\n`
   }
   
-  // 内容分析结果
-  if (results.analysis) {
+  // 内容分析结果（如果是结构化的分析结果）
+  if (results.analysis && typeof results.analysis === 'object' && results.analysis.subject) {
     response += `📊 **内容分析**\n`
     response += `• 学科: ${results.analysis.subject}\n`
     response += `• 难度: ${results.analysis.difficulty}\n`

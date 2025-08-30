@@ -25,8 +25,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // 配置axios默认设置
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
-axios.defaults.baseURL = API_BASE_URL
+// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+// 注意：不设置baseURL，让每个请求使用完整路径
+// axios.defaults.baseURL = API_BASE_URL
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)
@@ -48,8 +49,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (token) {
         setAuthHeader(token)
         try {
-          const response = await axios.get('/auth/verify')
-          if (response.data.valid) {
+          const response = await axios.get('/api/auth/status')
+          if (response.data.authenticated) {
             setUser(response.data.user)
           } else {
             logout()
@@ -68,7 +69,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 登录
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post('/auth/login', { email, password })
+      const response = await axios.post('/api/auth/login', { email, password })
       const { token: newToken, user: userData } = response.data
       
       setToken(newToken)
@@ -108,7 +109,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 注册
   const register = async (email: string, password: string, username?: string) => {
     try {
-      const response = await axios.post('/auth/register', { email, password, username })
+      const response = await axios.post('/api/auth/register', { email, password, username })
       const { token: newToken, user: userData } = response.data
       
       setToken(newToken)
@@ -135,10 +136,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     
     try {
-      const response = await axios.post('/usage/check')
+      const response = await axios.get('/api/usage/check')
       return {
-        canUse: response.data.canUse,
-        remaining: response.data.remaining
+        canUse: response.data.apiCallsRemaining > 0,  // 根据剩余次数判断是否可用
+        remaining: response.data.apiCallsRemaining     // 使用正确的字段名
       }
     } catch (error: any) {
       if (error.response?.status === 429) {
@@ -153,7 +154,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!token) return
     
     try {
-      await axios.post('/usage/record', {
+      await axios.post('/api/usage/record', {
         endpoint,
         model,
         cost,

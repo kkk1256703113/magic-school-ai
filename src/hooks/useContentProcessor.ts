@@ -96,16 +96,12 @@ export const useContentProcessor = ({
         console.log('🤖 选择的模型:', selectedModel)
         
         try {
-          let contentAnalysis
-          if (selectedModel === 'claude4') {
-            console.log('🧠 使用 Claude 4 Sonnet 进行分析')
-            console.log('🔗 Claude API端点: anthropic/claude-4-sonnet')
-            contentAnalysis = await apiService.analyzeContentWithClaude(userContent, undefined, signal)
-          } else {
-            console.log('🤖 使用 GPT-5 进行分析')
-            console.log('🔗 GPT-5 API端点: openai/gpt-5')
-            contentAnalysis = await apiService.analyzeContent(userContent, selectedModel, undefined, signal)
-          }
+          // 统一使用analyzeContent方法，它会根据selectedModel自动路由
+          console.log('🤖 使用模型进行分析:', selectedModel)
+          console.log('🔗 API端点:', selectedModel === 'claude4' ? 'anthropic/claude-4-sonnet' : 'openai/gpt-5')
+          
+          const contentAnalysis = await apiService.analyzeContent(userContent, selectedModel, undefined, signal)
+          
           console.log('📥 API调用成功，返回结果:', contentAnalysis)
           results.analysis = contentAnalysis
           

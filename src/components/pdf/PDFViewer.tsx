@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { FileText, Download, Eye, Loader2 } from 'lucide-react'
-import { pdfService } from '../../services/pdfService'
+import { pdfService } from '@/services/pdfService'
 
 interface PDFViewerProps {
   file: File

@@ -145,7 +145,7 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
           // 如果配置了API Token，调用HTML生成API
           try {
             // 导入API服务
-            const { aiService } = await import('../services/replicateAPI')
+            const { aiService } = await import('@/services/ai')
             
             updateMessage(aiMessageId, { 
               content: '🎨 正在生成可视化HTML页面...', 

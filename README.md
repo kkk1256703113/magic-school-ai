@@ -80,16 +80,30 @@ npm run preview
 ## 📁 项目结构
 
 ```
-src/
-├── components/          # 可复用组件
-├── pages/              # 页面组件
-├── context/            # React Context
-├── hooks/              # 自定义Hooks
-├── services/           # API服务
-├── types/              # TypeScript类型定义
-├── utils/              # 工具函数
-├── styles/             # 样式文件
-└── assets/             # 静态资源
+EduVisualizer 2.0/
+├── src/                    # 前端源代码
+│   ├── components/        # React组件
+│   ├── context/           # React Context (认证、主题、语言)
+│   ├── hooks/             # 自定义Hooks
+│   ├── services/          # API服务层
+│   ├── types/             # TypeScript类型定义
+│   ├── utils/             # 工具函数
+│   └── assets/            # 静态资源
+├── server-backend/         # 后端服务器代码
+│   ├── server.js          # Express服务器主文件
+│   └── ecosystem.config.js # PM2配置
+├── deploy/                 # 部署脚本
+│   ├── deploy-to-vps.sh   # Linux完整部署脚本
+│   ├── deploy-windows.ps1 # Windows部署脚本
+│   └── quick-update.bat   # 快速更新脚本
+├── tests/                  # 测试脚本
+│   ├── test-api-endpoints.mjs # API端点测试
+│   └── test-api-limit.mjs     # API限制测试
+├── monitoring/             # 监控脚本
+│   └── health-check.js    # 健康检查脚本
+└── docs/                   # 项目文档
+    ├── 项目背景及进展说明书.md
+    └── 管理员后台系统设计文档.md
 ```
 
 ## 🔧 配置
@@ -99,30 +113,15 @@ src/
 创建 `.env.local` 文件并配置以下变量：
 
 ```env
-# Google Cloud Vision API
-VITE_GOOGLE_VISION_API_KEY=your_api_key
-VITE_GOOGLE_VISION_ENDPOINT=https://vision.googleapis.com/v1
+# Replicate API配置
+VITE_REPLICATE_API_TOKEN=your_replicate_token
 
-# MathPix API
-VITE_MATHPIX_APP_ID=your_app_id
-VITE_MATHPIX_APP_KEY=your_app_key
-VITE_MATHPIX_ENDPOINT=https://api.mathpix.com/v3
+# AI模型配置
+VITE_GPT5_MODEL=openai/gpt-5
+VITE_CLAUDE4_MODEL=anthropic/claude-4-sonnet
 
-# OpenAI API
-VITE_OPENAI_API_KEY=your_api_key
-VITE_OPENAI_ENDPOINT=https://api.openai.com/v1
-
-# Cloudflare R2
-VITE_CLOUDFLARE_R2_ACCOUNT_ID=your_account_id
-VITE_CLOUDFLARE_R2_ACCESS_KEY_ID=your_access_key_id
-VITE_CLOUDFLARE_R2_SECRET_ACCESS_KEY=your_secret_access_key
-VITE_CLOUDFLARE_R2_BUCKET_NAME=your_bucket_name
-VITE_CLOUDFLARE_R2_ENDPOINT=your_endpoint
-
-# Cloudinary
-VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
-VITE_CLOUDINARY_API_KEY=your_api_key
-VITE_CLOUDINARY_API_SECRET=your_api_secret
+# API服务器配置 (可选，使用默认值即可)
+VITE_API_BASE_URL=/api
 ```
 
 ## 🎯 开发指南
@@ -151,75 +150,119 @@ VITE_CLOUDINARY_API_SECRET=your_api_secret
 
 ## 🚀 部署
 
-### Cloudflare Pages
+### 后端部署
 
-1. 连接GitHub仓库到Cloudflare Pages
-2. 配置构建命令: `npm run build`
-3. 配置输出目录: `dist`
-4. 设置环境变量
-5. 部署
+#### Windows环境部署
+```powershell
+# 使用PowerShell完整部署
+.\deploy\deploy-windows.ps1
 
-### 其他平台
+# 快速更新服务器代码
+.\deploy\quick-update.bat
+```
 
-项目可以部署到任何支持静态网站的平台上：
-- Vercel
-- Netlify
-- GitHub Pages
-- 阿里云OSS
-- 腾讯云COS
+#### Linux环境部署
+```bash
+# 完整部署到VPS
+./deploy/deploy-to-vps.sh
+```
+
+### 前端部署
+
+构建并部署到任何静态网站托管平台：
+
+```bash
+# 构建生产版本
+npm run build
+
+# 部署dist目录到：
+# - Cloudflare Pages
+# - Vercel
+# - Netlify
+# - GitHub Pages
+```
+
+### 服务器管理
+
+```bash
+# SSH登录VPS服务器
+ssh root@45.77.86.20
+
+# 查看服务状态
+pm2 status
+
+# 查看服务日志
+pm2 logs magic-school-api
+
+# 重启服务
+pm2 restart magic-school-api
+
+# 监控服务
+pm2 monit
+```
+
+## 🧪 测试
+
+### API端点测试
+```bash
+# 测试所有API端点
+node tests/test-api-endpoints.mjs
+
+# 测试API调用限制
+node tests/test-api-limit.mjs
+```
+
+### 健康检查
+```bash
+# 运行健康检查
+node monitoring/health-check.js
+```
+
+## 📊 API端点
+
+### 认证相关
+- `POST /auth/login` - 用户登录
+- `POST /auth/register` - 用户注册  
+- `GET /auth/status` - 认证状态检查
+- `POST /auth/logout` - 用户登出
+
+### 使用量管理
+- `GET /usage/check` - 检查API使用限制
+- `POST /usage/record` - 记录API使用
+
+### 系统状态
+- `GET /api/health` - 健康检查
+- `GET /api/status` - API状态信息
 
 ## 📝 许可证
 
-MIT License
+Private - Magic School AI
 
 ## 🤝 贡献
 
-欢迎提交Issue和Pull Request！
+内部项目，请联系团队负责人
 
-## 📊 日志系统
+## 🛠️ 故障排除
 
-项目集成了完整的日志记录系统，用于跟踪项目状态和调试问题：
+### 常见问题
 
-### 日志功能
-- **实时日志记录**: 记录应用启动、API调用、错误等关键事件
-- **状态检查**: 检查环境、构建、服务器、API配置状态
-- **错误追踪**: 详细记录错误信息和上下文
-- **日志导出**: 支持导出JSON格式的日志文件
+1. **API调用失败 (404错误)**
+   - 检查 `.env.local` 中的API配置
+   - 确认后端服务已启动
+   - 验证网络连接
 
-### 使用方法
-1. **查看状态**: 点击右下角的信息图标查看项目状态
-2. **导出日志**: 在状态面板中点击下载按钮导出日志
-3. **刷新状态**: 点击刷新按钮重新检查项目状态
-4. **控制台查看**: 在浏览器控制台中查看实时日志
+2. **API限制错误**
+   - 检查用户认证状态
+   - 验证API调用次数限制
+   - 查看 `/api/usage/check` 响应
 
-### 日志级别
-- `INFO`: 一般信息
-- `WARN`: 警告信息
-- `ERROR`: 错误信息
-- `SUCCESS`: 成功信息
+3. **部署失败**
+   - 确认SSH密钥配置正确
+   - 检查服务器网络连接
+   - 查看PM2日志
 
-### 全局访问
-在浏览器控制台中可以通过 `window.__MAGIC_LOGGER__` 访问日志器：
-```javascript
-// 查看所有日志
-console.log(window.__MAGIC_LOGGER__.getLogs())
+## 📞 技术支持
 
-// 查看错误日志
-console.log(window.__MAGIC_LOGGER__.getErrors())
-
-// 导出日志
-console.log(window.__MAGIC_LOGGER__.exportLogs())
-```
-
-### 已知问题记录
-项目维护了一个已知问题列表，记录在 `build-status.json` 文件中，包括：
-- 环境配置问题
-- 构建错误
-- 依赖问题
-- 解决方案
-
-## 📞 联系方式
-
-如有问题，请通过以下方式联系：
-- 邮箱: [your-email@example.com]
-- GitHub: [your-github-username]
+- **项目维护**: Magic School AI Team
+- **服务器地址**: 45.77.86.20:3001
+- **技术栈**: React + Node.js + PostgreSQL

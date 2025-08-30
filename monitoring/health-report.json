@@ -1,0 +1,194 @@
+{
+  "timestamp": "2025-08-29T03:16:05.009Z",
+  "server": {
+    "host": "45.77.86.20",
+    "port": 3001,
+    "connectivity": true
+  },
+  "endpoints": [
+    {
+      "endpoint": "/api/health",
+      "statusCode": 200,
+      "headers": {
+        "content-security-policy": "default-src 'self';base-src 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests;base-uri 'self'",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "origin-agent-cluster": "?1",
+        "referrer-policy": "no-referrer",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "off",
+        "x-download-options": "noopen",
+        "x-frame-options": "SAMEORIGIN",
+        "x-permitted-cross-domain-policies": "none",
+        "x-xss-protection": "0",
+        "vary": "Origin",
+        "access-control-allow-credentials": "true",
+        "ratelimit-policy": "100;w=900",
+        "ratelimit-limit": "100",
+        "ratelimit-remaining": "98",
+        "ratelimit-reset": "900",
+        "content-type": "application/json; charset=utf-8",
+        "content-length": "196",
+        "etag": "W/\"c4-1TDCAQWToaj8v1E1ZfjdRJgn7kU\"",
+        "date": "Fri, 29 Aug 2025 03:16:01 GMT",
+        "connection": "keep-alive",
+        "keep-alive": "timeout=5"
+      },
+      "body": {
+        "status": "healthy",
+        "service": "Magic School AI API",
+        "version": "1.0.0",
+        "timestamp": "2025-08-29T03:16:01.216Z",
+        "uptime": 135.625957282,
+        "database": {
+          "connected": true,
+          "time": "2025-08-29T03:16:01.215Z"
+        }
+      },
+      "duration": 211,
+      "success": true
+    },
+    {
+      "endpoint": "/auth/status",
+      "statusCode": 200,
+      "headers": {
+        "content-security-policy": "default-src 'self';base-src 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests;base-uri 'self'",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "origin-agent-cluster": "?1",
+        "referrer-policy": "no-referrer",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "off",
+        "x-download-options": "noopen",
+        "x-frame-options": "SAMEORIGIN",
+        "x-permitted-cross-domain-policies": "none",
+        "x-xss-protection": "0",
+        "vary": "Origin",
+        "access-control-allow-credentials": "true",
+        "ratelimit-policy": "100;w=900",
+        "ratelimit-limit": "100",
+        "ratelimit-remaining": "97",
+        "ratelimit-reset": "900",
+        "content-type": "application/json; charset=utf-8",
+        "content-length": "53",
+        "etag": "W/\"35-4trqfgMOjQLshBBRUX5A8tyqm0I\"",
+        "date": "Fri, 29 Aug 2025 03:16:01 GMT",
+        "connection": "keep-alive",
+        "keep-alive": "timeout=5"
+      },
+      "body": {
+        "authenticated": false,
+        "message": "No token provided"
+      },
+      "duration": 348,
+      "success": true
+    },
+    {
+      "endpoint": "/usage/check",
+      "statusCode": 200,
+      "headers": {
+        "content-security-policy": "default-src 'self';base-src 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests;base-uri 'self'",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "origin-agent-cluster": "?1",
+        "referrer-policy": "no-referrer",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "off",
+        "x-download-options": "noopen",
+        "x-frame-options": "SAMEORIGIN",
+        "x-permitted-cross-domain-policies": "none",
+        "x-xss-protection": "0",
+        "vary": "Origin",
+        "access-control-allow-credentials": "true",
+        "ratelimit-policy": "100;w=900",
+        "ratelimit-limit": "100",
+        "ratelimit-remaining": "96",
+        "ratelimit-reset": "899",
+        "content-type": "application/json; charset=utf-8",
+        "content-length": "91",
+        "etag": "W/\"5b-Wz2d+P2EgVYg0ucSqUJvCMdE9P8\"",
+        "date": "Fri, 29 Aug 2025 03:16:02 GMT",
+        "connection": "keep-alive",
+        "keep-alive": "timeout=5"
+      },
+      "body": {
+        "apiCallsRemaining": 0,
+        "apiCallsToday": 0,
+        "plan": "none",
+        "message": "Authentication required"
+      },
+      "duration": 541,
+      "success": true
+    },
+    {
+      "endpoint": "/api/status",
+      "statusCode": 200,
+      "headers": {
+        "content-security-policy": "default-src 'self';base-src 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests;base-uri 'self'",
+        "cross-origin-opener-policy": "same-origin",
+        "cross-origin-resource-policy": "same-origin",
+        "origin-agent-cluster": "?1",
+        "referrer-policy": "no-referrer",
+        "strict-transport-security": "max-age=31536000; includeSubDomains",
+        "x-content-type-options": "nosniff",
+        "x-dns-prefetch-control": "off",
+        "x-download-options": "noopen",
+        "x-frame-options": "SAMEORIGIN",
+        "x-permitted-cross-domain-policies": "none",
+        "x-xss-protection": "0",
+        "vary": "Origin",
+        "access-control-allow-credentials": "true",
+        "ratelimit-policy": "100;w=900",
+        "ratelimit-limit": "100",
+        "ratelimit-remaining": "95",
+        "ratelimit-reset": "898",
+        "content-type": "application/json; charset=utf-8",
+        "content-length": "358",
+        "etag": "W/\"166-256jDhi2iLRCDwEz/wLr/EBcSVs\"",
+        "date": "Fri, 29 Aug 2025 03:16:03 GMT",
+        "connection": "keep-alive",
+        "keep-alive": "timeout=5"
+      },
+      "body": {
+        "api": "Magic School AI Backend",
+        "version": "1.0.0",
+        "status": "operational",
+        "features": {
+          "authentication": true,
+          "database": true,
+          "rateLimit": true,
+          "cors": true
+        },
+        "endpoints": {
+          "health": "/api/health",
+          "auth": {
+            "login": "/auth/login",
+            "register": "/auth/register",
+            "status": "/auth/status",
+            "logout": "/auth/logout"
+          },
+          "usage": {
+            "check": "/usage/check",
+            "history": "/usage/history"
+          }
+        }
+      },
+      "duration": 355,
+      "success": true
+    }
+  ],
+  "security": {
+    "headersConfigured": 24,
+    "hasCSP": true,
+    "hasHSTS": true,
+    "hasFrameOptions": true
+  },
+  "summary": {
+    "totalEndpoints": 4,
+    "healthyEndpoints": 4,
+    "failedEndpoints": 0
+  }
+}

@@ -1,0 +1,471 @@
+{
+  "timestamp": "2025-08-29T02:19:25.568Z",
+  "proxy": {
+    "host": "127.0.0.1",
+    "port": 7890,
+    "enabled": true
+  },
+  "server": {
+    "host": "45.77.86.20",
+    "port": 3001
+  },
+  "endpoints": [
+    {
+      "endpoint": "/api/health",
+      "direct": {
+        "statusCode": 404,
+        "headers": {
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "origin-agent-cluster": "?1",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-xss-protection": "0",
+          "vary": "Origin",
+          "access-control-allow-credentials": "true",
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "95",
+          "date": "Fri, 29 Aug 2025 02:19:25 GMT",
+          "x-ratelimit-reset": "1756434153",
+          "content-type": "application/json; charset=utf-8",
+          "content-length": "27",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "connection": "keep-alive",
+          "keep-alive": "timeout=5"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 447,
+        "success": false,
+        "proxyUsed": false
+      },
+      "proxy": {
+        "statusCode": 404,
+        "headers": {
+          "content-length": "27",
+          "access-control-allow-credentials": "true",
+          "connection": "keep-alive",
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "content-type": "application/json; charset=utf-8",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "date": "Fri, 29 Aug 2025 02:19:26 GMT",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "keep-alive": "timeout=4",
+          "origin-agent-cluster": "?1",
+          "proxy-connection": "keep-alive",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "vary": "Origin",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "94",
+          "x-ratelimit-reset": "1756434153",
+          "x-xss-protection": "0"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 893,
+        "success": false,
+        "proxyUsed": true
+      },
+      "comparison": {
+        "bothSuccessful": false,
+        "bothFailed": true,
+        "onlyDirectWorks": false,
+        "onlyProxyWorks": false
+      }
+    },
+    {
+      "endpoint": "/auth/status",
+      "direct": {
+        "statusCode": 404,
+        "headers": {
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "origin-agent-cluster": "?1",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-xss-protection": "0",
+          "vary": "Origin",
+          "access-control-allow-credentials": "true",
+          "content-type": "application/json; charset=utf-8",
+          "content-length": "27",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "date": "Fri, 29 Aug 2025 02:19:28 GMT",
+          "connection": "keep-alive",
+          "keep-alive": "timeout=5"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 234,
+        "success": false,
+        "proxyUsed": false
+      },
+      "proxy": {
+        "statusCode": 404,
+        "headers": {
+          "content-length": "27",
+          "access-control-allow-credentials": "true",
+          "connection": "keep-alive",
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "content-type": "application/json; charset=utf-8",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "date": "Fri, 29 Aug 2025 02:19:28 GMT",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "keep-alive": "timeout=4",
+          "origin-agent-cluster": "?1",
+          "proxy-connection": "keep-alive",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "vary": "Origin",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-xss-protection": "0"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 234,
+        "success": false,
+        "proxyUsed": true
+      },
+      "comparison": {
+        "bothSuccessful": false,
+        "bothFailed": true,
+        "onlyDirectWorks": false,
+        "onlyProxyWorks": false
+      }
+    },
+    {
+      "endpoint": "/usage/check",
+      "direct": {
+        "statusCode": 404,
+        "headers": {
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "origin-agent-cluster": "?1",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-xss-protection": "0",
+          "vary": "Origin",
+          "access-control-allow-credentials": "true",
+          "content-type": "application/json; charset=utf-8",
+          "content-length": "27",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "date": "Fri, 29 Aug 2025 02:19:29 GMT",
+          "connection": "keep-alive",
+          "keep-alive": "timeout=5"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 184,
+        "success": false,
+        "proxyUsed": false
+      },
+      "proxy": {
+        "statusCode": 404,
+        "headers": {
+          "content-length": "27",
+          "access-control-allow-credentials": "true",
+          "connection": "keep-alive",
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "content-type": "application/json; charset=utf-8",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "date": "Fri, 29 Aug 2025 02:19:29 GMT",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "keep-alive": "timeout=4",
+          "origin-agent-cluster": "?1",
+          "proxy-connection": "keep-alive",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "vary": "Origin",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-xss-protection": "0"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 225,
+        "success": false,
+        "proxyUsed": true
+      },
+      "comparison": {
+        "bothSuccessful": false,
+        "bothFailed": true,
+        "onlyDirectWorks": false,
+        "onlyProxyWorks": false
+      }
+    },
+    {
+      "endpoint": "/api/status",
+      "direct": {
+        "statusCode": 404,
+        "headers": {
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "origin-agent-cluster": "?1",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-xss-protection": "0",
+          "vary": "Origin",
+          "access-control-allow-credentials": "true",
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "93",
+          "date": "Fri, 29 Aug 2025 02:19:30 GMT",
+          "x-ratelimit-reset": "1756434153",
+          "content-type": "application/json; charset=utf-8",
+          "content-length": "27",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "connection": "keep-alive",
+          "keep-alive": "timeout=5"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 190,
+        "success": false,
+        "proxyUsed": false
+      },
+      "proxy": {
+        "statusCode": 404,
+        "headers": {
+          "content-length": "27",
+          "access-control-allow-credentials": "true",
+          "connection": "keep-alive",
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "content-type": "application/json; charset=utf-8",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "date": "Fri, 29 Aug 2025 02:19:31 GMT",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "keep-alive": "timeout=4",
+          "origin-agent-cluster": "?1",
+          "proxy-connection": "keep-alive",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "vary": "Origin",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "92",
+          "x-ratelimit-reset": "1756434153",
+          "x-xss-protection": "0"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 234,
+        "success": false,
+        "proxyUsed": true
+      },
+      "comparison": {
+        "bothSuccessful": false,
+        "bothFailed": true,
+        "onlyDirectWorks": false,
+        "onlyProxyWorks": false
+      }
+    },
+    {
+      "endpoint": "/",
+      "direct": {
+        "statusCode": 404,
+        "headers": {
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "origin-agent-cluster": "?1",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-xss-protection": "0",
+          "vary": "Origin",
+          "access-control-allow-credentials": "true",
+          "content-type": "application/json; charset=utf-8",
+          "content-length": "27",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "date": "Fri, 29 Aug 2025 02:19:32 GMT",
+          "connection": "keep-alive",
+          "keep-alive": "timeout=5"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 220,
+        "success": false,
+        "proxyUsed": false
+      },
+      "proxy": {
+        "statusCode": 404,
+        "headers": {
+          "content-length": "27",
+          "access-control-allow-credentials": "true",
+          "connection": "keep-alive",
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "content-type": "application/json; charset=utf-8",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "date": "Fri, 29 Aug 2025 02:19:32 GMT",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "keep-alive": "timeout=4",
+          "origin-agent-cluster": "?1",
+          "proxy-connection": "keep-alive",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "vary": "Origin",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-xss-protection": "0"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 260,
+        "success": false,
+        "proxyUsed": true
+      },
+      "comparison": {
+        "bothSuccessful": false,
+        "bothFailed": true,
+        "onlyDirectWorks": false,
+        "onlyProxyWorks": false
+      }
+    },
+    {
+      "endpoint": "/api",
+      "direct": {
+        "statusCode": 404,
+        "headers": {
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "origin-agent-cluster": "?1",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-xss-protection": "0",
+          "vary": "Origin",
+          "access-control-allow-credentials": "true",
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "91",
+          "date": "Fri, 29 Aug 2025 02:19:33 GMT",
+          "x-ratelimit-reset": "1756434153",
+          "content-type": "application/json; charset=utf-8",
+          "content-length": "27",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "connection": "keep-alive",
+          "keep-alive": "timeout=5"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 193,
+        "success": false,
+        "proxyUsed": false
+      },
+      "proxy": {
+        "statusCode": 404,
+        "headers": {
+          "content-length": "27",
+          "access-control-allow-credentials": "true",
+          "connection": "keep-alive",
+          "content-security-policy": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests",
+          "content-type": "application/json; charset=utf-8",
+          "cross-origin-opener-policy": "same-origin",
+          "cross-origin-resource-policy": "same-origin",
+          "date": "Fri, 29 Aug 2025 02:19:34 GMT",
+          "etag": "W/\"1b-772e0u4nrE48ogbR0KmKfSvrHUE\"",
+          "keep-alive": "timeout=4",
+          "origin-agent-cluster": "?1",
+          "proxy-connection": "keep-alive",
+          "referrer-policy": "no-referrer",
+          "strict-transport-security": "max-age=31536000; includeSubDomains",
+          "vary": "Origin",
+          "x-content-type-options": "nosniff",
+          "x-dns-prefetch-control": "off",
+          "x-download-options": "noopen",
+          "x-frame-options": "SAMEORIGIN",
+          "x-permitted-cross-domain-policies": "none",
+          "x-ratelimit-limit": "100",
+          "x-ratelimit-remaining": "90",
+          "x-ratelimit-reset": "1756434153",
+          "x-xss-protection": "0"
+        },
+        "body": {
+          "error": "Route not found"
+        },
+        "duration": 247,
+        "success": false,
+        "proxyUsed": true
+      },
+      "comparison": {
+        "bothSuccessful": false,
+        "bothFailed": true,
+        "onlyDirectWorks": false,
+        "onlyProxyWorks": false
+      }
+    }
+  ],
+  "summary": {
+    "totalEndpoints": 6,
+    "directSuccessful": 0,
+    "proxySuccessful": 0,
+    "bothSuccessful": 0,
+    "bothFailed": 6
+  }
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { logger } from '../utils/logger'
-import { aiService } from '../services/replicateAPI'
+import { aiService } from '@/services/ai'
 import type { APIConfig } from '../types/chat'
 
 export const useAPIService = () => {
