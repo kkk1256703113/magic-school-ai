@@ -8,10 +8,19 @@ export class HTMLPrompts {
   /**
    * 获取HTML生成提示词（稳定版本）
    */
-  static getGenerationPromptStable(content: string, files?: File[]): PromptConfig {
+  static getGenerationPromptStable(content: string, files?: File[], language: 'zh' | 'en' = 'zh'): PromptConfig {
     let fileContext = ''
     if (files?.length) {
-      fileContext = `检测到${files.length}个文件，包含的文件信息需要在可视化中体现。`
+      if (language === 'en') {
+        fileContext = `Detected ${files.length} files, the file information needs to be reflected in the visualization.`
+      } else {
+        fileContext = `检测到${files.length}个文件，包含的文件信息需要在可视化中体现。`
+      }
+    }
+
+    // 根据语言选择提示词
+    if (language === 'en') {
+      return this.getEnglishPromptStable(content, fileContext)
     }
 
     return {
@@ -76,25 +85,34 @@ export class HTMLPrompts {
   /**
    * 获取HTML生成提示词（版本选择入口）
    */
-  static getGenerationPrompt(content: string, files?: File[]): PromptConfig {
+  static getGenerationPrompt(content: string, files?: File[], language: 'zh' | 'en' = 'zh'): PromptConfig {
     const version = promptVersionManager.getCurrentVersion()
     
     switch (version) {
       case 'enhanced':
-        return this.getGenerationPromptEnhanced(content, files)
+        return this.getGenerationPromptEnhanced(content, files, language)
       case 'stable':
       default:
-        return this.getGenerationPromptStable(content, files)
+        return this.getGenerationPromptStable(content, files, language)
     }
   }
 
   /**
    * 获取HTML生成提示词（增强版本 - 内容完整性优化版本）
    */
-  static getGenerationPromptEnhanced(content: string, files?: File[]): PromptConfig {
+  static getGenerationPromptEnhanced(content: string, files?: File[], language: 'zh' | 'en' = 'zh'): PromptConfig {
     let fileContext = ''
     if (files?.length) {
-      fileContext = `检测到${files.length}个文件，包含的文件信息需要在可视化中体现。`
+      if (language === 'en') {
+        fileContext = `Detected ${files.length} files, the file information needs to be reflected in the visualization.`
+      } else {
+        fileContext = `检测到${files.length}个文件，包含的文件信息需要在可视化中体现。`
+      }
+    }
+
+    // 根据语言选择提示词
+    if (language === 'en') {
+      return this.getEnglishPromptEnhanced(content, fileContext)
     }
 
     return {
@@ -173,6 +191,155 @@ export class HTMLPrompts {
 请根据上传文件的内容类型(文档、数据、图片等)，创建最适合展示该内容的可视化网页。
 
 重要提醒：请首先分析原文的完整结构，确保可视化网页包含原文的所有内容要素，不遗漏任何步骤或要点。`,
+      max_tokens: 8000,
+      reasoning_effort: 'high',
+      verbosity: 'medium'
+    }
+  }
+
+  /**
+   * 获取英文版稳定提示词
+   */
+  private static getEnglishPromptStable(content: string, fileContext: string): PromptConfig {
+    return {
+      prompt: `I will provide you with a file and content. Analyze the content and transform it into a beautiful English visualization web portfolio:
+
+Text Content: ${content}
+File Information: ${fileContext}
+
+## Content Requirements
+Maintain the core information from the original file, but present it in a more readable and visual way
+Add an author information area at the bottom of the page, including:
+* Author Name: [Magic School AI]
+* Social Media Links: At least include Twitter/X
+* Copyright Information and Year
+
+## Design Style
+Overall style references Linear App's minimalist modern design
+Use clear visual hierarchy to highlight important content
+Color scheme should be professional and harmonious, suitable for long-term reading
+
+## Technical Specifications
+Use HTML5, Tailwind CSS 3.0+ (via CDN) and necessary JavaScript
+Implement complete dark/light mode toggle functionality, default follows system settings
+Code structure is clear, contains appropriate comments, easy to understand and maintain
+
+## Responsive Design
+The page must display perfectly on all devices (mobile, tablet, desktop)
+Optimize layout and font sizes for different screen sizes
+Ensure good touch experience on mobile devices
+
+## Media Resources
+Use Markdown image links from the document (if any)
+Use video embed code from the document (if any)
+
+## Icons and Visual Elements
+Use professional icon libraries like Font Awesome or Material Icons (via CDN)
+Choose appropriate illustrations or charts to display data based on content theme
+Avoid using emojis as main icons
+
+## Interactive Experience
+Add appropriate micro-interactions to enhance user experience
+Buttons have slight scaling and color changes on hover
+Card elements have refined shadows and border effects on hover
+Smooth transition effects when scrolling through pages
+Elegant fade-in animation when content blocks load
+
+## Performance Optimization
+Ensure fast page loading speed, avoid unnecessary large resources
+Implement lazy loading technology for long page content
+
+## Output Requirements
+Provide a complete runnable single HTML file, including all necessary CSS and JavaScript
+Ensure code complies with W3C standards, no error warnings
+Pages maintain consistent appearance and functionality across different browsers
+Please create the most suitable visualization webpage based on the uploaded file's content type (document, data, image, etc.) to showcase that content.`,
+      max_tokens: 8000,
+      reasoning_effort: 'high',
+      verbosity: 'medium'
+    }
+  }
+
+  /**
+   * 获取英文版增强提示词
+   */
+  private static getEnglishPromptEnhanced(content: string, fileContext: string): PromptConfig {
+    return {
+      prompt: `I will provide you with a file and content. Transform it into a beautiful English visualization web portfolio, ensuring complete display of all original content:
+
+Text Content: ${content}
+File Information: ${fileContext}
+
+## Content Integrity Requirements
+1. **Complete display of all content**: Show as many steps, list items, and key points as the original text has, no omissions allowed
+2. **Maintain original structure**: Organize content according to the hierarchical structure and logical order of the original text
+3. **Precise correspondence to original modules**: Only create modules based on actual content in the original text, do not add parts that do not exist in the original
+4. **Avoid empty modules**: Each module must have specific content, do not create placeholder modules
+
+## Core Design Requirements
+Maintain the core information from the original file, presenting all content in a more readable and visual way
+Add an author information area at the bottom of the page, including:
+* Author Name: [Magic School AI]
+* Social Media Links: At least include Twitter/X
+* Copyright Information and Year
+
+## Design Style
+Overall style references Linear App's minimalist modern design
+Use clear visual hierarchy to highlight important content
+Color scheme should be professional and harmonious, suitable for long-term reading
+Add unique visual identifiers for each step/key point
+
+## Theme Toggle Feature (Must Implement)
+Implement complete dark/light mode toggle functionality:
+1. Define CSS variables for all colors, ensuring all elements change color correctly when themes switch
+2. Add JavaScript toggle logic, support localStorage state persistence
+3. Add obvious theme toggle button that can immediately switch themes when clicked
+4. All color changes should have CSS transition effects
+
+## Technical Specifications
+Use HTML5, Tailwind CSS 3.0+ (via CDN) and necessary JavaScript
+Code structure is clear, contains appropriate comments, easy to understand and maintain
+Ensure theme toggle functionality works properly in all browsers
+
+## Responsive Design
+The page must display perfectly on all devices (mobile, tablet, desktop)
+Optimize layout and font sizes for different screen sizes
+Ensure good touch experience on mobile devices
+
+## Media Resources
+Use Markdown image links from the document (if any)
+Use video embed code from the document (if any)
+
+## Icons and Visual Elements
+Use professional icon libraries like Font Awesome or Material Icons (via CDN)
+Add progress indicators or number identifiers for each step
+Choose appropriate illustrations or charts to display data based on content theme
+Avoid using emojis as main icons
+
+## Interactive Experience
+Add appropriate micro-interactions to enhance user experience
+Buttons have slight scaling and color changes on hover
+Card elements have refined shadows and border effects on hover
+Smooth transition effects when scrolling through pages
+Elegant fade-in animation when content blocks load
+
+## Content Organization Optimization
+Step-type content uses visual elements like number identifiers, progress bars, timelines
+List content uses icons, color coding, grouped display
+Categorized content uses card layouts, tag systems
+Key content uses highlighted backgrounds, borders, special fonts for emphasis
+
+## Performance Optimization
+Ensure fast page loading speed, avoid unnecessary large resources
+Implement lazy loading technology for long page content
+
+## Output Requirements
+Provide a complete runnable single HTML file, including all necessary CSS and JavaScript
+Ensure code complies with W3C standards, no error warnings
+Pages maintain consistent appearance and functionality across different browsers
+Please create the most suitable visualization webpage based on the uploaded file's content type (document, data, image, etc.) to showcase that content.
+
+Important Reminder: Please first analyze the complete structure of the original text, ensure the visualization webpage contains all content elements from the original text, without missing any steps or key points.`,
       max_tokens: 8000,
       reasoning_effort: 'high',
       verbosity: 'medium'

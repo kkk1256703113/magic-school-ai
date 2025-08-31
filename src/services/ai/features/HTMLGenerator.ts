@@ -36,7 +36,8 @@ export class HTMLGenerator {
   async generate(
     content: string,
     files?: File[],
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    language: 'zh' | 'en' = 'zh'
   ): Promise<HTMLVisualizationResponse> {
     try {
       logger.info('开始生成HTML页面', {
@@ -45,7 +46,7 @@ export class HTMLGenerator {
       })
 
       // 调用对应模型的HTML生成方法
-      const result = await this.modelService.generateHTML(content, files, signal)
+      const result = await this.modelService.generateHTML(content, files, signal, language)
       
       logger.success('HTML页面生成成功', {
         htmlLength: result.htmlContent.length,

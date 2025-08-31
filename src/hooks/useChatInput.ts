@@ -13,6 +13,7 @@ interface UseChatInputProps {
   selectedModel: 'gpt5' | 'claude4'
   isAuthenticated: boolean
   user: any
+  language: 'zh' | 'en'
 }
 
 export const useChatInput = ({
@@ -24,7 +25,8 @@ export const useChatInput = ({
   hasApiToken,
   selectedModel,
   isAuthenticated,
-  user
+  user,
+  language
 }: UseChatInputProps) => {
   const [inputText, setInputText] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
@@ -154,8 +156,8 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
               status: 'thinking' 
             })
             
-            // 调用HTML生成方法，传递选择的模型和取消信号
-            const htmlResult = await aiService.generateHTMLVisualization(userContent, undefined, selectedModel, abortControllerRef.current?.signal)
+            // 调用HTML生成方法，传递选择的模型、取消信号和语言设置
+            const htmlResult = await aiService.generateHTMLVisualization(userContent, undefined, selectedModel, abortControllerRef.current?.signal, language)
             
             // 更新消息显示HTML内容
             updateMessage(aiMessageId, {

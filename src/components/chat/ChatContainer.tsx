@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
 import { useTranslation } from 'react-i18next'
+import { useLanguage } from '@/context/LanguageContext'
 import { logger } from '@/utils/logger'
 import { ChevronDown, Sparkles } from 'lucide-react'
 import { setAuthConfig } from '@/services/ai'
@@ -22,6 +23,7 @@ export const ChatContainer = () => {
   const { theme } = useTheme()
   const { user, isAuthenticated, token, checkAPILimit, recordAPIUsage } = useAuth()
   const { t } = useTranslation()
+  const { language } = useLanguage()
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showModelMenu, setShowModelMenu] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -52,7 +54,8 @@ export const ChatContainer = () => {
   } = useContentProcessor({
     updateMessage,
     getAPIService,
-    selectedModel
+    selectedModel,
+    language
   })
 
   // 聊天输入处理
@@ -71,7 +74,8 @@ export const ChatContainer = () => {
     hasApiToken: apiConfig.hasToken,
     selectedModel,
     isAuthenticated,
-    user
+    user,
+    language
   })
 
   // 页面加载日志记录

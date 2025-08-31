@@ -76,12 +76,13 @@ export class GPT5Service extends AIServiceBase {
   async generateHTML(
     content: string,
     files?: File[],
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    language: 'zh' | 'en' = 'zh'
   ): Promise<HTMLVisualizationResponse> {
     logger.info('GPT-5开始生成HTML', { contentLength: content.length })
     
     return this.executeWithAuth(async () => {
-      const promptConfig = HTMLPrompts.getGenerationPrompt(content, files)
+      const promptConfig = HTMLPrompts.getGenerationPrompt(content, files, language)
       
       const prediction = await this.apiClient.createPrediction(
         this.getModelEndpoint(),
