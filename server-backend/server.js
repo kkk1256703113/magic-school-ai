@@ -5,6 +5,7 @@ const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 require('dotenv').config();
 
 const app = express();
@@ -361,6 +362,133 @@ app.post('/auth/logout', (req, res) => {
         success: true,
         message: 'Logged out successfully'
     });
+});
+
+// 忘记密码
+app.post('/auth/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({
+                error: 'Missing email',
+                message: '请提供邮箱地址'
+            });
+        }
+        
+        // 检查用户是否存在
+        const result = await pool.query(
+            'SELECT id, email FROM users WHERE email = $1',
+            [email]
+        );
+        
+        // 无论用户是否存在，都返回成功（安全考虑，不透露用户是否存在）
+        if (result.rows.length === 0) {
+            console.log(`Password reset requested for non-existent user: ${email}`);
+            return res.json({
+                success: true,
+                message: '如果该邮箱已注册，您将收到密码重置邮件'
+            });
+        }
+        
+        const user = result.rows[0];
+        
+        // 生成重置令牌（32字节的随机字符串）
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpires = new Date(Date.now() + 30 * 60 * 1000); // 30分钟后过期
+        
+        // 保存重置令牌到数据库
+        await pool.query(
+            'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3',
+            [resetToken, resetTokenExpires, user.id]
+        );
+        
+        // 构造重置链接
+        const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+        
+        // 模拟邮件发送（实际项目中这里应该调用邮件服务）
+        console.log('===========================================');
+        console.log('📧 密码重置邮件（模拟发送）');
+        console.log('===========================================');
+        console.log(`收件人: ${user.email}`);
+        console.log(`重置令牌: ${resetToken}`);
+        console.log(`重置链接: ${resetUrl}`);
+        console.log(`过期时间: ${resetTokenExpires.toLocaleString()}`);
+        console.log('===========================================');
+        
+        // TODO: 实际项目中在这里集成真实的邮件服务
+        // 例如：await sendResetEmail(user.email, resetUrl);
+        
+        res.json({
+            success: true,
+            message: '密码重置邮件已发送到您的邮箱'
+        });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({
+            error: 'Server error',
+            message: '发送重置邮件失败，请稍后再试'
+        });
+    }
+});
+
+// 重置密码
+app.post('/auth/reset-password', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+        
+        if (!token || !password) {
+            return res.status(400).json({
+                error: 'Missing required fields',
+                message: '缺少必要参数'
+            });
+        }
+        
+        if (password.length < 6) {
+            return res.status(400).json({
+                error: 'Password too short',
+                message: '密码至少需要6位'
+            });
+        }
+        
+        // 查找有效的重置令牌
+        const result = await pool.query(
+            'SELECT id, email FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()',
+            [token]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(400).json({
+                error: 'Invalid or expired token',
+                message: '重置链接无效或已过期'
+            });
+        }
+        
+        const user = result.rows[0];
+        
+        // 哈希新密码
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
+        
+        // 更新密码并清除重置令牌
+        await pool.query(
+            'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2',
+            [passwordHash, user.id]
+        );
+        
+        console.log(`Password reset successful for user: ${user.email}`);
+        
+        res.json({
+            success: true,
+            message: '密码重置成功'
+        });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({
+            error: 'Server error',
+            message: '密码重置失败，请稍后再试'
+        });
+    }
 });
 
 // ==================== 使用量路由 ====================

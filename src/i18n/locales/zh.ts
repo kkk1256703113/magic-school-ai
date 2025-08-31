@@ -8,6 +8,7 @@ export default {
     cancel: '取消',
     confirm: '确认',
     save: '保存',
+    saving: '保存中...',
     delete: '删除',
     edit: '编辑',
     close: '关闭',
@@ -43,6 +44,7 @@ export default {
   // 用户菜单
   userMenu: {
     notLoggedIn: '未登录',
+    welcomeGuest: '欢迎访客',
     loginToEnjoy: '登录以享受完整功能',
     loginOrRegister: '登录 / 注册',
     profile: '个人资料',
@@ -53,6 +55,10 @@ export default {
     loggedOut: '已退出登录',
     logoutFailed: '退出登录失败',
     clickToLogin: '点击登录',
+    openUserMenu: '打开用户菜单',
+    todayUsage: '今日使用',
+    times: '次',
+    upgradeAvailable: '可升级',
     featureInDevelopment: '{{feature}}功能开发中...',
     plans: {
       free: '免费版用户',
@@ -86,12 +92,23 @@ export default {
     loginFailed: '登录失败',
     registerFailed: '注册失败',
     agreement: '注册即表示您同意我们的服务条款和隐私政策',
+    forgotPassword: '忘记密码？',
+    resetPassword: '重置密码',
+    sendResetEmail: '发送重置邮件',
+    sendingResetEmail: '发送中...',
+    resetEmailSent: '已发送',
+    resetEmailDescription: '输入您的邮箱地址，我们将发送密码重置链接给您',
+    resetEmailSuccess: '密码重置邮件已发送到您的邮箱，请查收！',
+    resetEmailFailed: '发送重置邮件失败',
+    backToLogin: '返回登录',
+    clickToReset: '忘记密码？点击重置',
     errors: {
       emailPasswordWrong: '邮箱或密码错误',
       userNotFound: '用户不存在',
       serverError: '服务器错误，请稍后重试',
       networkError: '网络连接失败，请检查网络后重试',
-      genericError: '{{action}}失败，请重试'
+      genericError: '{{action}}失败，请重试',
+      emailRequired: '请输入邮箱地址'
     }
   },
 
@@ -231,5 +248,114 @@ export default {
     complete: '完成',
     error: '错误',
     cancelled: '已取消'
+  },
+
+  // 密码重置
+  passwordReset: {
+    title: '重置密码',
+    subtitle: '设置您的新密码',
+    newPassword: '新密码',
+    confirmPassword: '确认新密码',
+    passwordMismatch: '两次输入的密码不一致',
+    passwordTooShort: '密码至少需要6位',
+    resetSuccess: '密码重置成功！',
+    resetFailed: '密码重置失败',
+    tokenExpired: '重置链接已过期，请重新申请',
+    tokenInvalid: '重置链接无效',
+    submit: '重置密码',
+    submitting: '重置中...',
+    backToLogin: '返回登录页面'
+  },
+
+  // 个人资料
+  profile: {
+    title: '个人资料',
+    username: '用户名',
+    usernamePlaceholder: '请输入用户名',
+    email: '邮箱地址',
+    emailCannotChange: '邮箱地址不可修改',
+    joinDate: '注册时间',
+    subscriptionInfo: '订阅信息',
+    loginRequired: '请先登录查看个人资料',
+    notAuthenticated: '用户未认证',
+    updateSuccess: '个人资料更新成功',
+    updateFailed: '个人资料更新失败'
+  },
+
+  // 账户管理
+  account: {
+    title: '账户管理',
+    security: '安全设置',
+    privacy: '隐私设置',
+    loginRequired: '请先登录查看账户设置',
+    notAuthenticated: '用户未认证',
+    accountInfo: '账户信息',
+    email: '邮箱',
+    lastLogin: '最后登录',
+    now: '刚刚',
+    changePassword: '修改密码',
+    currentPassword: '当前密码',
+    newPassword: '新密码',
+    confirmPassword: '确认密码',
+    passwordMismatch: '两次输入的密码不一致',
+    passwordTooShort: '密码长度至少8位',
+    passwordMatch: '密码匹配',
+    passwordWeak: '弱',
+    passwordFair: '一般',
+    passwordGood: '良好',
+    passwordStrong: '强',
+    updatePassword: '更新密码',
+    updating: '更新中...',
+    passwordUpdateSuccess: '密码更新成功',
+    passwordUpdateFailed: '密码更新失败',
+    privacySettings: '隐私设置',
+    privacyDescription: '我们致力于保护您的隐私和数据安全',
+    dataUsage: '数据使用',
+    dataUsageDescription: '我们仅使用您的数据来提供AI服务，不会用于其他目的',
+    dataProtected: '您的数据受到严格保护'
+  },
+
+  // 订阅管理
+  subscription: {
+    title: '订阅管理',
+    loginRequired: '请先登录查看订阅信息',
+    currentPlan: '当前订阅',
+    dailyUsage: '今日使用量',
+    totalUsage: '总使用量',
+    unlimited: '无限制',
+    unlimitedUsage: '无限制使用',
+    dailyReset: '每日凌晨重置',
+    monthlyReset: '每月重置',
+    upgrade: '升级',
+    upgradeTitle: '升级您的订阅',
+    upgradeDescription: '解锁更多AI功能和使用次数',
+    upgradeComingSoon: '升级功能即将上线',
+    recommended: '推荐',
+    history: '订阅历史',
+    activeSince: '激活时间',
+    unknown: '未知',
+    plans: {
+      free: {
+        name: '免费版',
+        price: '免费'
+      },
+      monthly: {
+        name: '月费版',
+        period: '/月',
+        description: '适合个人用户'
+      },
+      quarterly: {
+        name: '季费版',
+        period: '/季',
+        description: '最受欢迎的选择',
+        savings: '节省20%'
+      },
+      yearly: {
+        name: '年费版',
+        period: '/年',
+        description: '最大价值',
+        savings: '节省40%'
+      }
+    }
   }
 }

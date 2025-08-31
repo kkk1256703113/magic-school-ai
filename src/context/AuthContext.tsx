@@ -18,6 +18,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, username?: string) => Promise<void>
   logout: () => void
+  forgotPassword: (email: string) => Promise<void>
+  resetPassword: (token: string, password: string) => Promise<void>
   checkAPILimit: () => Promise<{ canUse: boolean; remaining: number }>
   recordAPIUsage: (endpoint: string, model: string, cost: number, success: boolean) => Promise<void>
 }
@@ -129,6 +131,50 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setAuthHeader(null)
   }
 
+  // 忘记密码
+  const forgotPassword = async (email: string) => {
+    try {
+      const response = await axios.post('/api/auth/forgot-password', { email })
+      return response.data
+    } catch (error: any) {
+      if (error.response) {
+        throw new Error(error.response.data?.message || error.response.data?.error || '发送重置邮件失败')
+      } else if (error.request) {
+        throw new Error('网络连接失败，请检查网络后重试')
+      } else {
+        throw new Error('发送重置邮件失败，请重试')
+      }
+    }
+  }
+
+  // 重置密码
+  const resetPassword = async (token: string, password: string) => {
+    try {
+      const response = await axios.post('/api/auth/reset-password', { token, password })
+      return response.data
+    } catch (error: any) {
+      if (error.response) {
+        const errorMessage = error.response.data?.message || error.response.data?.error
+        if (errorMessage) {
+          throw new Error(errorMessage)
+        } else {
+          switch (error.response.status) {
+            case 400:
+              throw new Error('重置链接无效或已过期')
+            case 500:
+              throw new Error('服务器错误，请稍后重试')
+            default:
+              throw new Error('密码重置失败')
+          }
+        }
+      } else if (error.request) {
+        throw new Error('网络连接失败，请检查网络后重试')
+      } else {
+        throw new Error('密码重置失败，请重试')
+      }
+    }
+  }
+
   // 检查API使用限制
   const checkAPILimit = async () => {
     if (!token) {
@@ -173,6 +219,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     login,
     register,
     logout,
+    forgotPassword,
+    resetPassword,
     checkAPILimit,
     recordAPIUsage
   }

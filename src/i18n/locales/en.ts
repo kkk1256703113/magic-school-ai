@@ -8,6 +8,7 @@ export default {
     cancel: 'Cancel',
     confirm: 'Confirm',
     save: 'Save',
+    saving: 'Saving...',
     delete: 'Delete',
     edit: 'Edit',
     close: 'Close',
@@ -43,6 +44,7 @@ export default {
   // User Menu
   userMenu: {
     notLoggedIn: 'Not Logged In',
+    welcomeGuest: 'Welcome Guest',
     loginToEnjoy: 'Sign in to unlock all features',
     loginOrRegister: 'Sign In / Sign Up',
     profile: 'Profile',
@@ -53,6 +55,10 @@ export default {
     loggedOut: 'Successfully signed out',
     logoutFailed: 'Failed to sign out',
     clickToLogin: 'Click to sign in',
+    openUserMenu: 'Open user menu',
+    todayUsage: 'Today used',
+    times: 'times',
+    upgradeAvailable: 'Upgrade available',
     featureInDevelopment: '{{feature}} coming soon...',
     plans: {
       free: 'Free Plan',
@@ -86,12 +92,23 @@ export default {
     loginFailed: 'Sign in failed',
     registerFailed: 'Registration failed',
     agreement: 'By signing up, you agree to our Terms of Service and Privacy Policy',
+    forgotPassword: 'Forgot password?',
+    resetPassword: 'Reset Password',
+    sendResetEmail: 'Send Reset Email',
+    sendingResetEmail: 'Sending...',
+    resetEmailSent: 'Sent',
+    resetEmailDescription: 'Enter your email address and we will send you a password reset link',
+    resetEmailSuccess: 'Password reset email has been sent to your inbox. Please check your email!',
+    resetEmailFailed: 'Failed to send reset email',
+    backToLogin: 'Back to Login',
+    clickToReset: 'Forgot password? Click to reset',
     errors: {
       emailPasswordWrong: 'Invalid email or password',
       userNotFound: 'User not found',
       serverError: 'Server error. Please try again later',
       networkError: 'Connection failed. Please check your network',
-      genericError: '{{action}} failed. Please try again'
+      genericError: '{{action}} failed. Please try again',
+      emailRequired: 'Please enter your email address'
     }
   },
 
@@ -231,5 +248,114 @@ export default {
     complete: 'Complete',
     error: 'Error',
     cancelled: 'Cancelled'
+  },
+
+  // Password Reset
+  passwordReset: {
+    title: 'Reset Password',
+    subtitle: 'Set your new password',
+    newPassword: 'New Password',
+    confirmPassword: 'Confirm New Password',
+    passwordMismatch: 'Passwords do not match',
+    passwordTooShort: 'Password must be at least 6 characters',
+    resetSuccess: 'Password reset successfully!',
+    resetFailed: 'Password reset failed',
+    tokenExpired: 'Reset link has expired. Please request a new one',
+    tokenInvalid: 'Invalid reset link',
+    submit: 'Reset Password',
+    submitting: 'Resetting...',
+    backToLogin: 'Back to Login'
+  },
+
+  // Profile
+  profile: {
+    title: 'Profile',
+    username: 'Username',
+    usernamePlaceholder: 'Enter username',
+    email: 'Email Address',
+    emailCannotChange: 'Email address cannot be changed',
+    joinDate: 'Join Date',
+    subscriptionInfo: 'Subscription Info',
+    loginRequired: 'Please sign in to view your profile',
+    notAuthenticated: 'User not authenticated',
+    updateSuccess: 'Profile updated successfully',
+    updateFailed: 'Failed to update profile'
+  },
+
+  // Account Management
+  account: {
+    title: 'Account Management',
+    security: 'Security',
+    privacy: 'Privacy',
+    loginRequired: 'Please sign in to view account settings',
+    notAuthenticated: 'User not authenticated',
+    accountInfo: 'Account Information',
+    email: 'Email',
+    lastLogin: 'Last Login',
+    now: 'Just now',
+    changePassword: 'Change Password',
+    currentPassword: 'Current Password',
+    newPassword: 'New Password',
+    confirmPassword: 'Confirm Password',
+    passwordMismatch: 'Passwords do not match',
+    passwordTooShort: 'Password must be at least 8 characters',
+    passwordMatch: 'Passwords match',
+    passwordWeak: 'Weak',
+    passwordFair: 'Fair',
+    passwordGood: 'Good',
+    passwordStrong: 'Strong',
+    updatePassword: 'Update Password',
+    updating: 'Updating...',
+    passwordUpdateSuccess: 'Password updated successfully',
+    passwordUpdateFailed: 'Failed to update password',
+    privacySettings: 'Privacy Settings',
+    privacyDescription: 'We are committed to protecting your privacy and data security',
+    dataUsage: 'Data Usage',
+    dataUsageDescription: 'We only use your data to provide AI services, not for other purposes',
+    dataProtected: 'Your data is strictly protected'
+  },
+
+  // Subscription Management
+  subscription: {
+    title: 'Subscription Management',
+    loginRequired: 'Please sign in to view subscription information',
+    currentPlan: 'Current Plan',
+    dailyUsage: 'Daily Usage',
+    totalUsage: 'Total Usage',
+    unlimited: 'Unlimited',
+    unlimitedUsage: 'Unlimited Usage',
+    dailyReset: 'Resets daily at midnight',
+    monthlyReset: 'Resets monthly',
+    upgrade: 'Upgrade',
+    upgradeTitle: 'Upgrade Your Subscription',
+    upgradeDescription: 'Unlock more AI features and usage limits',
+    upgradeComingSoon: 'Upgrade feature coming soon',
+    recommended: 'Recommended',
+    history: 'Subscription History',
+    activeSince: 'Active Since',
+    unknown: 'Unknown',
+    plans: {
+      free: {
+        name: 'Free Plan',
+        price: 'Free'
+      },
+      monthly: {
+        name: 'Monthly Plan',
+        period: '/month',
+        description: 'Perfect for individuals'
+      },
+      quarterly: {
+        name: 'Quarterly Plan',
+        period: '/quarter',
+        description: 'Most popular choice',
+        savings: 'Save 20%'
+      },
+      yearly: {
+        name: 'Yearly Plan',
+        period: '/year',
+        description: 'Best value',
+        savings: 'Save 40%'
+      }
+    }
   }
 }
