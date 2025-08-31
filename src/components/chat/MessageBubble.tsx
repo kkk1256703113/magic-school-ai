@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Message } from '@/types/chat'
 import { HTMLPreview } from '@/components/html/HTMLPreview'
 import { PDFViewer } from '@/components/pdf/PDFViewer'
+import { useTranslation } from 'react-i18next'
 
 interface MessageBubbleProps {
   message: Message
@@ -10,6 +11,7 @@ interface MessageBubbleProps {
 export const MessageBubble = ({ message }: MessageBubbleProps) => {
   const isUser = message.type === 'user'
   const isSystem = message.type === 'system'
+  const { t } = useTranslation()
   
   // 检测消息是否包含HTML内容
   const isHTMLContent = (content: string): boolean => {
@@ -80,7 +82,7 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                 <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                 <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
               </motion.div>
-              <span className="text-sm text-gray-500">正在思考...</span>
+              <span className="text-sm text-gray-500">{t('chat.thinking')}</span>
             </div>
           )}
           
@@ -119,12 +121,12 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
           {hasHTMLContent ? (
             <div>
               <div className="mb-3 text-sm text-gray-600 dark:text-gray-400">
-                🎨 已生成可视化HTML页面：
+                {t('htmlContent.generatedTitle')}
               </div>
               <HTMLPreview 
                 htmlContent={message.content}
-                title="生成的可视化页面"
-                description="基于您的内容生成的HTML作品集"
+                title={t('htmlContent.pageTitle')}
+                description={t('htmlContent.pageDescription')}
               />
             </div>
           ) : (

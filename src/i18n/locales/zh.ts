@@ -118,8 +118,8 @@ export default {
     sendButton: '发送',
     cancelButton: '终止',
     processing: '处理中...',
-    thinking: '正在分析中...',
-    generatingHTML: '🎨 正在生成可视化HTML页面...',
+    thinking: '✨ 正在分析您的内容...',
+    generatingHTML: '🎨 正在为您创建交互式页面...',
     processCancelled: '处理已被终止',
     loginRequired: {
       title: '🔐 **需要登录才能使用AI功能**',
@@ -313,6 +313,13 @@ export default {
     dataUsage: '数据使用',
     dataUsageDescription: '我们仅使用您的数据来提供AI服务，不会用于其他目的',
     dataProtected: '您的数据受到严格保护'
+  },
+
+  // HTML内容显示
+  htmlContent: {
+    generatedTitle: '✨ 为您生成的交互式页面',
+    pageTitle: '智能可视化页面',
+    pageDescription: '根据您的内容精心制作'
   },
 
   // 订阅管理

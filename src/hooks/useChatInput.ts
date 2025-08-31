@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { isSimpleGreeting, generateGreetingResponse, sleep } from '@/utils/chatHelpers'
 import { pdfService } from '@/services/pdfService'
 
@@ -28,6 +29,7 @@ export const useChatInput = ({
   const [inputText, setInputText] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const { t } = useTranslation()
 
   // 取消处理函数
   const cancelProcessing = () => {
@@ -148,7 +150,7 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
             const { aiService } = await import('@/services/ai')
             
             updateMessage(aiMessageId, { 
-              content: '🎨 正在生成可视化HTML页面...', 
+              content: t('chat.generatingHTML'), 
               status: 'thinking' 
             })
             

@@ -118,8 +118,8 @@ export default {
     sendButton: 'Send',
     cancelButton: 'Stop',
     processing: 'Processing...',
-    thinking: 'Analyzing...',
-    generatingHTML: '🎨 Creating visualization...',
+    thinking: '✨ Analyzing your content...',
+    generatingHTML: '🎨 Creating interactive page for you...',
     processCancelled: 'Process stopped',
     loginRequired: {
       title: '🔐 **Sign In Required**',
@@ -313,6 +313,13 @@ export default {
     dataUsage: 'Data Usage',
     dataUsageDescription: 'We only use your data to provide AI services, not for other purposes',
     dataProtected: 'Your data is strictly protected'
+  },
+
+  // HTML Content Display
+  htmlContent: {
+    generatedTitle: '✨ Interactive page created for you',
+    pageTitle: 'AI-Generated Visualization',
+    pageDescription: 'Crafted based on your content'
   },
 
   // Subscription Management
