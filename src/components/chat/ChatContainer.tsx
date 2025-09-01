@@ -63,6 +63,7 @@ export const ChatContainer = () => {
     inputText,
     setInputText,
     isProcessing,
+    isCancelling,
     handleSendMessage,
     cancelProcessing
   } = useChatInput({
@@ -177,6 +178,7 @@ export const ChatContainer = () => {
           inputText={inputText}
           setInputText={setInputText}
           isProcessing={isProcessing}
+          isCancelling={isCancelling}
           onSendMessage={handleSendMessage}
           onCancelProcessing={cancelProcessing}
         />

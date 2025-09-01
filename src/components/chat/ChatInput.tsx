@@ -5,6 +5,7 @@ interface ChatInputProps {
   inputText: string
   setInputText: (text: string) => void
   isProcessing: boolean
+  isCancelling?: boolean
   onSendMessage: (message: string, files?: File[]) => void
   onCancelProcessing?: () => void
 }
@@ -13,6 +14,7 @@ export const ChatInput = ({
   inputText,
   setInputText,
   isProcessing,
+  isCancelling = false,
   onSendMessage,
   onCancelProcessing
 }: ChatInputProps) => {
@@ -223,10 +225,15 @@ export const ChatInput = ({
                 <button
                   type="button"
                   onClick={onCancelProcessing}
-                  className="h-8 w-8 flex items-center justify-center bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors"
-                  title="终止处理"
+                  disabled={isCancelling}
+                  className={`h-8 w-8 flex items-center justify-center text-white rounded-full transition-colors ${
+                    isCancelling 
+                      ? 'bg-gray-500 cursor-not-allowed' 
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                  title={isCancelling ? "正在终止..." : "终止处理"}
                 >
-                  <StopCircle className="h-4 w-4" />
+                  <StopCircle className={`h-4 w-4 ${isCancelling ? 'animate-pulse' : ''}`} />
                 </button>
               ) : (
                 <button

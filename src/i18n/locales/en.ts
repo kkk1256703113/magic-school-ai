@@ -120,7 +120,12 @@ export default {
     processing: 'Processing...',
     thinking: '✨ Analyzing your content...',
     generatingHTML: '🎨 Creating interactive page for you...',
-    processCancelled: 'Process stopped',
+    processCancelled: '✋ Process cancelled by you',
+    processCancelling: '⏹️ Stopping process for you...',
+    processCancelledBackup: '✋ AI processing stopped',
+    cancelDebugSuccess: 'Cancel feedback updated',
+    cancelDebugWarning: 'Message ref is empty, using backup feedback',
+    cancelling: 'Cancelling...',
     loginRequired: {
       title: '🔐 **Sign In Required**',
       description: 'Please sign in to use AI features:',

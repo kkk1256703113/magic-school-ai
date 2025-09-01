@@ -13,14 +13,17 @@ export const useChatMessages = () => {
   }, [messages])
 
   // 添加用户消息
-  const addUserMessage = (content: string, files?: File[]) => {
+  const addUserMessage = (content: string, files?: File[], parsedFiles?: Array<{content: string, metadata?: any}>) => {
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
       content,
       timestamp: new Date(),
       status: 'sent',
-      data: files ? { files } : undefined
+      data: files || parsedFiles ? { 
+        files,
+        parsedFiles 
+      } : undefined
     }
     
     setMessages(prev => [...prev, userMessage])

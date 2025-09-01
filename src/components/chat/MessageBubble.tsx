@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Message } from '@/types/chat'
 import { HTMLPreview } from '@/components/html/HTMLPreview'
 import { PDFViewer } from '@/components/pdf/PDFViewer'
+import { DocumentViewer } from '@/components/document/DocumentViewer'
 import { useTranslation } from 'react-i18next'
 
 interface MessageBubbleProps {
@@ -12,6 +13,25 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
   const isUser = message.type === 'user'
   const isSystem = message.type === 'system'
   const { t } = useTranslation()
+  
+  // 检测文件是否需要使用DocumentViewer
+  const shouldUseDocumentViewer = (file: File): boolean => {
+    const textTypes = [
+      'text/plain',
+      'text/markdown', 
+      'application/json',
+      'text/csv',
+      'text/html',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ]
+    const textExtensions = ['.txt', '.md', '.json', '.csv', '.html', '.doc', '.docx', '.xls', '.xlsx']
+    
+    return textTypes.includes(file.type) || 
+           textExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
+  }
   
   // 检测消息是否包含HTML内容
   const isHTMLContent = (content: string): boolean => {
@@ -47,14 +67,11 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
       transition={{ duration: 0.4 }}
       className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
     >
-      {/* AI头像（类似Gemini的蓝色方块） */}
+      {/* AI头像（渐变魔法圆形设计） */}
       {!isUser && !isSystem && (
         <div className="flex items-start gap-3">
-          <div className="w-6 h-6 bg-blue-500 rounded-sm flex items-center justify-center flex-shrink-0 mt-1">
-            <div 
-              className="w-3 h-3 bg-white"
-              style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}
-            />
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mt-1 shadow-sm">
+            <span className="text-white font-bold text-sm">M</span>
           </div>
         </div>
       )}
@@ -103,7 +120,24 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
                       />
                     )
                   }
-                  // 其他文件显示简单信息
+                  
+                  // 如果是支持DocumentViewer的文件类型，使用DocumentViewer
+                  if (shouldUseDocumentViewer(file)) {
+                    // 从message.data中获取解析后的内容（如果存在）
+                    const parsedContent = message.data?.parsedFiles?.[index]?.content || ''
+                    const metadata = message.data?.parsedFiles?.[index]?.metadata || {}
+                    
+                    return (
+                      <DocumentViewer
+                        key={index}
+                        file={file}
+                        parsedContent={parsedContent}
+                        metadata={metadata}
+                      />
+                    )
+                  }
+                  
+                  // 其他不支持的文件显示简单信息
                   return (
                     <div key={index} className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded px-2 py-1 text-xs">
                       <span className="font-medium">{file.name}</span>
@@ -130,12 +164,30 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
               />
             </div>
           ) : (
-            // 仅当没有PDF文件时显示用户的文本内容
-            !hasPDFFiles && message.content && (
-              <div className="whitespace-pre-wrap">
-                {message.content}
-              </div>
-            )
+            // 显示普通文本内容
+            (() => {
+              let displayContent = message.content
+              
+              // 过滤用户消息中的文件内容
+              if (isUser && message.data?.files?.length && message.data.files.length > 0 && displayContent) {
+                const fileMarkers = ['附件内容：', '请分析以下文件内容：']
+                for (const marker of fileMarkers) {
+                  const index = displayContent.indexOf(marker)
+                  if (index !== -1) {
+                    // 只保留文件标记之前的用户输入
+                    displayContent = displayContent.substring(0, index).trim()
+                    break
+                  }
+                }
+              }
+              
+              // 只有当有内容时才显示
+              return displayContent ? (
+                <div className="whitespace-pre-wrap">
+                  {displayContent}
+                </div>
+              ) : null
+            })()
           )}
           
           {/* 可视化内容展示 */}

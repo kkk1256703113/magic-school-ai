@@ -120,7 +120,12 @@ export default {
     processing: '处理中...',
     thinking: '✨ 正在分析您的内容...',
     generatingHTML: '🎨 正在为您创建交互式页面...',
-    processCancelled: '处理已被终止',
+    processCancelled: '✋ 处理已被您终止',
+    processCancelling: '⏹️ 正在为您终止处理...',
+    processCancelledBackup: '✋ AI处理已终止',
+    cancelDebugSuccess: '取消反馈已更新',
+    cancelDebugWarning: '消息引用为空，使用备用反馈',
+    cancelling: '正在终止...',
     loginRequired: {
       title: '🔐 **需要登录才能使用AI功能**',
       description: '请先登录您的账号以使用AI分析功能：',
