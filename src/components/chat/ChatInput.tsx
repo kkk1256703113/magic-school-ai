@@ -48,25 +48,74 @@ export const ChatInput = ({
   const handleFileSelect = (selectedFiles: FileList | null) => {
     if (selectedFiles) {
       const newFiles = Array.from(selectedFiles)
-      // 过滤支持的文件类型
-      const supportedFiles = newFiles.filter(file => {
-        const supportedTypes = [
-          'text/plain',
-          'text/markdown', 
-          'application/pdf',
-          'text/csv',
-          'application/json',
-          'text/html',
-          'application/msword',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        ]
-        return supportedTypes.includes(file.type) || 
-               file.name.toLowerCase().endsWith('.md') ||
-               file.name.toLowerCase().endsWith('.txt')
+      const supportedTypes = [
+        'text/plain',
+        'text/markdown', 
+        'application/pdf',
+        'text/csv',
+        'application/json',
+        'text/html',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ]
+      const supportedExtensions = ['.txt', '.md', '.json', '.csv', '.html', '.doc', '.docx', '.xls', '.xlsx']
+      
+      // 分类处理文件
+      const supportedFiles: File[] = []
+      const unsupportedFiles: File[] = []
+      const oversizedFiles: File[] = []
+      
+      newFiles.forEach(file => {
+        // 检查文件类型
+        const isSupported = supportedTypes.includes(file.type) || 
+                           supportedExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
+        
+        if (!isSupported) {
+          unsupportedFiles.push(file)
+          return
+        }
+        
+        // 根据文件类型设置不同的大小限制
+        const isOfficeFile = file.type.includes('msword') || 
+                             file.type.includes('spreadsheetml') || 
+                             file.type.includes('ms-excel') ||
+                             ['.doc', '.docx', '.xls', '.xlsx'].some(ext => file.name.toLowerCase().endsWith(ext))
+        
+        const sizeLimit = isOfficeFile ? 10 * 1024 * 1024 : 2 * 1024 * 1024 // Office: 10MB, 其他: 2MB
+        
+        if (file.size > sizeLimit) {
+          oversizedFiles.push(file)
+          return
+        }
+        
+        supportedFiles.push(file)
       })
       
+      // 添加支持的文件
       if (supportedFiles.length > 0) {
         setFiles((prev) => [...prev, ...supportedFiles])
+        console.log(`✅ 成功添加 ${supportedFiles.length} 个文件:`, supportedFiles.map(f => f.name))
+      }
+      
+      // 显示不支持文件的警告
+      if (unsupportedFiles.length > 0) {
+        console.warn('❌ 以下文件类型不支持:', unsupportedFiles.map(f => `${f.name} (${f.type})`))
+      }
+      
+      // 显示超大文件的警告
+      if (oversizedFiles.length > 0) {
+        const oversizedNames = oversizedFiles.map(f => {
+          const sizeMB = Math.round(f.size / 1024 / 1024)
+          const isOfficeFile = f.type.includes('msword') || 
+                               f.type.includes('spreadsheetml') || 
+                               f.type.includes('ms-excel') ||
+                               ['.doc', '.docx', '.xls', '.xlsx'].some(ext => f.name.toLowerCase().endsWith(ext))
+          const limit = isOfficeFile ? '10MB' : '2MB'
+          return `${f.name} (${sizeMB}MB, 超过${limit}限制)`
+        })
+        console.warn('📏 以下文件超过大小限制:', oversizedNames)
       }
     }
   }
@@ -128,7 +177,7 @@ export const ChatInput = ({
             ref={fileInputRef}
             type="file"
             multiple
-            accept=".txt,.md,.pdf,.csv,.json,.html,.doc,.docx,text/plain,text/markdown,application/pdf"
+            accept=".txt,.md,.pdf,.csv,.json,.html,.doc,.docx,.xls,.xlsx,text/plain,text/markdown,application/pdf,application/json,text/csv,text/html,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             className="hidden"
             onChange={(e) => {
               handleFileSelect(e.target.files)
@@ -202,7 +251,7 @@ export const ChatInput = ({
         </div>
 
         <div className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-          支持 TXT, MD, PDF, CSV, JSON, HTML, DOC, DOCX · Enter 发送 · Shift+Enter 换行
+          支持 TXT, MD, PDF, CSV, JSON, HTML, Word, Excel · Enter 发送 · Shift+Enter 换行
         </div>
       </div>
     </div>
