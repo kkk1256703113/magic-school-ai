@@ -9,6 +9,7 @@ export interface Message {
     analysis?: any
     visualization?: any
     files?: File[]
+    parsedFiles?: Array<{content: string, metadata?: any}>
     contentType?: 'text' | 'formula' | 'mixed'
     isLocalAnalysis?: boolean
     hasApiToken?: boolean

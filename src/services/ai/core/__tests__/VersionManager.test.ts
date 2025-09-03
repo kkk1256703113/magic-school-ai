@@ -4,7 +4,6 @@
  */
 
 import { promptVersionManager } from '../PromptVersionManager'
-import { getPromptVersion, setPromptVersion } from '@/services/ai/config/apiConfig'
 import { HTMLPrompts } from '@/services/ai/prompts/htmlPrompt'
 
 // 简单的测试函数

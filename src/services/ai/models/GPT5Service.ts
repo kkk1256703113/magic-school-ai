@@ -362,12 +362,12 @@ ${fileContext}
         
         // 如果是HTML内容或其他文本，按照原文件格式返回
         logger.info('GPT-5返回HTML内容，保持原始格式')
-        return result  // 直接返回原始HTML内容
+        return result as any  // 直接返回原始HTML内容
       } else if (Array.isArray(result)) {
         // 如果是数组，合并为字符串
         const htmlContent = result.join('')
         logger.info('GPT-5返回数组格式，合并为HTML')
-        return htmlContent
+        return htmlContent as any
       } else if (result && typeof result === 'object') {
         // 如果已经是对象，直接返回
         logger.info('GPT-5返回对象格式')

@@ -55,9 +55,6 @@ export const MessageBubble = ({ message }: MessageBubbleProps) => {
     return result
   }
   
-  // 检测用户消息是否包含PDF文件
-  const hasPDFFiles = isUser && message.data?.files?.some((file: File) => file.type === 'application/pdf')
-  
   const hasHTMLContent = !isUser && isHTMLContent(message.content)
   
   return (

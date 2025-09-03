@@ -7,6 +7,7 @@ interface User {
   email: string
   username: string
   plan_type: string
+  created_at?: string
   api_calls_today?: number
   api_calls_total?: number
 }
@@ -40,7 +41,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'))
   const [isLoading, setIsLoading] = useState(true)
-  const [verificationCodes, setVerificationCodes] = useState<Map<string, string>>(new Map())
+  const [verificationCodes] = useState<Map<string, string>>(new Map())
   
   // 检查是否为开发模式
   const isDevMode = import.meta.env.VITE_DEV_MODE === 'true'

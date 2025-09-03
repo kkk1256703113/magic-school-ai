@@ -17,7 +17,7 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
   const [showAccountModal, setShowAccountModal] = useState(false)
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
   const { user, isAuthenticated, logout, isLoading } = useAuth()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const menuRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   

@@ -11,7 +11,6 @@ import { logger } from '@/utils/logger'
 // 缓存相关的导入已移除，因为当前使用简化的API调用方式
 import { temporaryStorage } from '@/utils/temporaryStorage'
 import { cleanHTMLContent, isValidHTMLDocument } from '@/utils/contentAnalysis'
-import axios from 'axios'
 
 // 用户认证和API使用限制检查
 let authToken: string | null = null
@@ -665,7 +664,7 @@ export class MagicSchoolAIService {
         }
         
         logger.success('Claude内容分析完成', {
-          hasClaudeAnalysis: !!analysisResult.claudeAnalysis,
+          hasClaudeAnalysis: !!(analysisResult as any).claudeAnalysis,
           subject: analysisResult.subject || 'HTML内容',
           difficulty: analysisResult.difficulty || 'N/A',
           tagsCount: analysisResult.tags?.length || 0,

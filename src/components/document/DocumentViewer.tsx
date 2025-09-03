@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { 
   FileText, 
   Download, 
@@ -10,18 +10,6 @@ import {
   Check
 } from 'lucide-react'
 
-interface DocumentData {
-  name: string
-  size: number
-  type: string
-  content: string
-  metadata?: {
-    sheets?: string[]  // For Excel files
-    lines?: number
-    characters?: number
-    encoding?: string
-  }
-}
 
 interface DocumentViewerProps {
   file: File
@@ -33,8 +21,7 @@ interface DocumentViewerProps {
 export const DocumentViewer: React.FC<DocumentViewerProps> = ({ 
   file, 
   parsedContent, 
-  metadata,
-  onContentExtracted 
+  metadata
 }) => {
   const [showFullContent, setShowFullContent] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -125,7 +112,7 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
     if (fileType === 'Excel表格' && metadata?.sheets) {
       const lines = content.split('\n')
       const sections = []
-      let currentSection = []
+      let currentSection: string[] = []
       
       for (const line of lines) {
         if (line.startsWith('--- 工作表')) {
@@ -181,15 +168,6 @@ export const DocumentViewer: React.FC<DocumentViewerProps> = ({
     }
   }
 
-  // 下载原文件
-  const downloadFile = () => {
-    const url = URL.createObjectURL(file)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = file.name
-    a.click()
-    URL.revokeObjectURL(url)
-  }
 
   // 下载提取的文本
   const downloadText = () => {

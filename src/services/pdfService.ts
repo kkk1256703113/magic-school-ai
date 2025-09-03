@@ -95,10 +95,10 @@ export class PDFService {
         text: fullText.trim(),
         pageCount: pdf.numPages,
         metadata: metadata.info ? {
-          title: metadata.info.Title,
-          author: metadata.info.Author,
-          subject: metadata.info.Subject,
-          keywords: metadata.info.Keywords
+          title: (metadata.info as any).Title,
+          author: (metadata.info as any).Author,
+          subject: (metadata.info as any).Subject,
+          keywords: (metadata.info as any).Keywords
         } : undefined,
         processedBy: 'local',
         confidence: 0.85

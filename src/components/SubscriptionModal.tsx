@@ -115,10 +115,10 @@ export const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) =
   }
 
   // 处理升级
-  const handleUpgrade = (planType: string) => {
+  const handleUpgrade = () => {
     onClose()
     // 这里应该打开升级模态框或跳转到支付页面
-    toast.info(t('subscription.upgradeComingSoon'))
+    toast(t('subscription.upgradeComingSoon'))
   }
 
   if (!isOpen) return null
@@ -189,7 +189,7 @@ export const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) =
                 </div>
                 {user?.plan_type === 'free' && (
                   <button
-                    onClick={() => handleUpgrade('monthly')}
+                    onClick={() => handleUpgrade()}
                     className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
                   >
                     {t('subscription.upgrade')}
@@ -285,7 +285,7 @@ export const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) =
                 <div className="grid md:grid-cols-3 gap-3">
                   {/* 月费套餐 */}
                   <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:border-blue-500 transition-colors cursor-pointer" 
-                       onClick={() => handleUpgrade('monthly')}>
+                       onClick={() => handleUpgrade()}>
                     <div className="text-center">
                       <Calendar className="mx-auto h-6 w-6 text-blue-600 mb-2" />
                       <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
@@ -304,7 +304,7 @@ export const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) =
 
                   {/* 季费套餐 */}
                   <div className="border-2 border-purple-500 rounded-lg p-4 hover:border-purple-600 transition-colors cursor-pointer relative" 
-                       onClick={() => handleUpgrade('quarterly')}>
+                       onClick={() => handleUpgrade()}>
                     <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white px-2 py-1 rounded text-xs font-medium">
                       {t('subscription.recommended')}
                     </div>
@@ -329,7 +329,7 @@ export const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) =
 
                   {/* 年费套餐 */}
                   <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:border-yellow-500 transition-colors cursor-pointer" 
-                       onClick={() => handleUpgrade('yearly')}>
+                       onClick={() => handleUpgrade()}>
                     <div className="text-center">
                       <Crown className="mx-auto h-6 w-6 text-yellow-600 mb-2" />
                       <h4 className="font-semibold text-gray-900 dark:text-white text-sm">

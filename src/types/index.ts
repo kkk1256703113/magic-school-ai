@@ -101,11 +101,14 @@ export interface APIConfig {
 
 // User types
 export interface User {
-  id: string
+  id: number
   email: string
-  name: string
+  username: string
+  plan_type: string
+  created_at?: string
+  api_calls_today?: number
+  api_calls_total?: number
   avatar?: string
-  createdAt: Date
 }
 
 // Error types

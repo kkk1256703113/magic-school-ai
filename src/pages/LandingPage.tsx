@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/context/AuthContext'
 import { AuthModal } from '@/components/AuthModal'
 import { HeroSection } from '@/components/landing/HeroSection'
@@ -12,12 +11,11 @@ import { CTASection } from '@/components/landing/CTASection'
 
 const LandingPage = () => {
   const navigate = useNavigate()
-  const { t } = useTranslation()
   const { isAuthenticated } = useAuth()
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register')
 
-  const handleGetStarted = (plan?: string) => {
+  const handleGetStarted = () => {
     if (isAuthenticated) {
       // 已登录用户直接进入应用
       navigate('/app')
