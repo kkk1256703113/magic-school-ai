@@ -89,7 +89,7 @@ tmp/
 temp/
 
 # Gatsby files
-public
+# public (removed - needed for Vite static assets)
 
 # Storybook build outputs
 .out
