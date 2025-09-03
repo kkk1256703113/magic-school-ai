@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
 import { useTranslation } from 'react-i18next'
+import { useLanguage } from '@/context/LanguageContext'
 import { logger } from '@/utils/logger'
 import { ChevronDown, Sparkles } from 'lucide-react'
 import { setAuthConfig } from '@/services/ai'
@@ -13,15 +14,16 @@ import { useChatInput } from '@/hooks/useChatInput'
 
 import { MessageList } from './MessageList'
 import { ChatInput } from './ChatInput'
-import { Sidebar } from '../Sidebar'
-import { UpgradeModal } from '../UpgradeModal'
-import { UserMenu } from '../UserMenu'
-import { AuthModal } from '../AuthModal'
+import { Sidebar } from '@/components/Sidebar'
+import { UpgradeModal } from '@/components/UpgradeModal'
+import { UserMenu } from '@/components/UserMenu'
+import { AuthModal } from '@/components/AuthModal'
 
 export const ChatContainer = () => {
   const { theme } = useTheme()
   const { user, isAuthenticated, token, checkAPILimit, recordAPIUsage } = useAuth()
   const { t } = useTranslation()
+  const { language } = useLanguage()
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [showModelMenu, setShowModelMenu] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
@@ -52,7 +54,8 @@ export const ChatContainer = () => {
   } = useContentProcessor({
     updateMessage,
     getAPIService,
-    selectedModel
+    selectedModel,
+    language
   })
 
   // 聊天输入处理
@@ -60,6 +63,7 @@ export const ChatContainer = () => {
     inputText,
     setInputText,
     isProcessing,
+    isCancelling,
     handleSendMessage,
     cancelProcessing
   } = useChatInput({
@@ -71,7 +75,8 @@ export const ChatContainer = () => {
     hasApiToken: apiConfig.hasToken,
     selectedModel,
     isAuthenticated,
-    user
+    user,
+    language
   })
 
   // 页面加载日志记录
@@ -173,6 +178,7 @@ export const ChatContainer = () => {
           inputText={inputText}
           setInputText={setInputText}
           isProcessing={isProcessing}
+          isCancelling={isCancelling}
           onSendMessage={handleSendMessage}
           onCancelProcessing={cancelProcessing}
         />

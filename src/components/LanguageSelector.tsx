@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Globe } from 'lucide-react'
-import { useLanguage } from '../context/LanguageContext'
+import { useLanguage } from '@/context/LanguageContext'
 
 export const LanguageSelector: React.FC = () => {
   const [showMenu, setShowMenu] = useState(false)

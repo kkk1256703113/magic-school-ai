@@ -77,12 +77,13 @@ export class ClaudeService extends AIServiceBase {
   async generateHTML(
     content: string,
     files?: File[],
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    language: 'zh' | 'en' = 'zh'
   ): Promise<HTMLVisualizationResponse> {
     logger.info('Claude 4开始生成语义化HTML', { contentLength: content.length })
     
     return this.executeWithAuth(async () => {
-      const promptConfig = HTMLPrompts.getGenerationPrompt(content, files)
+      const promptConfig = HTMLPrompts.getGenerationPrompt(content, files, language)
       
       // Claude特定参数调整
       const claudeInput = {

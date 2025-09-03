@@ -8,6 +8,7 @@ export default {
     cancel: '取消',
     confirm: '确认',
     save: '保存',
+    saving: '保存中...',
     delete: '删除',
     edit: '编辑',
     close: '关闭',
@@ -33,7 +34,7 @@ export default {
   // 导航栏
   navbar: {
     title: 'Magic School AI',
-    upgrade: '升级',
+    upgrade: '订阅',
     models: {
       gpt5: 'GPT-5',
       claude4: 'Claude 4 Sonnet'
@@ -43,6 +44,7 @@ export default {
   // 用户菜单
   userMenu: {
     notLoggedIn: '未登录',
+    welcomeGuest: '欢迎访客',
     loginToEnjoy: '登录以享受完整功能',
     loginOrRegister: '登录 / 注册',
     profile: '个人资料',
@@ -53,6 +55,10 @@ export default {
     loggedOut: '已退出登录',
     logoutFailed: '退出登录失败',
     clickToLogin: '点击登录',
+    openUserMenu: '打开用户菜单',
+    todayUsage: '今日使用',
+    times: '次',
+    upgradeAvailable: '可升级',
     featureInDevelopment: '{{feature}}功能开发中...',
     plans: {
       free: '免费版用户',
@@ -86,12 +92,23 @@ export default {
     loginFailed: '登录失败',
     registerFailed: '注册失败',
     agreement: '注册即表示您同意我们的服务条款和隐私政策',
+    forgotPassword: '忘记密码？',
+    resetPassword: '重置密码',
+    sendResetEmail: '发送重置邮件',
+    sendingResetEmail: '发送中...',
+    resetEmailSent: '已发送',
+    resetEmailDescription: '输入您的邮箱地址，我们将发送密码重置链接给您',
+    resetEmailSuccess: '密码重置邮件已发送到您的邮箱，请查收！',
+    resetEmailFailed: '发送重置邮件失败',
+    backToLogin: '返回登录',
+    clickToReset: '忘记密码？点击重置',
     errors: {
       emailPasswordWrong: '邮箱或密码错误',
       userNotFound: '用户不存在',
       serverError: '服务器错误，请稍后重试',
       networkError: '网络连接失败，请检查网络后重试',
-      genericError: '{{action}}失败，请重试'
+      genericError: '{{action}}失败，请重试',
+      emailRequired: '请输入邮箱地址'
     }
   },
 
@@ -101,9 +118,14 @@ export default {
     sendButton: '发送',
     cancelButton: '终止',
     processing: '处理中...',
-    thinking: '正在分析中...',
-    generatingHTML: '🎨 正在生成可视化HTML页面...',
-    processCancelled: '处理已被终止',
+    thinking: '✨ 正在分析您的内容...',
+    generatingHTML: '🎨 正在为您创建交互式页面...',
+    processCancelled: '✋ 处理已被您终止',
+    processCancelling: '⏹️ 正在为您终止处理...',
+    processCancelledBackup: '✋ AI处理已终止',
+    cancelDebugSuccess: '取消反馈已更新',
+    cancelDebugWarning: '消息引用为空，使用备用反馈',
+    cancelling: '正在终止...',
     loginRequired: {
       title: '🔐 **需要登录才能使用AI功能**',
       description: '请先登录您的账号以使用AI分析功能：',
@@ -156,49 +178,47 @@ export default {
     }
   },
 
-  // 升级模态框
+  // 订阅模态框
   upgrade: {
-    title: '升级您的账户',
-    currentPlan: '当前计划',
-    choosePlan: '选择一个计划以继续',
-    monthly: '月付',
-    yearly: '年付',
-    save: '节省 {{percent}}%',
-    features: '功能特性',
-    unlimited: '无限制',
-    limited: '{{count}} 次/天',
-    choosePlanButton: '选择此计划',
+    title: '选择订阅套餐',
+    recommended: '推荐',
+    choosePlan: '选择此套餐',
+    paymentMethods: '支持支付宝、微信支付、银行卡 · 随时可取消订阅',
     plans: {
-      free: {
-        name: '免费版',
-        price: '￥0',
-        features: {
-          apiCalls: '10 次 API 调用/天',
-          basicFeatures: '基础功能',
-          communitySupport: '社区支持'
-        }
+      monthly: {
+        name: '月会员',
+        price: '¥29',
+        period: '/月',
+        description: '按月订阅，灵活便捷',
+        features: [
+          '无限制对话次数',
+          '优先访问新功能',
+          '24/7 客户支持'
+        ]
       },
-      pro: {
-        name: '专业版',
-        price: '￥99',
-        priceYearly: '￥990',
-        features: {
-          apiCalls: '1000 次 API 调用/天',
-          advancedFeatures: '高级功能',
-          prioritySupport: '优先支持',
-          customization: '自定义选项'
-        }
+      quarterly: {
+        name: '季会员',
+        price: '¥69',
+        period: '/3个月',
+        description: '3个月套餐，省20%',
+        savings: '节省¥18',
+        features: [
+          '月会员所有功能',
+          '专属客服通道',
+          '高级模型优先体验'
+        ]
       },
-      enterprise: {
-        name: '企业版',
-        price: '联系销售',
-        features: {
-          apiCalls: '无限制 API 调用',
-          allFeatures: '所有功能',
-          dedicatedSupport: '专属支持团队',
-          sla: 'SLA 保证',
-          customIntegration: '定制集成'
-        }
+      yearly: {
+        name: '年会员',
+        price: '¥199',
+        period: '/年',
+        description: '12个月套餐，省40%',
+        savings: '节省¥149',
+        features: [
+          '季会员所有功能',
+          '专属定制服务',
+          '年度功能路线图预览'
+        ]
       }
     }
   },
@@ -231,5 +251,243 @@ export default {
     complete: '完成',
     error: '错误',
     cancelled: '已取消'
+  },
+
+  // 密码重置
+  passwordReset: {
+    title: '重置密码',
+    subtitle: '设置您的新密码',
+    newPassword: '新密码',
+    confirmPassword: '确认新密码',
+    passwordMismatch: '两次输入的密码不一致',
+    passwordTooShort: '密码至少需要6位',
+    resetSuccess: '密码重置成功！',
+    resetFailed: '密码重置失败',
+    tokenExpired: '重置链接已过期，请重新申请',
+    tokenInvalid: '重置链接无效',
+    submit: '重置密码',
+    submitting: '重置中...',
+    backToLogin: '返回登录页面'
+  },
+
+  // 个人资料
+  profile: {
+    title: '个人资料',
+    username: '用户名',
+    usernamePlaceholder: '请输入用户名',
+    email: '邮箱地址',
+    emailCannotChange: '邮箱地址不可修改',
+    joinDate: '注册时间',
+    subscriptionInfo: '订阅信息',
+    loginRequired: '请先登录查看个人资料',
+    notAuthenticated: '用户未认证',
+    updateSuccess: '个人资料更新成功',
+    updateFailed: '个人资料更新失败'
+  },
+
+  // 账户管理
+  account: {
+    title: '账户管理',
+    security: '安全设置',
+    privacy: '隐私设置',
+    loginRequired: '请先登录查看账户设置',
+    notAuthenticated: '用户未认证',
+    accountInfo: '账户信息',
+    email: '邮箱',
+    lastLogin: '最后登录',
+    now: '刚刚',
+    changePassword: '修改密码',
+    currentPassword: '当前密码',
+    newPassword: '新密码',
+    confirmPassword: '确认密码',
+    passwordMismatch: '两次输入的密码不一致',
+    passwordTooShort: '密码长度至少8位',
+    passwordMatch: '密码匹配',
+    passwordWeak: '弱',
+    passwordFair: '一般',
+    passwordGood: '良好',
+    passwordStrong: '强',
+    updatePassword: '更新密码',
+    updating: '更新中...',
+    passwordUpdateSuccess: '密码更新成功',
+    passwordUpdateFailed: '密码更新失败',
+    privacySettings: '隐私设置',
+    privacyDescription: '我们致力于保护您的隐私和数据安全',
+    dataUsage: '数据使用',
+    dataUsageDescription: '我们仅使用您的数据来提供AI服务，不会用于其他目的',
+    dataProtected: '您的数据受到严格保护'
+  },
+
+  // HTML内容显示
+  htmlContent: {
+    generatedTitle: '✨ 为您生成的交互式页面',
+    pageTitle: '智能可视化页面',
+    pageDescription: '根据您的内容精心制作'
+  },
+
+  // 订阅管理
+  subscription: {
+    title: '订阅管理',
+    loginRequired: '请先登录查看订阅信息',
+    currentPlan: '当前订阅',
+    dailyUsage: '今日使用量',
+    totalUsage: '总使用量',
+    unlimited: '无限制',
+    unlimitedUsage: '无限制使用',
+    dailyReset: '每日凌晨重置',
+    monthlyReset: '每月重置',
+    upgrade: '升级',
+    upgradeTitle: '升级您的订阅',
+    upgradeDescription: '解锁更多AI功能和使用次数',
+    upgradeComingSoon: '升级功能即将上线',
+    recommended: '推荐',
+    history: '订阅历史',
+    activeSince: '激活时间',
+    unknown: '未知',
+    plans: {
+      free: {
+        name: '免费版',
+        price: '免费'
+      },
+      monthly: {
+        name: '月费版',
+        period: '/月',
+        description: '适合个人用户'
+      },
+      quarterly: {
+        name: '季费版',
+        period: '/季',
+        description: '最受欢迎的选择',
+        savings: '节省20%'
+      },
+      yearly: {
+        name: '年费版',
+        period: '/年',
+        description: '最大价值',
+        savings: '节省40%'
+      }
+    }
+  },
+
+  // 宣传页
+  landing: {
+    hero: {
+      description: 'AI 驱动的文档可视化平台，让复杂变简单',
+      cta: '免费开始',
+      ctaSubtitle: '每日免费额度',
+      demo: '查看演示',
+      secure: '数据安全',
+      fast: '快速处理',
+      multilingual: '多语言支持'
+    },
+    features: {
+      title: '核心优势',
+      subtitle: '强大的 AI 技术，简单的使用体验',
+      ai: {
+        title: '双 AI 模型',
+        description: 'GPT-5 + Claude 4 协同工作'
+      },
+      format: {
+        title: '全格式支持',
+        description: 'PDF、Word、Markdown 等主流格式'
+      },
+      output: {
+        title: '专业输出',
+        description: '一键生成精美 HTML 作品集'
+      },
+      quick: {
+        title: '即刻使用',
+        description: '30秒注册，立即体验'
+      }
+    },
+    demo: {
+      title: '看看 Magic School AI 能做什么',
+      subtitle: '真实案例，真实效果',
+      before: '原始文档',
+      after: 'AI 转换后',
+      academic: {
+        title: '学术论文',
+        description: '将复杂公式转为互动图表'
+      },
+      business: {
+        title: '商业报告',
+        description: '数据可视化，一目了然'
+      },
+      education: {
+        title: '教学材料',
+        description: '让知识更生动有趣'
+      }
+    },
+    pricing: {
+      title: '选择适合你的方案',
+      subtitle: '透明定价，无隐藏费用',
+      guarantee: '30 天退款保证 · 随时可以取消 · 安全支付',
+      free: {
+        name: '免费版',
+        price: '¥0',
+        feature1: '每日 2 次转换',
+        feature2: '基础文档格式',
+        feature3: '标准处理速度',
+        feature4: '社区支持',
+        cta: '立即体验'
+      },
+      monthly: {
+        name: '月度会员',
+        price: '¥29',
+        period: '/月',
+        badge: '最受欢迎',
+        feature1: '无限次转换',
+        feature2: '所有文档格式',
+        feature3: '优先处理',
+        feature4: '专属客服',
+        feature5: '高级模板',
+        cta: '开始免费试用'
+      },
+      yearly: {
+        name: '年度会员',
+        price: '¥199',
+        period: '/年',
+        badge: '省40%',
+        feature1: '月度会员所有权益',
+        feature2: 'API 访问权限',
+        feature3: '批量处理',
+        feature4: '定制服务',
+        feature5: '优先体验新功能',
+        cta: '开始免费试用'
+      }
+    },
+    trust: {
+      title: '为什么选择 Magic School AI',
+      subtitle: '值得信赖的 AI 文档处理平台',
+      security: {
+        title: '数据安全',
+        description: '端到端加密，您的文档绝对安全'
+      },
+      speed: {
+        title: '处理速度',
+        description: '平均 10 秒完成文档转换'
+      },
+      accuracy: {
+        title: '精准转换',
+        description: '98% 的用户满意度'
+      },
+      support: {
+        title: '专业支持',
+        description: '7×24 小时客服支持'
+      },
+      stats: {
+        users: '活跃用户',
+        documents: '文档已处理',
+        satisfaction: '满意度'
+      }
+    },
+    cta: {
+      title: '准备好提升你的文档体验了吗？',
+      subtitle: '加入数千位用户，让 AI 帮你把复杂变简单',
+      button: '立即免费开始',
+      feature1: '30秒快速注册',
+      feature2: '每日免费额度',
+      feature3: '随时可以升级'
+    }
   }
 }

@@ -1,9 +1,12 @@
 import { useState, useRef } from 'react'
-import { isSimpleGreeting, generateGreetingResponse, sleep } from '../utils/chatHelpers'
-import { pdfService } from '../services/pdfService'
+import { useTranslation } from 'react-i18next'
+import { isSimpleGreeting, generateGreetingResponse, sleep } from '@/utils/chatHelpers'
+import { pdfService } from '@/services/pdfService'
+import mammoth from 'mammoth'
+import * as XLSX from 'xlsx'
 
 interface UseChatInputProps {
-  addUserMessage: (content: string, files?: File[]) => string
+  addUserMessage: (content: string, files?: File[], parsedFiles?: Array<{content: string, metadata?: any}>) => string
   addAssistantMessage: (content: string, status?: any) => string
   updateMessage: (messageId: string, updates: any) => void
   processUserInput: (content: string, contentType: any, messageId: string, signal?: AbortSignal) => Promise<void>
@@ -12,6 +15,7 @@ interface UseChatInputProps {
   selectedModel: 'gpt5' | 'claude4'
   isAuthenticated: boolean
   user: any
+  language: 'zh' | 'en'
 }
 
 export const useChatInput = ({
@@ -23,23 +27,64 @@ export const useChatInput = ({
   hasApiToken,
   selectedModel,
   isAuthenticated,
-  user
+  user,
+  language
 }: UseChatInputProps) => {
   const [inputText, setInputText] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const currentMessageIdRef = useRef<string | null>(null)
+  const cancelledMessageIds = useRef(new Set<string>()).current  // 追踪已取消的消息
+  const { t } = useTranslation()
 
-  // 取消处理函数
+  // 取消处理函数 - 增强版本，提供即时反馈并彻底清理资源
   const cancelProcessing = () => {
-    console.log('🛑 终止按钮被点击，准备取消处理')
+    console.log('🛑 用户点击终止按钮，开始取消处理流程')
+    
+    // 1. 立即设置取消状态
+    setIsCancelling(true)
+    
+    // 2. 保存要更新的消息ID
+    const messageIdToUpdate = currentMessageIdRef.current
+    
+    // 3. 立即更新或创建取消反馈消息
+    if (messageIdToUpdate) {
+      // 标记为已取消，防止catch块重复更新
+      cancelledMessageIds.add(messageIdToUpdate)
+      
+      console.log('✅ 更新消息为取消状态，messageId:', messageIdToUpdate)
+      updateMessage(messageIdToUpdate, {
+        content: t('chat.processCancelled'),
+        status: 'complete'  // 确保status为complete以显示内容
+      })
+      console.log('📝 取消反馈已更新')
+    } else {
+      // 备用反馈机制：直接添加系统消息
+      console.warn('⚠️ 当前消息引用为空，创建新的取消反馈消息')
+      const backupMessageId = addAssistantMessage(t('chat.processCancelledBackup'), 'complete')
+      cancelledMessageIds.add(backupMessageId)
+      console.log('🔄 备用反馈消息已创建，messageId:', backupMessageId)
+    }
+    
+    // 4. 执行abort操作
     if (abortControllerRef.current) {
-      console.log('🛑 AbortController存在，发送abort信号')
+      console.log('🛑 发送AbortController信号')
       abortControllerRef.current.abort()
       abortControllerRef.current = null
-      setIsProcessing(false)
     } else {
-      console.log('⚠️ AbortController不存在')
+      console.log('⚠️ AbortController不存在，但仍然停止处理')
     }
+    
+    // 5. 立即重置处理状态
+    setIsProcessing(false)
+    
+    // 6. 延迟重置取消状态和清理引用
+    setTimeout(() => {
+      setIsCancelling(false)
+      currentMessageIdRef.current = null
+      console.log('✅ 取消处理完成，所有状态已重置')
+    }, 1500)
   }
 
   const handleSendMessage = async (message: string = inputText, files?: File[]) => {
@@ -52,44 +97,269 @@ export const useChatInput = ({
     // 创建新的AbortController
     abortControllerRef.current = new AbortController()
     
-    // 处理PDF文件
-    let pdfContent = ''
+    // 文件类型检测工具函数
+    const isTextFile = (file: File): boolean => {
+      const textTypes = [
+        'text/plain',
+        'text/markdown', 
+        'application/json',
+        'text/csv',
+        'text/html'
+      ]
+      const textExtensions = ['.txt', '.md', '.json', '.csv', '.html']
+      
+      return textTypes.includes(file.type) || 
+             textExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
+    }
+
+    // Office文档类型检测
+    const isOfficeFile = (file: File): boolean => {
+      const officeTypes = [
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      ]
+      const officeExtensions = ['.doc', '.docx', '.xls', '.xlsx']
+      
+      return officeTypes.includes(file.type) || 
+             officeExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
+    }
+
+    const getFileTypeLabel = (file: File): string => {
+      if (file.type === 'text/plain' || file.name.toLowerCase().endsWith('.txt')) return 'TXT文件'
+      if (file.type === 'text/markdown' || file.name.toLowerCase().endsWith('.md')) return 'Markdown文件'
+      if (file.type === 'application/json' || file.name.toLowerCase().endsWith('.json')) return 'JSON文件'
+      if (file.type === 'text/csv' || file.name.toLowerCase().endsWith('.csv')) return 'CSV文件'
+      if (file.type === 'text/html' || file.name.toLowerCase().endsWith('.html')) return 'HTML文件'
+      return '文本文件'
+    }
+
+    const getOfficeFileTypeLabel = (file: File): string => {
+      if (file.name.toLowerCase().endsWith('.doc') || file.type === 'application/msword') return 'Word文档(.doc)'
+      if (file.name.toLowerCase().endsWith('.docx') || file.type.includes('wordprocessingml')) return 'Word文档(.docx)'
+      if (file.name.toLowerCase().endsWith('.xls') || file.type === 'application/vnd.ms-excel') return 'Excel表格(.xls)'
+      if (file.name.toLowerCase().endsWith('.xlsx') || file.type.includes('spreadsheetml')) return 'Excel表格(.xlsx)'
+      return 'Office文档'
+    }
+
+    // Word文档解析函数
+    const parseWordDocument = async (file: File): Promise<string> => {
+      try {
+        const arrayBuffer = await file.arrayBuffer()
+        const result = await mammoth.extractRawText({ arrayBuffer })
+        return result.value
+      } catch (error: any) {
+        throw new Error(`Word文档解析失败: ${error.message}`)
+      }
+    }
+
+    // Excel表格解析函数  
+    const parseExcelDocument = async (file: File): Promise<string> => {
+      try {
+        const arrayBuffer = await file.arrayBuffer()
+        const workbook = XLSX.read(arrayBuffer)
+        let allContent = ''
+        
+        // 遍历所有工作表
+        workbook.SheetNames.forEach((sheetName, index) => {
+          const worksheet = workbook.Sheets[sheetName]
+          const sheetData = XLSX.utils.sheet_to_txt(worksheet, { FS: '\t' })
+          
+          if (sheetData.trim()) {
+            allContent += `\n--- 工作表 ${index + 1}: ${sheetName} ---\n`
+            allContent += sheetData + '\n'
+          }
+        })
+        
+        return allContent || '表格内容为空'
+      } catch (error: any) {
+        throw new Error(`Excel表格解析失败: ${error.message}`)
+      }
+    }
+
+    // 处理所有类型文件
+    let fileContent = ''  // 保留用于AI分析
+    let parsedFiles: Array<{content: string, metadata?: any}> = []  // 存储解析结果供UI展示
+    let processedFilesCount = 0
+    let failedFilesCount = 0
+    
     if (files && files.length > 0) {
       for (const file of files) {
-        if (file.type === 'application/pdf') {
-          try {
+        try {
+          if (file.type === 'application/pdf') {
             // 使用PDF服务处理文件
             const result = await pdfService.processPDF(file)
-            pdfContent += `\n\n--- PDF文件: ${file.name} ---\n`
-            pdfContent += `页数: ${result.pageCount}\n`
+            
+            // 添加到fileContent用于AI分析
+            fileContent += `\n\n--- PDF文件: ${file.name} ---\n`
+            fileContent += `页数: ${result.pageCount}\n`
             if (result.metadata?.title) {
-              pdfContent += `标题: ${result.metadata.title}\n`
+              fileContent += `标题: ${result.metadata.title}\n`
             }
             if (result.metadata?.author) {
-              pdfContent += `作者: ${result.metadata.author}\n`
+              fileContent += `作者: ${result.metadata.author}\n`
             }
-            pdfContent += `处理方式: ${result.processedBy === 'api' ? 'iLovePDF API (高精度)' : 'PDF.js (快速处理)'}\n`
-            pdfContent += `\n内容:\n${result.text}\n`
-          } catch (error) {
-            console.error('PDF处理失败:', error)
+            fileContent += `处理方式: ${result.processedBy === 'api' ? 'iLovePDF API (高精度)' : 'PDF.js (快速处理)'}\n`
+            fileContent += `\n内容:\n${result.text}\n`
+            
+            // PDF文件使用PDFViewer，不需要添加到parsedFiles
+            // parsedFiles.push({ content: '', metadata: {} })  // 占位符保持索引对应
+            parsedFiles.push({
+              content: '',  // PDF由PDFViewer处理，这里为空
+              metadata: { isPDF: true }
+            })
+            
+            processedFilesCount++
+          } else if (isTextFile(file)) {
+            // 检查文件大小限制 (2MB)
+            if (file.size > 2 * 1024 * 1024) {
+              console.error('文件太大:', file.name, file.size)
+              failedFilesCount++
+              continue
+            }
+            
+            // 读取文本文件内容
+            const text = await file.text()
+            const fileTypeLabel = getFileTypeLabel(file)
+            const fileSizeKB = Math.round(file.size / 1024)
+            
+            // 添加到fileContent用于AI分析
+            fileContent += `\n\n--- ${fileTypeLabel}: ${file.name} ---\n`
+            fileContent += `文件大小: ${fileSizeKB}KB\n`
+            fileContent += `文件类型: ${file.type || '未知'}\n`
+            fileContent += `\n内容:\n${text}\n`
+            
+            // 添加到parsedFiles用于DocumentViewer展示
+            parsedFiles.push({
+              content: text,
+              metadata: {
+                lines: text.split('\n').length,
+                characters: text.length,
+                encoding: 'UTF-8'
+              }
+            })
+            
+            processedFilesCount++
+            console.log(`✅ 成功读取${fileTypeLabel}: ${file.name} (${fileSizeKB}KB)`)
+          } else if (isOfficeFile(file)) {
+            // Office文档处理
+            const fileTypeLabel = getOfficeFileTypeLabel(file)
+            const fileSizeKB = Math.round(file.size / 1024)
+            
+            // 检查文件大小限制 (10MB for Office documents)
+            if (file.size > 10 * 1024 * 1024) {
+              console.error('Office文档文件太大:', file.name, file.size)
+              fileContent += `\n\n--- ${fileTypeLabel}: ${file.name} ---\n`
+              fileContent += `文件大小: ${fileSizeKB}KB\n`
+              fileContent += `解析状态: 失败 - 文件超过10MB限制\n`
+              fileContent += `\n请使用较小的文档文件，或手动描述文档内容。\n`
+              failedFilesCount++
+              continue
+            }
+            
+            fileContent += `\n\n--- ${fileTypeLabel}: ${file.name} ---\n`
+            fileContent += `文件大小: ${fileSizeKB}KB\n`
+            
+            try {
+              let documentContent = ''
+              
+              if (file.name.toLowerCase().endsWith('.docx') || file.name.toLowerCase().endsWith('.doc')) {
+                console.log(`📄 开始解析Word文档: ${file.name}`)
+                documentContent = await parseWordDocument(file)
+              } else if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
+                console.log(`📊 开始解析Excel表格: ${file.name}`)
+                documentContent = await parseExcelDocument(file)
+              }
+              
+              // 添加到fileContent用于AI分析
+              fileContent += `解析状态: 成功\n`
+              fileContent += `内容长度: ${documentContent.length}字符\n`
+              fileContent += `\n文档内容:\n${documentContent}\n`
+              
+              // 添加到parsedFiles用于DocumentViewer展示
+              const metadata: any = {
+                characters: documentContent.length,
+                lines: documentContent.split('\n').length
+              }
+              
+              // 为Excel文件添加工作表信息
+              if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
+                const sheetMatches = documentContent.match(/--- 工作表 \d+: (.+?) ---/g)
+                if (sheetMatches) {
+                  metadata.sheets = sheetMatches.map(match => 
+                    match.replace(/--- 工作表 \d+: (.+?) ---/, '$1')
+                  )
+                }
+              }
+              
+              parsedFiles.push({
+                content: documentContent,
+                metadata
+              })
+              
+              processedFilesCount++
+              console.log(`✅ 成功解析${fileTypeLabel}: ${file.name} (${documentContent.length}字符)`)
+              
+            } catch (error: any) {
+              fileContent += `解析状态: 失败 - ${error.message}\n`
+              fileContent += `\n请检查文档格式是否正确，或手动描述文档内容。\n`
+              
+              // 添加失败占位符到parsedFiles
+              parsedFiles.push({
+                content: '',
+                metadata: { failed: true, error: error.message }
+              })
+              
+              failedFilesCount++
+              console.error(`❌ Office文档解析失败: ${file.name}`, error)
+            }
+          } else {
+            console.warn('不支持的文件类型:', file.name, file.type)
+            
+            // 添加不支持文件的占位符到parsedFiles
+            parsedFiles.push({
+              content: '',
+              metadata: { unsupported: true }
+            })
+            
+            failedFilesCount++
           }
+        } catch (error) {
+          console.error(`文件处理失败: ${file.name}`, error)
+          
+          // 添加处理失败占位符到parsedFiles
+          parsedFiles.push({
+            content: '',
+            metadata: { failed: true, error: error instanceof Error ? error.message : '未知错误' }
+          })
+          
+          failedFilesCount++
         }
+      }
+      
+      // 添加处理统计信息
+      if (files.length > 1) {
+        fileContent = `\n📁 文件处理统计: 成功${processedFilesCount}个，失败${failedFilesCount}个，总计${files.length}个文件\n` + fileContent
       }
     }
     
-    // 如果有PDF内容，添加到用户消息中
-    if (pdfContent) {
-      userContent = userContent ? `${userContent}\n\n附件内容：${pdfContent}` : `请分析以下PDF内容：${pdfContent}`
+    // 如果有文件内容，添加到用户消息中
+    if (fileContent) {
+      userContent = userContent ? `${userContent}\n\n附件内容：${fileContent}` : `请分析以下文件内容：${fileContent}`
     }
     
-    // 添加用户消息
-    addUserMessage(userContent, files)
+    // 添加用户消息，传递原文件和解析结果
+    addUserMessage(userContent, files, parsedFiles.length > 0 ? parsedFiles : undefined)
     
     // 检查是否是简单问候
     const isGreeting = isSimpleGreeting(userContent)
     
     // 添加助手思考消息
     const aiMessageId = addAssistantMessage('正在分析中...', 'thinking')
+    
+    // 保存当前消息ID，以便取消时使用
+    currentMessageIdRef.current = aiMessageId
     
     try {
       if (isGreeting) {
@@ -148,12 +418,12 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
             const { aiService } = await import('@/services/ai')
             
             updateMessage(aiMessageId, { 
-              content: '🎨 正在生成可视化HTML页面...', 
+              content: t('chat.generatingHTML'), 
               status: 'thinking' 
             })
             
-            // 调用HTML生成方法，传递选择的模型和取消信号
-            const htmlResult = await aiService.generateHTMLVisualization(userContent, undefined, selectedModel, abortControllerRef.current?.signal)
+            // 调用HTML生成方法，传递选择的模型、取消信号和语言设置
+            const htmlResult = await aiService.generateHTMLVisualization(userContent, undefined, selectedModel, abortControllerRef.current?.signal, language)
             
             // 更新消息显示HTML内容
             updateMessage(aiMessageId, {
@@ -177,11 +447,17 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
               throw htmlError
             }
             
+            // 检查signal是否已经被abort或用户是否已停止处理
+            if (abortControllerRef.current?.signal.aborted || !isProcessing) {
+              console.log('🛑 检测到用户已取消或停止处理，不执行降级流程')
+              throw new Error('处理已被用户取消')
+            }
+            
             console.error('HTML生成失败，尝试降级到原有流程:', htmlError)
             
-            // 检查signal是否已经被abort
-            if (abortControllerRef.current?.signal.aborted) {
-              console.log('🛑 Signal已被abort，不执行降级流程')
+            // 在降级前再次确认用户没有取消
+            if (abortControllerRef.current?.signal.aborted || !isProcessing) {
+              console.log('🛑 降级前检测：用户已取消，终止所有处理')
               throw new Error('处理已被用户取消')
             }
             
@@ -192,20 +468,42 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
       }
     } catch (error) {
       // 检查是否是用户主动取消
-      if (error instanceof Error && error.name === 'AbortError') {
-        updateMessage(aiMessageId, {
-          content: '处理已被终止',
-          status: 'complete'
-        })
+      if (error instanceof Error && 
+          (error.name === 'AbortError' || 
+           error.message.includes('处理已被用户取消') ||
+           error.message.includes('用户取消'))) {
+        
+        // 检查是否已经在cancelProcessing中处理过
+        if (!cancelledMessageIds.has(aiMessageId)) {
+          // 只有当cancelProcessing没有处理时才更新
+          if (currentMessageIdRef.current === aiMessageId) {
+            updateMessage(aiMessageId, {
+              content: t('chat.processCancelled'),
+              status: 'complete'
+            })
+            console.log('🔄 catch块更新了取消消息')
+          }
+        } else {
+          console.log('✅ 消息已在cancelProcessing中处理，跳过catch块更新')
+        }
       } else {
+        // 错误消息正常显示
         updateMessage(aiMessageId, {
-          content: `抱歉，处理过程中出现错误：${error instanceof Error ? error.message : '未知错误'}`,
+          content: `😔 处理过程中遇到问题：${error instanceof Error ? error.message : '未知错误'}\n\n您可以重新尝试或联系支持。`,
           status: 'error'
         })
       }
     } finally {
       setIsProcessing(false)
       abortControllerRef.current = null
+      // 延迟清理messageId引用和取消记录
+      setTimeout(() => {
+        currentMessageIdRef.current = null
+        // 清理已处理的取消记录，防止内存泄漏
+        if (aiMessageId) {
+          cancelledMessageIds.delete(aiMessageId)
+        }
+      }, 2000)  // 延长到2秒，确保所有处理完成
     }
   }
 
@@ -214,6 +512,7 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
     inputText,
     setInputText,
     isProcessing,
+    isCancelling,
     handleSendMessage,
     cancelProcessing
   }

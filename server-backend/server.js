@@ -5,6 +5,8 @@ const rateLimit = require('express-rate-limit');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { API_ROUTES, getRouteDocumentation } = require('./config/apiRoutes');
 require('dotenv').config();
 
 const app = express();
@@ -21,6 +23,15 @@ const pool = new Pool({
 
 // JWT密钥
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+// 开发模式
+const DEV_MODE = process.env.DEV_MODE === 'true';
+const MOCK_VERIFICATION_CODE = process.env.MOCK_VERIFICATION_CODE || '123456';
+const MOCK_GOOGLE_EMAIL = process.env.MOCK_GOOGLE_EMAIL || 'test@gmail.com';
+const MOCK_GOOGLE_USER = process.env.MOCK_GOOGLE_USER || '测试用户';
+
+// 存储验证码（生产环境应使用Redis）
+const verificationCodes = new Map();
 
 // 中间件配置
 app.use(helmet({
@@ -132,26 +143,14 @@ app.get('/api/status', (req, res) => {
             rateLimit: true,
             cors: true
         },
-        endpoints: {
-            health: '/api/health',
-            auth: {
-                login: '/auth/login',
-                register: '/auth/register',
-                status: '/auth/status',
-                logout: '/auth/logout'
-            },
-            usage: {
-                check: '/usage/check',
-                history: '/usage/history'
-            }
-        }
+        endpoints: getRouteDocumentation()
     });
 });
 
 // ==================== 认证路由 ====================
 
 // 登录
-app.post('/auth/login', async (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
     try {
         const { email, password } = req.body;
         
@@ -225,7 +224,7 @@ app.post('/auth/login', async (req, res) => {
 });
 
 // 注册
-app.post('/auth/register', async (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
     try {
         const { email, password, username } = req.body;
         
@@ -296,7 +295,7 @@ app.post('/auth/register', async (req, res) => {
 });
 
 // 认证状态
-app.get('/auth/status', async (req, res) => {
+app.get('/api/auth/status', async (req, res) => {
     try {
         // 从header获取token
         const authHeader = req.headers.authorization;
@@ -355,7 +354,7 @@ app.get('/auth/status', async (req, res) => {
 });
 
 // 登出
-app.post('/auth/logout', (req, res) => {
+app.post('/api/auth/logout', (req, res) => {
     // JWT是无状态的，客户端只需删除token即可
     res.json({
         success: true,
@@ -363,10 +362,298 @@ app.post('/auth/logout', (req, res) => {
     });
 });
 
+// 忘记密码
+app.post('/api/auth/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({
+                error: 'Missing email',
+                message: '请提供邮箱地址'
+            });
+        }
+        
+        // 检查用户是否存在
+        const result = await pool.query(
+            'SELECT id, email FROM users WHERE email = $1',
+            [email]
+        );
+        
+        // 无论用户是否存在，都返回成功（安全考虑，不透露用户是否存在）
+        if (result.rows.length === 0) {
+            console.log(`Password reset requested for non-existent user: ${email}`);
+            return res.json({
+                success: true,
+                message: '如果该邮箱已注册，您将收到密码重置邮件'
+            });
+        }
+        
+        const user = result.rows[0];
+        
+        // 生成重置令牌（32字节的随机字符串）
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpires = new Date(Date.now() + 30 * 60 * 1000); // 30分钟后过期
+        
+        // 保存重置令牌到数据库
+        await pool.query(
+            'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3',
+            [resetToken, resetTokenExpires, user.id]
+        );
+        
+        // 构造重置链接
+        const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+        
+        // 模拟邮件发送（实际项目中这里应该调用邮件服务）
+        console.log('===========================================');
+        console.log('📧 密码重置邮件（模拟发送）');
+        console.log('===========================================');
+        console.log(`收件人: ${user.email}`);
+        console.log(`重置令牌: ${resetToken}`);
+        console.log(`重置链接: ${resetUrl}`);
+        console.log(`过期时间: ${resetTokenExpires.toLocaleString()}`);
+        console.log('===========================================');
+        
+        // TODO: 实际项目中在这里集成真实的邮件服务
+        // 例如：await sendResetEmail(user.email, resetUrl);
+        
+        res.json({
+            success: true,
+            message: '密码重置邮件已发送到您的邮箱'
+        });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({
+            error: 'Server error',
+            message: '发送重置邮件失败，请稍后再试'
+        });
+    }
+});
+
+// 重置密码
+app.post('/api/auth/reset-password', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+        
+        if (!token || !password) {
+            return res.status(400).json({
+                error: 'Missing required fields',
+                message: '缺少必要参数'
+            });
+        }
+        
+        if (password.length < 6) {
+            return res.status(400).json({
+                error: 'Password too short',
+                message: '密码至少需要6位'
+            });
+        }
+        
+        // 查找有效的重置令牌
+        const result = await pool.query(
+            'SELECT id, email FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()',
+            [token]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.status(400).json({
+                error: 'Invalid or expired token',
+                message: '重置链接无效或已过期'
+            });
+        }
+        
+        const user = result.rows[0];
+        
+        // 哈希新密码
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
+        
+        // 更新密码并清除重置令牌
+        await pool.query(
+            'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2',
+            [passwordHash, user.id]
+        );
+        
+        console.log(`Password reset successful for user: ${user.email}`);
+        
+        res.json({
+            success: true,
+            message: '密码重置成功'
+        });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({
+            error: 'Server error',
+            message: '密码重置失败，请稍后再试'
+        });
+    }
+});
+
+// ==================== 验证码和OAuth API ====================
+
+// 发送验证码
+app.post('/api/auth/send-code', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if (!email) {
+            return res.status(400).json({
+                error: 'Missing email',
+                message: '请提供邮箱地址'
+            });
+        }
+        
+        if (DEV_MODE) {
+            // 开发模式：存储模拟验证码
+            verificationCodes.set(email, MOCK_VERIFICATION_CODE);
+            console.log(`[DEV MODE] 验证码已发送到 ${email}: ${MOCK_VERIFICATION_CODE}`);
+            
+            return res.json({
+                success: true,
+                message: '验证码已发送（开发模式）',
+                devMode: true
+            });
+        }
+        
+        // 生产模式：生成6位随机验证码
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        verificationCodes.set(email, code);
+        
+        // TODO: 实际发送邮件
+        console.log(`验证码已生成: ${email} -> ${code}`);
+        
+        // 5分钟后过期
+        setTimeout(() => {
+            verificationCodes.delete(email);
+        }, 5 * 60 * 1000);
+        
+        res.json({
+            success: true,
+            message: '验证码已发送到您的邮箱'
+        });
+    } catch (error) {
+        console.error('Send code error:', error);
+        res.status(500).json({
+            error: 'Server error',
+            message: '发送验证码失败'
+        });
+    }
+});
+
+// 验证验证码
+app.post('/api/auth/verify-code', async (req, res) => {
+    try {
+        const { email, code } = req.body;
+        
+        if (!email || !code) {
+            return res.status(400).json({
+                error: 'Missing fields',
+                message: '请提供邮箱和验证码'
+            });
+        }
+        
+        const storedCode = verificationCodes.get(email);
+        
+        if (!storedCode) {
+            return res.json({
+                success: false,
+                message: '验证码已过期或不存在'
+            });
+        }
+        
+        if (storedCode === code) {
+            // 验证成功，删除验证码
+            verificationCodes.delete(email);
+            return res.json({
+                success: true,
+                message: '验证成功'
+            });
+        }
+        
+        res.json({
+            success: false,
+            message: '验证码错误'
+        });
+    } catch (error) {
+        console.error('Verify code error:', error);
+        res.status(500).json({
+            error: 'Server error',
+            message: '验证失败'
+        });
+    }
+});
+
+// Google OAuth登录
+app.post('/api/auth/google', async (req, res) => {
+    try {
+        if (DEV_MODE) {
+            // 开发模式：模拟Google登录
+            console.log(`[DEV MODE] 模拟Google登录: ${MOCK_GOOGLE_EMAIL}`);
+            
+            // 检查用户是否存在
+            let result = await pool.query(
+                'SELECT * FROM users WHERE email = $1',
+                [MOCK_GOOGLE_EMAIL]
+            );
+            
+            let user;
+            if (result.rows.length === 0) {
+                // 创建新用户
+                const createResult = await pool.query(
+                    `INSERT INTO users (email, username, plan_type, api_calls_today, created_at) 
+                     VALUES ($1, $2, $3, $4, NOW()) 
+                     RETURNING id, email, username, plan_type, api_calls_today`,
+                    [MOCK_GOOGLE_EMAIL, MOCK_GOOGLE_USER, 'free', 0]
+                );
+                user = createResult.rows[0];
+            } else {
+                user = result.rows[0];
+            }
+            
+            // 生成JWT
+            const token = jwt.sign(
+                { 
+                    id: user.id, 
+                    email: user.email,
+                    plan: user.plan_type 
+                },
+                JWT_SECRET,
+                { expiresIn: '24h' }
+            );
+            
+            return res.json({
+                success: true,
+                token,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    username: user.username,
+                    plan: user.plan_type,
+                    apiCallsToday: user.api_calls_today || 0,
+                    apiCallsRemaining: user.plan_type === 'free' ? 10 - (user.api_calls_today || 0) : 1000
+                }
+            });
+        }
+        
+        // 生产模式：真实Google OAuth验证
+        // TODO: 实现真实的Google OAuth验证
+        res.status(501).json({
+            error: 'Not implemented',
+            message: 'Google OAuth尚未在生产环境实现'
+        });
+    } catch (error) {
+        console.error('Google auth error:', error);
+        res.status(500).json({
+            error: 'Server error',
+            message: 'Google登录失败'
+        });
+    }
+});
+
 // ==================== 使用量路由 ====================
 
 // 检查使用量
-app.get('/usage/check', async (req, res) => {
+app.get('/api/usage/check', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
         
@@ -429,7 +716,7 @@ app.get('/usage/check', async (req, res) => {
 });
 
 // 使用历史
-app.get('/usage/history', async (req, res) => {
+app.get('/api/usage/history', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
         
@@ -463,7 +750,7 @@ app.get('/usage/history', async (req, res) => {
 });
 
 // 记录API使用
-app.post('/usage/record', async (req, res) => {
+app.post('/api/usage/record', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
         

@@ -1,23 +1,25 @@
-import { logger } from '../utils/logger'
+import { logger } from '@/utils/logger'
 import { 
   detectContentType, 
   analyzeFormulaText, 
   generateResponseContent,
   handleAPIError
-} from '../utils/contentAnalysis'
-import { createStatusUpdater, sleep } from '../utils/chatHelpers'
-import type { ContentType } from '../types/chat'
+} from '@/utils/contentAnalysis'
+import { createStatusUpdater, sleep } from '@/utils/chatHelpers'
+import type { ContentType } from '@/types/chat'
 
 interface UseContentProcessorProps {
   updateMessage: (messageId: string, updates: any) => void
   getAPIService: () => any
   selectedModel: 'gpt5' | 'claude4'
+  language: 'zh' | 'en'
 }
 
 export const useContentProcessor = ({
   updateMessage,
   getAPIService,
-  selectedModel
+  selectedModel,
+  language
 }: UseContentProcessorProps) => {
 
   const processUserInput = async (
@@ -41,6 +43,7 @@ export const useContentProcessor = ({
       userContent,
       contentType,
       selectedModel,
+      language,
       apiService: typeof apiService,
       hasToken: !!import.meta.env.VITE_REPLICATE_API_TOKEN,
       tokenLength: import.meta.env.VITE_REPLICATE_API_TOKEN?.length

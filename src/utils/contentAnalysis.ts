@@ -1,4 +1,4 @@
-import { ContentType } from '../types/chat'
+import { ContentType } from '@/types/chat'
 import { logger } from './logger'
 import { aiService } from '@/services/ai'
 

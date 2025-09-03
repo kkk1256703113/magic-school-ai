@@ -1,5 +1,5 @@
 import { logger } from './logger'
-import { TemporaryFileStorage } from '../types'
+import { TemporaryFileStorage } from '@/types'
 import { generateFileHash } from './cacheManager'
 
 /**

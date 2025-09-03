@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { MessageSquarePlus, Settings, Sun, Moon, Zap, CheckCircle } from 'lucide-react'
-import { useTheme } from '../context/ThemeContext'
+import { useTheme } from '@/context/ThemeContext'
 import { useTranslation } from 'react-i18next'
-import { promptVersionManager } from '../services/ai/core/PromptVersionManager'
+import { promptVersionManager } from '@/services/ai/core/PromptVersionManager'
 
 interface SidebarProps {
   onNewChat: () => void

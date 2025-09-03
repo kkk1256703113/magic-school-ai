@@ -120,10 +120,11 @@ export class MagicSchoolAIService {
     content: string,
     files?: File[],
     selectedModel: ModelType = 'gpt5',
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    language: 'zh' | 'en' = 'zh'
   ): Promise<HTMLVisualizationResponse> {
     this.htmlGenerator.switchModel(selectedModel)
-    return this.htmlGenerator.generate(content, files, signal)
+    return this.htmlGenerator.generate(content, files, signal, language)
   }
 
   /**
