@@ -1,13 +1,15 @@
+# CSS 文件
+/*.css
+  Content-Type: text/css
+
+/assets/*.css
+  Content-Type: text/css
+
+# JavaScript 文件
 /*.js
   Content-Type: application/javascript
 
 /*.mjs
-  Content-Type: application/javascript
-
-/*.tsx
-  Content-Type: application/javascript
-
-/*.ts
   Content-Type: application/javascript
 
 /assets/*.js
@@ -16,18 +18,79 @@
 /assets/*.mjs
   Content-Type: application/javascript
 
-# 确保模块脚本有正确的MIME类型
-/assets/index*.js
-  Content-Type: application/javascript
+# 图片文件
+/*.png
+  Content-Type: image/png
 
-# React和其他库的JS文件
-/assets/vendor*.js
-  Content-Type: application/javascript
+/*.jpg
+  Content-Type: image/jpeg
 
-# 所有构建输出的JS文件
-/assets/*
-  Content-Type: application/javascript
+/*.jpeg
+  Content-Type: image/jpeg
 
-# 主入口文件
-/main.tsx
-  Content-Type: application/javascript
+/*.gif
+  Content-Type: image/gif
+
+/*.svg
+  Content-Type: image/svg+xml
+
+/*.webp
+  Content-Type: image/webp
+
+/assets/*.png
+  Content-Type: image/png
+
+/assets/*.jpg
+  Content-Type: image/jpeg
+
+/assets/*.jpeg
+  Content-Type: image/jpeg
+
+/assets/*.gif
+  Content-Type: image/gif
+
+/assets/*.svg
+  Content-Type: image/svg+xml
+
+/assets/*.webp
+  Content-Type: image/webp
+
+# 字体文件
+/*.woff
+  Content-Type: font/woff
+
+/*.woff2
+  Content-Type: font/woff2
+
+/*.ttf
+  Content-Type: font/ttf
+
+/*.otf
+  Content-Type: font/otf
+
+/assets/*.woff
+  Content-Type: font/woff
+
+/assets/*.woff2
+  Content-Type: font/woff2
+
+/assets/*.ttf
+  Content-Type: font/ttf
+
+/assets/*.otf
+  Content-Type: font/otf
+
+# JSON 文件
+/*.json
+  Content-Type: application/json
+
+/assets/*.json
+  Content-Type: application/json
+
+# HTML 文件
+/*.html
+  Content-Type: text/html
+
+# XML 文件
+/*.xml
+  Content-Type: application/xml
