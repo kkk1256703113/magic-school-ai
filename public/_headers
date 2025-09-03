@@ -1,0 +1,110 @@
+# CSS 文件 - 最重要！必须正确配置
+/*.css
+  Content-Type: text/css; charset=UTF-8
+
+/assets/*.css
+  Content-Type: text/css; charset=UTF-8
+
+# JavaScript 文件
+/*.js
+  Content-Type: application/javascript; charset=UTF-8
+
+/*.mjs
+  Content-Type: application/javascript; charset=UTF-8
+
+/assets/*.js
+  Content-Type: application/javascript; charset=UTF-8
+
+/assets/*.mjs
+  Content-Type: application/javascript; charset=UTF-8
+
+# 确保 index 文件的 MIME 类型正确
+/assets/index*.css
+  Content-Type: text/css; charset=UTF-8
+
+/assets/index*.js
+  Content-Type: application/javascript; charset=UTF-8
+
+# 图片文件
+/*.png
+  Content-Type: image/png
+
+/*.jpg
+  Content-Type: image/jpeg
+
+/*.jpeg
+  Content-Type: image/jpeg
+
+/*.gif
+  Content-Type: image/gif
+
+/*.svg
+  Content-Type: image/svg+xml
+
+/*.webp
+  Content-Type: image/webp
+
+/assets/*.png
+  Content-Type: image/png
+
+/assets/*.jpg
+  Content-Type: image/jpeg
+
+/assets/*.jpeg
+  Content-Type: image/jpeg
+
+/assets/*.gif
+  Content-Type: image/gif
+
+/assets/*.svg
+  Content-Type: image/svg+xml
+
+/assets/*.webp
+  Content-Type: image/webp
+
+# 字体文件
+/*.woff
+  Content-Type: font/woff
+
+/*.woff2
+  Content-Type: font/woff2
+
+/*.ttf
+  Content-Type: font/ttf
+
+/*.otf
+  Content-Type: font/otf
+
+/assets/*.woff
+  Content-Type: font/woff
+
+/assets/*.woff2
+  Content-Type: font/woff2
+
+/assets/*.ttf
+  Content-Type: font/ttf
+
+/assets/*.otf
+  Content-Type: font/otf
+
+# JSON 文件
+/*.json
+  Content-Type: application/json
+
+/assets/*.json
+  Content-Type: application/json
+
+# HTML 文件
+/*.html
+  Content-Type: text/html; charset=UTF-8
+
+# XML 文件
+/*.xml
+  Content-Type: application/xml
+
+# 默认缓存控制
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
