@@ -34,7 +34,7 @@ export default {
   // 导航栏
   navbar: {
     title: 'Magic School AI',
-    upgrade: '升级',
+    upgrade: '订阅',
     models: {
       gpt5: 'GPT-5',
       claude4: 'Claude 4 Sonnet'
@@ -178,49 +178,47 @@ export default {
     }
   },
 
-  // 升级模态框
+  // 订阅模态框
   upgrade: {
-    title: '升级您的账户',
-    currentPlan: '当前计划',
-    choosePlan: '选择一个计划以继续',
-    monthly: '月付',
-    yearly: '年付',
-    save: '节省 {{percent}}%',
-    features: '功能特性',
-    unlimited: '无限制',
-    limited: '{{count}} 次/天',
-    choosePlanButton: '选择此计划',
+    title: '选择订阅套餐',
+    recommended: '推荐',
+    choosePlan: '选择此套餐',
+    paymentMethods: '支持支付宝、微信支付、银行卡 · 随时可取消订阅',
     plans: {
-      free: {
-        name: '免费版',
-        price: '￥0',
-        features: {
-          apiCalls: '10 次 API 调用/天',
-          basicFeatures: '基础功能',
-          communitySupport: '社区支持'
-        }
+      monthly: {
+        name: '月会员',
+        price: '¥29',
+        period: '/月',
+        description: '按月订阅，灵活便捷',
+        features: [
+          '无限制对话次数',
+          '优先访问新功能',
+          '24/7 客户支持'
+        ]
       },
-      pro: {
-        name: '专业版',
-        price: '￥99',
-        priceYearly: '￥990',
-        features: {
-          apiCalls: '1000 次 API 调用/天',
-          advancedFeatures: '高级功能',
-          prioritySupport: '优先支持',
-          customization: '自定义选项'
-        }
+      quarterly: {
+        name: '季会员',
+        price: '¥69',
+        period: '/3个月',
+        description: '3个月套餐，省20%',
+        savings: '节省¥18',
+        features: [
+          '月会员所有功能',
+          '专属客服通道',
+          '高级模型优先体验'
+        ]
       },
-      enterprise: {
-        name: '企业版',
-        price: '联系销售',
-        features: {
-          apiCalls: '无限制 API 调用',
-          allFeatures: '所有功能',
-          dedicatedSupport: '专属支持团队',
-          sla: 'SLA 保证',
-          customIntegration: '定制集成'
-        }
+      yearly: {
+        name: '年会员',
+        price: '¥199',
+        period: '/年',
+        description: '12个月套餐，省40%',
+        savings: '节省¥149',
+        features: [
+          '季会员所有功能',
+          '专属定制服务',
+          '年度功能路线图预览'
+        ]
       }
     }
   },
@@ -368,6 +366,128 @@ export default {
         description: '最大价值',
         savings: '节省40%'
       }
+    }
+  },
+
+  // 宣传页
+  landing: {
+    hero: {
+      description: 'AI 驱动的文档可视化平台，让复杂变简单',
+      cta: '免费开始',
+      ctaSubtitle: '每日免费额度',
+      demo: '查看演示',
+      secure: '数据安全',
+      fast: '快速处理',
+      multilingual: '多语言支持'
+    },
+    features: {
+      title: '核心优势',
+      subtitle: '强大的 AI 技术，简单的使用体验',
+      ai: {
+        title: '双 AI 模型',
+        description: 'GPT-5 + Claude 4 协同工作'
+      },
+      format: {
+        title: '全格式支持',
+        description: 'PDF、Word、Markdown 等主流格式'
+      },
+      output: {
+        title: '专业输出',
+        description: '一键生成精美 HTML 作品集'
+      },
+      quick: {
+        title: '即刻使用',
+        description: '30秒注册，立即体验'
+      }
+    },
+    demo: {
+      title: '看看 Magic School AI 能做什么',
+      subtitle: '真实案例，真实效果',
+      before: '原始文档',
+      after: 'AI 转换后',
+      academic: {
+        title: '学术论文',
+        description: '将复杂公式转为互动图表'
+      },
+      business: {
+        title: '商业报告',
+        description: '数据可视化，一目了然'
+      },
+      education: {
+        title: '教学材料',
+        description: '让知识更生动有趣'
+      }
+    },
+    pricing: {
+      title: '选择适合你的方案',
+      subtitle: '透明定价，无隐藏费用',
+      guarantee: '30 天退款保证 · 随时可以取消 · 安全支付',
+      free: {
+        name: '免费版',
+        price: '¥0',
+        feature1: '每日 2 次转换',
+        feature2: '基础文档格式',
+        feature3: '标准处理速度',
+        feature4: '社区支持',
+        cta: '立即体验'
+      },
+      monthly: {
+        name: '月度会员',
+        price: '¥29',
+        period: '/月',
+        badge: '最受欢迎',
+        feature1: '无限次转换',
+        feature2: '所有文档格式',
+        feature3: '优先处理',
+        feature4: '专属客服',
+        feature5: '高级模板',
+        cta: '开始免费试用'
+      },
+      yearly: {
+        name: '年度会员',
+        price: '¥199',
+        period: '/年',
+        badge: '省40%',
+        feature1: '月度会员所有权益',
+        feature2: 'API 访问权限',
+        feature3: '批量处理',
+        feature4: '定制服务',
+        feature5: '优先体验新功能',
+        cta: '开始免费试用'
+      }
+    },
+    trust: {
+      title: '为什么选择 Magic School AI',
+      subtitle: '值得信赖的 AI 文档处理平台',
+      security: {
+        title: '数据安全',
+        description: '端到端加密，您的文档绝对安全'
+      },
+      speed: {
+        title: '处理速度',
+        description: '平均 10 秒完成文档转换'
+      },
+      accuracy: {
+        title: '精准转换',
+        description: '98% 的用户满意度'
+      },
+      support: {
+        title: '专业支持',
+        description: '7×24 小时客服支持'
+      },
+      stats: {
+        users: '活跃用户',
+        documents: '文档已处理',
+        satisfaction: '满意度'
+      }
+    },
+    cta: {
+      title: '准备好提升你的文档体验了吗？',
+      subtitle: '加入数千位用户，让 AI 帮你把复杂变简单',
+      button: '立即免费开始',
+      feature1: '30秒快速注册',
+      feature2: '每日免费额度',
+      feature3: '随时可以升级'
     }
   }
 }

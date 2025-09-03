@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import axios from 'axios'
+import { API_ROUTES } from '@/config/apiRoutes'
 
 interface User {
   id: number
@@ -22,6 +23,10 @@ interface AuthContextType {
   resetPassword: (token: string, password: string) => Promise<void>
   checkAPILimit: () => Promise<{ canUse: boolean; remaining: number }>
   recordAPIUsage: (endpoint: string, model: string, cost: number, success: boolean) => Promise<void>
+  sendVerificationCode: (email: string) => Promise<void>
+  verifyCode: (email: string, code: string) => Promise<boolean>
+  googleLogin: () => Promise<void>
+  isDevMode: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -35,6 +40,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'))
   const [isLoading, setIsLoading] = useState(true)
+  const [verificationCodes, setVerificationCodes] = useState<Map<string, string>>(new Map())
+  
+  // 检查是否为开发模式
+  const isDevMode = import.meta.env.VITE_DEV_MODE === 'true'
 
   // 设置axios认证头
   const setAuthHeader = (token: string | null) => {
@@ -51,7 +60,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (token) {
         setAuthHeader(token)
         try {
-          const response = await axios.get('/api/auth/status')
+          const response = await axios.get(API_ROUTES.AUTH.STATUS)
           if (response.data.authenticated) {
             setUser(response.data.user)
           } else {
@@ -71,7 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 登录
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post('/api/auth/login', { email, password })
+      const response = await axios.post(API_ROUTES.AUTH.LOGIN, { email, password })
       const { token: newToken, user: userData } = response.data
       
       setToken(newToken)
@@ -111,7 +120,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 注册
   const register = async (email: string, password: string, username?: string) => {
     try {
-      const response = await axios.post('/api/auth/register', { email, password, username })
+      const response = await axios.post(API_ROUTES.AUTH.REGISTER, { email, password, username })
       const { token: newToken, user: userData } = response.data
       
       setToken(newToken)
@@ -134,7 +143,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 忘记密码
   const forgotPassword = async (email: string) => {
     try {
-      const response = await axios.post('/api/auth/forgot-password', { email })
+      const response = await axios.post(API_ROUTES.AUTH.FORGOT_PASSWORD, { email })
       return response.data
     } catch (error: any) {
       if (error.response) {
@@ -150,7 +159,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 重置密码
   const resetPassword = async (token: string, password: string) => {
     try {
-      const response = await axios.post('/api/auth/reset-password', { token, password })
+      const response = await axios.post(API_ROUTES.AUTH.RESET_PASSWORD, { token, password })
       return response.data
     } catch (error: any) {
       if (error.response) {
@@ -182,7 +191,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     
     try {
-      const response = await axios.get('/api/usage/check')
+      const response = await axios.get(API_ROUTES.USAGE.CHECK)
       return {
         canUse: response.data.apiCallsRemaining > 0,  // 根据剩余次数判断是否可用
         remaining: response.data.apiCallsRemaining     // 使用正确的字段名
@@ -200,7 +209,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!token) return
     
     try {
-      await axios.post('/api/usage/record', {
+      await axios.post(API_ROUTES.USAGE.RECORD, {
         endpoint,
         model,
         cost,
@@ -208,6 +217,81 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       })
     } catch (error) {
       console.error('记录API使用失败:', error)
+    }
+  }
+
+  // 发送验证码
+  const sendVerificationCode = async (email: string) => {
+    try {
+      if (isDevMode) {
+        // 开发模式：模拟发送验证码
+        const mockCode = import.meta.env.VITE_MOCK_VERIFICATION_CODE || '123456'
+        verificationCodes.set(email, mockCode)
+        console.log(`[DEV MODE] 验证码已发送到 ${email}: ${mockCode}`)
+        return
+      }
+      
+      // 生产模式：调用真实API
+      await axios.post(API_ROUTES.AUTH.SEND_CODE, { email })
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || '发送验证码失败')
+    }
+  }
+
+  // 验证验证码
+  const verifyCode = async (email: string, code: string): Promise<boolean> => {
+    try {
+      if (isDevMode) {
+        // 开发模式：验证模拟验证码
+        const mockCode = import.meta.env.VITE_MOCK_VERIFICATION_CODE || '123456'
+        return code === mockCode
+      }
+      
+      // 生产模式：调用真实API
+      const response = await axios.post(API_ROUTES.AUTH.VERIFY_CODE, { email, code })
+      return response.data.success
+    } catch (error) {
+      return false
+    }
+  }
+
+  // Google登录
+  const googleLogin = async () => {
+    try {
+      if (isDevMode) {
+        // 开发模式：模拟Google登录
+        const mockEmail = import.meta.env.VITE_MOCK_GOOGLE_EMAIL || 'test@gmail.com'
+        const mockUser = import.meta.env.VITE_MOCK_GOOGLE_USER || '测试用户'
+        
+        // 模拟后端响应
+        const mockToken = 'mock_jwt_token_' + Date.now()
+        const userData = {
+          id: 999,
+          email: mockEmail,
+          username: mockUser,
+          plan_type: 'free',
+          api_calls_today: 0
+        }
+        
+        setToken(mockToken)
+        setUser(userData)
+        localStorage.setItem('token', mockToken)
+        setAuthHeader(mockToken)
+        
+        console.log(`[DEV MODE] Google登录成功: ${mockEmail}`)
+        return
+      }
+      
+      // 生产模式：真实Google OAuth流程
+      const response = await axios.post(API_ROUTES.AUTH.GOOGLE)
+      const { token: newToken, user: userData } = response.data
+      
+      setToken(newToken)
+      setUser(userData)
+      localStorage.setItem('token', newToken)
+      setAuthHeader(newToken)
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'Google登录失败')
     }
   }
 
@@ -222,7 +306,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     forgotPassword,
     resetPassword,
     checkAPILimit,
-    recordAPIUsage
+    recordAPIUsage,
+    sendVerificationCode,
+    verifyCode,
+    googleLogin,
+    isDevMode
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

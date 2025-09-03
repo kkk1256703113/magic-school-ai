@@ -1,4 +1,5 @@
 import { X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface UpgradeModalProps {
   isOpen: boolean
@@ -6,48 +7,27 @@ interface UpgradeModalProps {
 }
 
 export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
+  const { t } = useTranslation()
+  
   if (!isOpen) return null
 
-  const plans = [
-    {
-      name: '月会员',
-      price: '¥29',
-      period: '/月',
-      description: '按月订阅，灵活便捷',
-      features: [
-        '无限制对话次数',
-        '优先访问新功能',
-        '24/7 客户支持'
-      ],
-      highlighted: false
-    },
-    {
-      name: '季会员',
-      price: '¥69',
-      period: '/3个月',
-      description: '3个月套餐，省20%',
-      features: [
-        '月会员所有功能',
-        '专属客服通道',
-        '高级模型优先体验'
-      ],
-      highlighted: true,
-      savings: '节省¥18'
-    },
-    {
-      name: '年会员',
-      price: '¥199',
-      period: '/年',
-      description: '12个月套餐，省40%',
-      features: [
-        '季会员所有功能',
-        '专属定制服务',
-        '年度功能路线图预览'
-      ],
-      highlighted: false,
-      savings: '节省¥149'
+  // 定义套餐类型
+  const planKeys = ['monthly', 'quarterly', 'yearly'] as const
+  
+  // 获取套餐数据
+  const plans = planKeys.map((key) => {
+    const plan = t(`upgrade.plans.${key}`, { returnObjects: true }) as any
+    return {
+      key,
+      name: plan.name,
+      price: plan.price,
+      period: plan.period,
+      description: plan.description,
+      features: plan.features || [],
+      highlighted: key === 'quarterly',
+      savings: plan.savings
     }
-  ]
+  })
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
@@ -57,7 +37,7 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            选择订阅套餐
+            {t('upgrade.title')}
           </h2>
           <button
             onClick={onClose}
@@ -70,7 +50,7 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
         <div className="grid md:grid-cols-3 gap-6">
           {plans.map((plan) => (
             <div
-              key={plan.name}
+              key={plan.key}
               className={`relative rounded-xl border-2 p-6 transition-all hover:shadow-lg ${
                 plan.highlighted
                   ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
@@ -79,7 +59,7 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
             >
               {plan.highlighted && (
                 <div className="absolute -top-3 left-4 bg-blue-500 text-white text-xs px-3 py-1 rounded-full">
-                  推荐
+                  {t('upgrade.recommended')}
                 </div>
               )}
 
@@ -107,7 +87,7 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
               </div>
 
               <ul className="space-y-3 mb-6">
-                {plan.features.map((feature, index) => (
+                {plan.features.map((feature: string, index: number) => (
                   <li key={index} className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <span className="text-blue-500 mt-0.5">✓</span>
                     {feature}
@@ -122,14 +102,14 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
                     : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-900 dark:text-white'
                 }`}
               >
-                选择此套餐
+                {t('upgrade.choosePlan')}
               </button>
             </div>
           ))}
         </div>
 
         <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-          支持支付宝、微信支付、银行卡 · 随时可取消订阅
+          {t('upgrade.paymentMethods')}
         </div>
       </div>
     </div>

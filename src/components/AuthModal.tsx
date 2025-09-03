@@ -1,24 +1,65 @@
 import React, { useState } from 'react'
-import { X, Mail, ArrowLeft } from 'lucide-react'
+import { X, Mail, ArrowLeft, Chrome, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import toast from 'react-hot-toast'
 
 interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
+  initialMode?: 'login' | 'register'
+  onSuccess?: () => void
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const [isLogin, setIsLogin] = useState(true)
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'login', onSuccess }) => {
+  const [isLogin, setIsLogin] = useState(initialMode === 'login')
   const [isForgotPassword, setIsForgotPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')
+  const [verificationCode, setVerificationCode] = useState('')
+  const [isCodeSent, setIsCodeSent] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   
-  const { login, register, forgotPassword } = useAuth()
+  const { login, register, forgotPassword, sendVerificationCode, verifyCode, googleLogin, isDevMode } = useAuth()
+
+  const handleSendCode = async () => {
+    if (!email) {
+      setErrorMessage('请输入邮箱地址')
+      return
+    }
+    
+    setIsLoading(true)
+    setErrorMessage('')
+    
+    try {
+      await sendVerificationCode(email)
+      setIsCodeSent(true)
+      toast.success(isDevMode ? `验证码已发送（开发模式：123456）` : '验证码已发送到您的邮箱')
+    } catch (error: any) {
+      setErrorMessage(error.message || '发送验证码失败')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true)
+    setErrorMessage('')
+    
+    try {
+      await googleLogin()
+      toast.success('Google登录成功！')
+      onClose()
+      resetForm()
+      onSuccess?.()
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Google登录失败')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,6 +91,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       setErrorMessage('请填写邮箱和密码')
       return
     }
+    
+    // 注册时需要验证码
+    if (!isLogin && !isCodeSent) {
+      setErrorMessage('请先发送验证码')
+      return
+    }
+    
+    if (!isLogin && isCodeSent && !verificationCode) {
+      setErrorMessage('请输入验证码')
+      return
+    }
 
     setIsLoading(true)
     setErrorMessage('')
@@ -60,11 +112,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         toast.success('登录成功！')
         onClose()
         resetForm()
+        onSuccess?.()
       } else {
+        // 验证验证码
+        const isCodeValid = await verifyCode(email, verificationCode)
+        if (!isCodeValid) {
+          setErrorMessage('验证码错误')
+          setIsLoading(false)
+          return
+        }
+        
         await register(email, password, username)
         toast.success('注册成功！')
         onClose()
         resetForm()
+        onSuccess?.()
       }
     } catch (error: any) {
       setErrorMessage(error.message || (isLogin ? '登录失败' : '注册失败'))
@@ -77,6 +139,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setEmail('')
     setPassword('')
     setUsername('')
+    setVerificationCode('')
+    setIsCodeSent(false)
     setErrorMessage('')
     setSuccessMessage('')
     setIsForgotPassword(false)
@@ -104,6 +168,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md">
+        {/* 开发模式提示 */}
+        {isDevMode && (
+          <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <div className="flex items-center">
+              <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-2" />
+              <div className="text-sm text-yellow-700 dark:text-yellow-300">
+                <span className="font-medium">开发模式</span>：验证码为 <code className="bg-yellow-100 dark:bg-yellow-800 px-1 rounded">123456</code>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center">
             {isForgotPassword && (
@@ -218,19 +294,51 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </div>
 
             {!isLogin && (
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  用户名（可选）
-                </label>
-                <input
-                  type="text"
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  placeholder="用户名"
-                />
-              </div>
+              <>
+                <div>
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    用户名（可选）
+                  </label>
+                  <input
+                    type="text"
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="用户名"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    验证码
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      id="verificationCode"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="请输入验证码"
+                      maxLength={6}
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSendCode}
+                      disabled={isLoading || isCodeSent}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white text-sm font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
+                    >
+                      {isCodeSent ? '已发送' : '发送验证码'}
+                    </button>
+                  </div>
+                  {isCodeSent && isDevMode && (
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      开发模式验证码：123456
+                    </p>
+                  )}
+                </div>
+              </>
             )}
 
             <div>
@@ -280,6 +388,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? '处理中...' : (isLogin ? '登录' : '注册')}
+            </button>
+            
+            {/* 分隔线 */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">或</span>
+              </div>
+            </div>
+            
+            {/* Google登录按钮 */}
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Chrome className="w-5 h-5" />
+              {isDevMode ? '模拟Google登录' : '使用Google登录'}
             </button>
           </form>
         )}

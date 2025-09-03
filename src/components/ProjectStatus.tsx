@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { CheckCircle, XCircle, AlertTriangle, Info, Download, RefreshCw } from 'lucide-react'
 import { logger, LogLevel } from '@/utils/logger'
+import { API_ROUTES } from '@/config/apiRoutes'
 
 interface ProjectStatusProps {
   className?: string
@@ -118,7 +119,7 @@ export const ProjectStatus: React.FC<ProjectStatusProps> = ({ className }) => {
   const checkDevServerStatus = async (): Promise<StatusItem> => {
     try {
       // 检查开发服务器是否运行
-      const response = await fetch('/api/health', { 
+      const response = await fetch(API_ROUTES.HEALTH, { 
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       }).catch(() => null)

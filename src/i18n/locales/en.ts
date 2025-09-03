@@ -34,7 +34,7 @@ export default {
   // Navigation Bar
   navbar: {
     title: 'Magic School AI',
-    upgrade: 'Upgrade',
+    upgrade: 'Subscribe',
     models: {
       gpt5: 'GPT-5',
       claude4: 'Claude 4 Sonnet'
@@ -178,49 +178,47 @@ export default {
     }
   },
 
-  // Upgrade Modal
+  // Subscription Modal
   upgrade: {
-    title: 'Upgrade Your Account',
-    currentPlan: 'Current Plan',
-    choosePlan: 'Choose a plan to continue',
-    monthly: 'Monthly',
-    yearly: 'Yearly',
-    save: 'Save {{percent}}%',
-    features: 'Features',
-    unlimited: 'Unlimited',
-    limited: '{{count}}/day',
-    choosePlanButton: 'Choose This Plan',
+    title: 'Choose Subscription Plan',
+    recommended: 'Recommended',
+    choosePlan: 'Choose This Plan',
+    paymentMethods: 'Supports Alipay, WeChat Pay, Credit Card · Cancel anytime',
     plans: {
-      free: {
-        name: 'Free',
-        price: '$0',
-        features: {
-          apiCalls: '10 API calls/day',
-          basicFeatures: 'Basic features',
-          communitySupport: 'Community support'
-        }
+      monthly: {
+        name: 'Monthly',
+        price: '$4.99',
+        period: '/month',
+        description: 'Monthly subscription, flexible and convenient',
+        features: [
+          'Unlimited conversations',
+          'Priority access to new features',
+          '24/7 customer support'
+        ]
       },
-      pro: {
-        name: 'Pro',
-        price: '$14.99',
-        priceYearly: '$149.90',
-        features: {
-          apiCalls: '1,000 API calls/day',
-          advancedFeatures: 'Advanced features',
-          prioritySupport: 'Priority support',
-          customization: 'Customization options'
-        }
+      quarterly: {
+        name: 'Quarterly',
+        price: '$11.99',
+        period: '/3 months',
+        description: '3-month plan, save 20%',
+        savings: 'Save $3',
+        features: [
+          'All monthly features',
+          'Dedicated support channel',
+          'Priority access to advanced models'
+        ]
       },
-      enterprise: {
-        name: 'Enterprise',
-        price: 'Contact Sales',
-        features: {
-          apiCalls: 'Unlimited API calls',
-          allFeatures: 'All features',
-          dedicatedSupport: 'Dedicated support team',
-          sla: 'SLA guarantee',
-          customIntegration: 'Custom integrations'
-        }
+      yearly: {
+        name: 'Yearly',
+        price: '$34.99',
+        period: '/year',
+        description: '12-month plan, save 40%',
+        savings: 'Save $25',
+        features: [
+          'All quarterly features',
+          'Custom support services',
+          'Annual feature roadmap preview'
+        ]
       }
     }
   },
@@ -368,6 +366,128 @@ export default {
         description: 'Best value',
         savings: 'Save 40%'
       }
+    }
+  },
+
+  // Landing Page
+  landing: {
+    hero: {
+      description: 'AI-powered document visualization platform that makes complexity simple',
+      cta: 'Start Free',
+      ctaSubtitle: 'Daily free quota',
+      demo: 'View Demo',
+      secure: 'Data Security',
+      fast: 'Fast Processing',
+      multilingual: 'Multi-language Support'
+    },
+    features: {
+      title: 'Core Advantages',
+      subtitle: 'Powerful AI technology, simple user experience',
+      ai: {
+        title: 'Dual AI Models',
+        description: 'GPT-5 + Claude 4 working together'
+      },
+      format: {
+        title: 'All Format Support',
+        description: 'PDF, Word, Markdown and more'
+      },
+      output: {
+        title: 'Professional Output',
+        description: 'One-click beautiful HTML portfolio'
+      },
+      quick: {
+        title: 'Instant Use',
+        description: '30-second signup, immediate experience'
+      }
+    },
+    demo: {
+      title: 'See What Magic School AI Can Do',
+      subtitle: 'Real cases, real results',
+      before: 'Original Document',
+      after: 'After AI Conversion',
+      academic: {
+        title: 'Academic Papers',
+        description: 'Transform complex formulas into interactive charts'
+      },
+      business: {
+        title: 'Business Reports',
+        description: 'Data visualization at a glance'
+      },
+      education: {
+        title: 'Teaching Materials',
+        description: 'Make knowledge more engaging'
+      }
+    },
+    pricing: {
+      title: 'Choose Your Plan',
+      subtitle: 'Transparent pricing, no hidden fees',
+      guarantee: '30-day money back guarantee · Cancel anytime · Secure payment',
+      free: {
+        name: 'Free',
+        price: '$0',
+        feature1: '2 conversions per day',
+        feature2: 'Basic document formats',
+        feature3: 'Standard processing speed',
+        feature4: 'Community support',
+        cta: 'Get Started'
+      },
+      monthly: {
+        name: 'Monthly',
+        price: '$4.99',
+        period: '/month',
+        badge: 'Most Popular',
+        feature1: 'Unlimited conversions',
+        feature2: 'All document formats',
+        feature3: 'Priority processing',
+        feature4: 'Dedicated support',
+        feature5: 'Premium templates',
+        cta: 'Start Free Trial'
+      },
+      yearly: {
+        name: 'Yearly',
+        price: '$34.99',
+        period: '/year',
+        badge: 'Save 40%',
+        feature1: 'All monthly features',
+        feature2: 'API access',
+        feature3: 'Batch processing',
+        feature4: 'Custom services',
+        feature5: 'Early access to new features',
+        cta: 'Start Free Trial'
+      }
+    },
+    trust: {
+      title: 'Why Choose Magic School AI',
+      subtitle: 'Trusted AI document processing platform',
+      security: {
+        title: 'Data Security',
+        description: 'End-to-end encryption, your documents are absolutely safe'
+      },
+      speed: {
+        title: 'Processing Speed',
+        description: 'Average 10 seconds to complete conversion'
+      },
+      accuracy: {
+        title: 'Accurate Conversion',
+        description: '98% user satisfaction'
+      },
+      support: {
+        title: 'Professional Support',
+        description: '24/7 customer support'
+      },
+      stats: {
+        users: 'Active Users',
+        documents: 'Documents Processed',
+        satisfaction: 'Satisfaction Rate'
+      }
+    },
+    cta: {
+      title: 'Ready to Transform Your Document Experience?',
+      subtitle: 'Join thousands of users, let AI help you simplify complexity',
+      button: 'Start Free Now',
+      feature1: '30-second quick signup',
+      feature2: 'Daily free quota',
+      feature3: 'Upgrade anytime'
     }
   }
 }
