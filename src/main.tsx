@@ -25,15 +25,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               {/* 现有功能页始终可通过 /app 访问 */}
               <Route path="/app" element={<HomePage />} />
               
-              {/* 根路径处理 - 可通过环境变量控制 */}
-              <Route 
-                path="/" 
-                element={
-                  import.meta.env.VITE_LANDING_AS_HOME === 'true' 
-                    ? <LandingPage /> 
-                    : <HomePage />
-                } 
-              />
+              {/* 根路径 - 落地页作为首页 */}
+              <Route path="/" element={<LandingPage />} />
               
               <Route path="/reset-password" element={<ResetPassword />} />
             </Routes>
