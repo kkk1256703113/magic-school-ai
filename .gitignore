@@ -90,6 +90,9 @@ temp/
 
 # Gatsby files
 public
+# 但是包含Cloudflare Pages需要的配置文件
+!public/_redirects
+!public/_headers
 
 # Storybook build outputs
 .out
