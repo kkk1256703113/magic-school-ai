@@ -11,10 +11,6 @@ export async function onRequest(context) {
   // ===== API代理功能（新增）=====
   // 拦截所有 /api/* 请求并代理到后端服务器
   if (url.pathname.startsWith('/api/')) {
-    const backendUrl = `http://45.77.86.20:3001${url.pathname}${url.search}`;
-    
-    console.log(`API Proxy: ${context.request.method} ${url.pathname} -> ${backendUrl}`);
-    
     // 处理CORS预检请求
     if (context.request.method === 'OPTIONS') {
       return new Response(null, {
@@ -29,11 +25,38 @@ export async function onRequest(context) {
       });
     }
     
+    // 调试信息 - 确认函数被触发
+    console.log(`[Middleware] API request intercepted: ${context.request.method} ${url.pathname}`);
+    
+    // 对于API请求，直接返回测试响应（先确认middleware在工作）
+    // 这是临时测试代码，用于验证Functions是否运行
+    if (url.pathname === '/api/test') {
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          message: 'Cloudflare Functions is working!',
+          timestamp: new Date().toISOString(),
+          path: url.pathname
+        }), 
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'X-Powered-By': 'Cloudflare-Functions'
+          }
+        }
+      );
+    }
+    
     try {
+      // 后端URL - 使用原始IP
+      const backendUrl = `http://45.77.86.20:3001${url.pathname}${url.search}`;
+      
       // 准备请求头
       const headers = new Headers();
       
-      // 复制必要的请求头，但不包括Host和其他Cloudflare特定的头
+      // 只复制必要的请求头
       const contentType = context.request.headers.get('Content-Type');
       const authorization = context.request.headers.get('Authorization');
       
@@ -51,24 +74,19 @@ export async function onRequest(context) {
         headers.set('X-Real-IP', cfConnectingIP);
       }
       
-      // 设置Host header为后端服务器地址（避免Error 1003）
-      headers.set('Host', '45.77.86.20:3001');
+      // 注意：不设置Host header，让fetch自动处理
       
       // 准备请求体
       let body = undefined;
       if (context.request.method !== 'GET' && context.request.method !== 'HEAD') {
         try {
-          // 尝试读取请求体
-          const contentType = context.request.headers.get('Content-Type');
-          if (contentType && contentType.includes('application/json')) {
-            body = await context.request.text();
-          } else {
-            body = await context.request.arrayBuffer();
-          }
+          body = await context.request.text();
         } catch (e) {
           console.error('Error reading request body:', e);
         }
       }
+      
+      console.log(`[Middleware] Forwarding to backend: ${backendUrl}`);
       
       // 转发请求到后端
       const backendResponse = await fetch(backendUrl, {
