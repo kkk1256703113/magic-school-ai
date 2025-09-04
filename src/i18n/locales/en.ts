@@ -114,9 +114,14 @@ export default {
 
   // Chat Input
   chat: {
-    inputPlaceholder: 'Type a message or drop files here...',
+    inputPlaceholder: 'Ask MagicS anything...',
     sendButton: 'Send',
     cancelButton: 'Stop',
+    uploadFile: 'Upload file',
+    sendMessage: 'Send message',
+    cancelProcessing: 'Cancel processing',
+    supportedFormats: 'Supports TXT, MD, PDF, CSV, JSON, HTML, Word, Excel · Enter to send · Shift+Enter for new line',
+    dragDropHint: 'Drop files here to upload',
     processing: 'Processing...',
     thinking: '✨ Analyzing your content...',
     generatingHTML: '🎨 Creating interactive page for you...',

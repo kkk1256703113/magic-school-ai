@@ -114,9 +114,14 @@ export default {
 
   // 聊天输入
   chat: {
-    inputPlaceholder: '输入消息或拖放文件...',
+    inputPlaceholder: '向 MagicS 提问...',
     sendButton: '发送',
     cancelButton: '终止',
+    uploadFile: '上传文件',
+    sendMessage: '发送消息',
+    cancelProcessing: '终止处理',
+    supportedFormats: '支持 TXT, MD, PDF, CSV, JSON, HTML, Word, Excel · Enter 发送 · Shift+Enter 换行',
+    dragDropHint: '拖拽文件到这里上传',
     processing: '处理中...',
     thinking: '✨ 正在分析您的内容...',
     generatingHTML: '🎨 正在为您创建交互式页面...',

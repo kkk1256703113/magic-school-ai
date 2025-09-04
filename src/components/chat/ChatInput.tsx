@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { Send, Paperclip, X, StopCircle } from 'lucide-react'
+import { useLanguage } from '../../context/LanguageContext'
 
 interface ChatInputProps {
   inputText: string
@@ -18,6 +19,7 @@ export const ChatInput = ({
   onSendMessage,
   onCancelProcessing
 }: ChatInputProps) => {
+  const { t } = useLanguage()
   const [files, setFiles] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -194,7 +196,7 @@ export const ChatInput = ({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="向 MagicS 提问..."
+              placeholder={t('chat.inputPlaceholder')}
               className="flex-1 min-h-[24px] max-h-[120px] resize-none border-0 bg-transparent text-base text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none"
               disabled={isProcessing}
               rows={1}
@@ -216,7 +218,7 @@ export const ChatInput = ({
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isProcessing}
                 className="h-8 w-8 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="上传文件"
+                title={t('chat.uploadFile')}
               >
                 <Paperclip className="h-4 w-4" />
               </button>
@@ -231,7 +233,7 @@ export const ChatInput = ({
                       ? 'bg-gray-500 cursor-not-allowed' 
                       : 'bg-red-600 hover:bg-red-700'
                   }`}
-                  title={isCancelling ? "正在终止..." : "终止处理"}
+                  title={isCancelling ? t('chat.cancelling') : t('chat.cancelProcessing')}
                 >
                   <StopCircle className={`h-4 w-4 ${isCancelling ? 'animate-pulse' : ''}`} />
                 </button>
@@ -241,7 +243,7 @@ export const ChatInput = ({
                   onClick={handleSend}
                   disabled={!inputText.trim() && files.length === 0}
                   className="h-8 w-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-full transition-colors"
-                  title="发送消息"
+                  title={t('chat.sendMessage')}
                 >
                   <Send className="h-4 w-4" />
                 </button>
@@ -252,13 +254,13 @@ export const ChatInput = ({
           {/* 拖拽提示 */}
           {isDragging && (
             <div className="absolute inset-0 flex items-center justify-center bg-blue-50 dark:bg-blue-900/20 rounded-3xl border-2 border-dashed border-blue-500">
-              <p className="text-blue-600 dark:text-blue-400 font-medium">拖拽文件到这里上传</p>
+              <p className="text-blue-600 dark:text-blue-400 font-medium">{t('chat.dragDropHint')}</p>
             </div>
           )}
         </div>
 
         <div className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-          支持 TXT, MD, PDF, CSV, JSON, HTML, Word, Excel · Enter 发送 · Shift+Enter 换行
+          {t('chat.supportedFormats')}
         </div>
       </div>
     </div>
