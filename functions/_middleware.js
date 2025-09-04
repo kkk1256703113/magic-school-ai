@@ -25,47 +25,12 @@ export async function onRequest(context) {
       });
     }
     
-    // 调试信息 - 确认函数被触发
-    console.log(`[Middleware] API request intercepted: ${context.request.method} ${url.pathname}`);
-    
-    // 对于API请求，直接返回测试响应（先确认middleware在工作）
-    // 这是临时测试代码，用于验证Functions是否运行
-    if (url.pathname === '/api/test') {
-      return new Response(
-        JSON.stringify({ 
-          success: true,
-          message: 'Cloudflare Functions is working!',
-          timestamp: new Date().toISOString(),
-          path: url.pathname
-        }), 
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'X-Powered-By': 'Cloudflare-Functions'
-          }
-        }
-      );
-    }
-    
     try {
-      // 使用临时域名来避免 Error 1003
-      // 后端服务器需要配置为接受来自这个域名的请求
-      const BACKEND_HOST = 'backend.magicschoolai.net';
-      const BACKEND_IP = '45.77.86.20';
-      const BACKEND_PORT = '3001';
+      // 使用配置好的子域名，Cloudflare会自动处理端口转发
+      const BACKEND_HOST = 'api.magicschoolai.net';
       
-      // 构建后端URL - 先尝试使用域名
-      let backendUrl;
-      let useDomainApproach = false; // 暂时禁用域名方式
-      
-      if (useDomainApproach) {
-        backendUrl = `http://${BACKEND_HOST}:${BACKEND_PORT}${url.pathname}${url.search}`;
-      } else {
-        // 直接使用IP（会导致Error 1003，但我们会捕获并处理）
-        backendUrl = `http://${BACKEND_IP}:${BACKEND_PORT}${url.pathname}${url.search}`;
-      }
+      // 构建后端URL - 不需要端口号，Cloudflare自动转发到3001
+      const backendUrl = `http://${BACKEND_HOST}${url.pathname}${url.search}`;
       
       // 准备请求头
       const headers = new Headers();
@@ -98,43 +63,12 @@ export async function onRequest(context) {
         }
       }
       
-      console.log(`[Middleware] Attempting to forward to: ${backendUrl}`);
-      
-      // 尝试转发请求
-      let backendResponse;
-      try {
-        backendResponse = await fetch(backendUrl, {
-          method: context.request.method,
-          headers: headers,
-          body: body
-        });
-      } catch (fetchError) {
-        // 如果fetch失败，返回详细错误信息
-        console.error('Fetch failed:', fetchError);
-        
-        // 检查是否是Error 1003
-        if (fetchError.message && fetchError.message.includes('1003')) {
-          return new Response(
-            JSON.stringify({ 
-              error: 'Cloudflare Error 1003',
-              message: 'Direct IP access is not allowed from Cloudflare Functions. A domain name is required for the backend server.',
-              details: {
-                attempted_url: backendUrl,
-                suggestion: 'Backend server needs a domain name, or use Cloudflare Tunnel'
-              }
-            }), 
-            {
-              status: 503,
-              headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
-              }
-            }
-          );
-        }
-        
-        throw fetchError;
-      }
+      // 转发请求到后端
+      const backendResponse = await fetch(backendUrl, {
+        method: context.request.method,
+        headers: headers,
+        body: body
+      });
       
       // 创建响应并添加CORS头
       const response = new Response(backendResponse.body, backendResponse);
@@ -148,8 +82,7 @@ export async function onRequest(context) {
       return new Response(
         JSON.stringify({ 
           error: 'Backend connection failed',
-          message: error.message,
-          stack: error.stack
+          message: error.message
         }), 
         {
           status: 503,
