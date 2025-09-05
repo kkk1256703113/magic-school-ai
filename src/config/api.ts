@@ -1,0 +1,72 @@
+/**
+ * API配置文件
+ * 根据环境自动选择API基础URL
+ */
+
+// 获取API基础URL
+export const getAPIBaseURL = (): string => {
+  // 生产环境使用api子域名
+  if (import.meta.env.PROD) {
+    return import.meta.env.VITE_API_BASE_URL || 'https://api.magicschoolai.net'
+  }
+  
+  // 开发环境使用本地代理
+  return ''
+}
+
+// 构建完整的API URL
+export const buildAPIURL = (path: string): string => {
+  const baseURL = getAPIBaseURL()
+  // 如果基础URL为空（开发环境），直接返回路径
+  if (!baseURL) {
+    return path
+  }
+  // 生产环境，拼接基础URL和路径
+  return `${baseURL}${path}`
+}
+
+// 配置axios默认设置
+export const configureAxios = (axios: any): void => {
+  const baseURL = getAPIBaseURL()
+  if (baseURL) {
+    axios.defaults.baseURL = baseURL
+  }
+  
+  // 设置通用请求头
+  axios.defaults.headers.common['Content-Type'] = 'application/json'
+  
+  // 添加请求拦截器
+  axios.interceptors.request.use(
+    (config: any) => {
+      // 添加时间戳防止缓存
+      if (config.method === 'get') {
+        config.params = {
+          ...config.params,
+          _t: Date.now()
+        }
+      }
+      return config
+    },
+    (error: any) => {
+      return Promise.reject(error)
+    }
+  )
+  
+  // 添加响应拦截器
+  axios.interceptors.response.use(
+    (response: any) => {
+      return response
+    },
+    (error: any) => {
+      // 统一错误处理
+      if (error.response) {
+        // 服务器返回错误
+        console.error('API Error:', error.response.status, error.response.data)
+      } else if (error.request) {
+        // 请求发送失败
+        console.error('Network Error:', error.message)
+      }
+      return Promise.reject(error)
+    }
+  )
+}

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import axios from 'axios'
 import { API_ROUTES } from '@/config/apiRoutes'
+import { configureAxios } from '@/config/api'
 
 interface User {
   id: number
@@ -33,9 +34,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // 配置axios默认设置
-// const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
-// 注意：不设置baseURL，让每个请求使用完整路径
-// axios.defaults.baseURL = API_BASE_URL
+configureAxios(axios)
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null)

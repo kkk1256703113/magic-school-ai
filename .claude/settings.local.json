@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/D:\\project\\magicschoolai project\\EduVisualizer 2.0/**)",
+      "Read(/D:\\project\\magicschoolai project\\EduVisualizer 2.0/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
