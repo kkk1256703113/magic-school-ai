@@ -27,8 +27,8 @@ export async function onRequest(context) {
     
     try {
       // 直接连接到服务器，避免通过Cloudflare造成循环
-      // 在生产环境使用HTTPS端口8443
-      const BACKEND_URL = 'https://45.77.86.20:8443';
+      // 使用HTTP端口8080（服务器实际监听的端口）
+      const BACKEND_URL = 'http://45.77.86.20:8080';
       
       // 构建后端URL
       const backendUrl = `${BACKEND_URL}${url.pathname}${url.search}`;
