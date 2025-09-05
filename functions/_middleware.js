@@ -26,11 +26,12 @@ export async function onRequest(context) {
     }
     
     try {
-      // 使用配置好的子域名，Cloudflare会自动处理端口转发
-      const BACKEND_HOST = 'api.magicschoolai.net';
+      // 直接连接到服务器，避免通过Cloudflare造成循环
+      // 在生产环境使用HTTPS端口8443
+      const BACKEND_URL = 'https://45.77.86.20:8443';
       
-      // 构建后端URL - 不需要端口号，Cloudflare自动转发到8443
-      const backendUrl = `https://${BACKEND_HOST}${url.pathname}${url.search}`;
+      // 构建后端URL
+      const backendUrl = `${BACKEND_URL}${url.pathname}${url.search}`;
       
       // 准备请求头
       const headers = new Headers();
