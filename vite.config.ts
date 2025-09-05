@@ -24,7 +24,7 @@ export default defineConfig({
         }
       },
       '/api': {
-        target: 'http://45.77.86.20:3001',
+        target: 'http://45.77.86.20:8080',
         changeOrigin: true,
         secure: false,
         // 不要移除/api前缀，因为后端路由包含/api

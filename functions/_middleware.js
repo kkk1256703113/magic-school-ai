@@ -29,8 +29,8 @@ export async function onRequest(context) {
       // 使用配置好的子域名，Cloudflare会自动处理端口转发
       const BACKEND_HOST = 'api.magicschoolai.net';
       
-      // 构建后端URL - 不需要端口号，Cloudflare自动转发到3001
-      const backendUrl = `http://${BACKEND_HOST}${url.pathname}${url.search}`;
+      // 构建后端URL - 不需要端口号，Cloudflare自动转发到8443
+      const backendUrl = `https://${BACKEND_HOST}${url.pathname}${url.search}`;
       
       // 准备请求头
       const headers = new Headers();
