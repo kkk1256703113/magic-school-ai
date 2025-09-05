@@ -5,9 +5,10 @@
 
 // 获取API基础URL
 export const getAPIBaseURL = (): string => {
-  // 生产环境使用api子域名
+  // 生产环境使用api子域名（关闭橙云后使用HTTP）
   if (import.meta.env.PROD) {
-    return import.meta.env.VITE_API_BASE_URL || 'https://api.magicschoolai.net'
+    // 直接硬编码生产环境API地址
+    return 'http://api.magicschoolai.net:8080'
   }
   
   // 开发环境使用本地代理
