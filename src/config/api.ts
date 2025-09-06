@@ -5,10 +5,10 @@
 
 // 获取API基础URL
 export const getAPIBaseURL = (): string => {
-  // 生产环境使用api子域名（启用橙云支持HTTPS）
+  // 生产环境使用Functions代理（解决522端口连接问题）
   if (import.meta.env.PROD) {
-    // 使用HTTPS解决混合内容错误，Cloudflare自动处理端口转发
-    return 'https://api.magicschoolai.net'
+    // 使用空字符串，让API调用走当前域名的/api路径，通过Functions代理到后端
+    return ''
   }
   
   // 开发环境使用本地代理
