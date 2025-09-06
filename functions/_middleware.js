@@ -14,15 +14,17 @@ export async function onRequest(context) {
   if (url.pathname.startsWith('/api/')) {
     console.log(`Proxying API request: ${url.pathname}`);
     
-    // 构建后端URL - 直接连接服务器IP
-    const backendUrl = `http://45.77.86.20:8080${url.pathname}${url.search}`;
+    // 构建后端URL - 通过灰云域名访问（已设置DNS Only）
+    const backendUrl = `http://api.magicschoolai.net:8080${url.pathname}${url.search}`;
     
-    // 准备请求头  
+    // 准备请求头 - 设置正确的Host头部避免1003错误
     const headers = new Headers(context.request.headers);
     headers.delete('cf-ray');
     headers.delete('cf-visitor');
     headers.delete('cf-connecting-ip');
+    headers.set('Host', 'api.magicschoolai.net');  // 关键：设置正确Host头部
     headers.set('Origin', url.origin);
+    headers.set('X-Real-IP', context.request.headers.get('CF-Connecting-IP') || 'unknown');
     
     try {
       // 代理请求到后端
