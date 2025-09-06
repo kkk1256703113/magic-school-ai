@@ -79,10 +79,28 @@ export class GPT5Service extends AIServiceBase {
     signal?: AbortSignal,
     language: 'zh' | 'en' = 'zh'
   ): Promise<HTMLVisualizationResponse> {
+    // 🔧 详细日志：GPT-5开始
+    console.log('🤖 GPT5Service.generateHTML被调用:', {
+      contentLength: content.length,
+      filesCount: files?.length || 0,
+      hasSignal: !!signal,
+      signalAborted: signal?.aborted,
+      language,
+      timestamp: new Date().toISOString()
+    })
+    
     logger.info('GPT-5开始生成HTML', { contentLength: content.length })
     
     return this.executeWithAuth(async () => {
+      console.log('🚀 在executeWithAuth内部，准备调用API')
       const promptConfig = HTMLPrompts.getGenerationPrompt(content, files, language)
+      console.log('📄 Prompt配置已准备')
+      
+      console.log('🌐 准备调用createPrediction:', {
+        modelEndpoint: this.getModelEndpoint(),
+        hasPromptConfig: !!promptConfig,
+        signalAborted: signal?.aborted
+      })
       
       const prediction = await this.apiClient.createPrediction(
         this.getModelEndpoint(),
@@ -90,11 +108,15 @@ export class GPT5Service extends AIServiceBase {
         signal
       )
       
+      console.log('✅ createPrediction成功，predictionId:', prediction.id)
+      
+      console.log('🔄 开始轮询结果:', prediction.id)
       const result = await this.apiClient.pollPredictionResult(
         prediction.id,
         signal
       )
       
+      console.log('✅ 轮询完成，处理结果')
       return this.processHTMLResult(result)
     }, 'generateHTML', 1)
   }

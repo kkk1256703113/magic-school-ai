@@ -39,14 +39,41 @@ export class HTMLGenerator {
     signal?: AbortSignal,
     language: 'zh' | 'en' = 'zh'
   ): Promise<HTMLVisualizationResponse> {
+    // 🔧 详细日志：追踪函数入口
+    console.log('🎯 HTMLGenerator.generate被调用:', {
+      contentLength: content.length,
+      filesCount: files?.length || 0,
+      hasSignal: !!signal,
+      signalAborted: signal?.aborted,
+      language,
+      currentModel: this.getCurrentModel(),
+      timestamp: new Date().toISOString()
+    })
+    
     try {
       logger.info('开始生成HTML页面', {
         contentLength: content.length,
         filesCount: files?.length || 0
       })
 
+      // 🔧 详细日志：调用模型服务前
+      console.log('🤖 准备调用模型服务:', {
+        modelType: this.getCurrentModel(),
+        hasModelService: !!this.modelService,
+        signalAborted: signal?.aborted,
+        timestamp: new Date().toISOString()
+      })
+      
       // 调用对应模型的HTML生成方法
       const result = await this.modelService.generateHTML(content, files, signal, language)
+      
+      // 🔧 详细日志：模型返回结果
+      console.log('✅ 模型服务返回成功:', {
+        htmlLength: result.htmlContent.length,
+        fileSize: result.fileSize,
+        title: result.title,
+        timestamp: new Date().toISOString()
+      })
       
       logger.success('HTML页面生成成功', {
         htmlLength: result.htmlContent.length,
@@ -55,6 +82,15 @@ export class HTMLGenerator {
 
       return result
     } catch (error) {
+      // 🔧 详细错误追踪
+      console.error('❌ HTMLGenerator.generate遇到错误:', {
+        errorName: error instanceof Error ? error.name : 'unknown',
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack?.split('\n').slice(0, 3) : undefined,
+        signalAborted: signal?.aborted,
+        timestamp: new Date().toISOString()
+      })
+      
       // 处理取消操作
       if (error instanceof DOMException && error.name === 'AbortError') {
         logger.info('HTML生成被用户取消')
