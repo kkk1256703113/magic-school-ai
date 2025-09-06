@@ -14,12 +14,14 @@ export async function onRequest(context) {
   if (url.pathname.startsWith('/api/')) {
     console.log(`Proxying API request: ${url.pathname}`);
     
-    // 构建后端URL - 直接连接到服务器IP和端口
+    // 构建后端URL - 直接连接服务器IP
     const backendUrl = `http://45.77.86.20:8080${url.pathname}${url.search}`;
     
-    // 准备请求头
+    // 准备请求头  
     const headers = new Headers(context.request.headers);
-    headers.set('Host', '45.77.86.20:8080');
+    headers.delete('cf-ray');
+    headers.delete('cf-visitor');
+    headers.delete('cf-connecting-ip');
     headers.set('Origin', url.origin);
     
     try {
