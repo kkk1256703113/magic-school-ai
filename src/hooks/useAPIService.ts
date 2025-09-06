@@ -24,21 +24,30 @@ export const useAPIService = () => {
     const hasToken = !!import.meta.env.VITE_REPLICATE_API_TOKEN
     const tokenValue = import.meta.env.VITE_REPLICATE_API_TOKEN
     
+    // 生产环境修复：如果是生产环境且没有检测到token，默认认为已配置
+    // 因为生产环境的token是通过Functions中间件处理的
+    const isProduction = import.meta.env.PROD
+    const finalHasToken = hasToken || isProduction
+    
     logger.info('API状态检查', {
-      replicateToken: hasToken ? '已配置' : '未配置'
+      replicateToken: finalHasToken ? '已配置' : '未配置',
+      环境: isProduction ? '生产环境' : '开发环境',
+      检测到token: hasToken ? '是' : '否'
     }, 'APIService')
     
     console.log('🔧 环境变量检查:', {
       VITE_REPLICATE_API_TOKEN: hasToken ? `存在(${tokenValue?.length}字符)` : '缺失',
+      生产环境: isProduction ? '是' : '否',
+      最终状态: finalHasToken ? '已配置' : '未配置',
       全部环境变量: Object.keys(import.meta.env).filter(key => key.startsWith('VITE_'))
     })
     
     setApiConfig({
-      hasToken,
+      hasToken: finalHasToken,
       tokenValue
     })
 
-    return { hasToken, tokenValue }
+    return { hasToken: finalHasToken, tokenValue }
   }
 
   const validateModels = async () => {

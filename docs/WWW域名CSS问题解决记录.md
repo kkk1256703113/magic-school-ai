@@ -237,3 +237,222 @@ c590b05 修复 CSS MIME 类型错误
 2. [ ] 监控 Functions 执行情况
 3. [ ] 考虑是否需要长期保留中间件
 4. [ ] 更新部署文档，加入 MIME 类型配置说明
+
+---
+
+## 📅 日期：2025-09-05 - API调用和CORS问题
+
+## 🔴 新问题描述
+
+### 症状
+- **错误类型**：多个连锁问题
+- **受影响功能**：用户登录、API调用
+- **受影响域名**：
+  - https://magicschoolai.net/
+  - https://www.magicschoolai.net/
+
+### 错误信息时间线
+
+#### 1. 初始错误（上午9:00）
+```
+API configuration missing
+```
+- **原因**：端口配置混乱
+  - server-backend/.env: PORT=5000
+  - vite.config.ts: 代理到3001端口
+  - 实际服务器运行在8080端口
+
+#### 2. Functions 403错误（上午10:00）
+```
+Failed to load resource: the server responded with a status of 403
+```
+- **原因**：Cloudflare Functions不允许直接访问IP地址
+- **尝试的配置**：`https://45.77.86.20:8443`
+
+#### 3. 522连接超时（上午10:30）
+```
+Failed to load resource: the server responded with a status of 522
+```
+- **原因**：循环代理
+  - Functions代理到 api.magicschoolai.net
+  - api.magicschoolai.net 又通过Cloudflare回到Functions
+  - 形成无限循环
+
+#### 4. CORS错误（上午11:00）
+```
+Access to XMLHttpRequest at 'https://api.magicschoolai.net/api/auth/login' 
+from origin 'https://magicschoolai.net' has been blocked by CORS policy
+```
+- **原因**：后端CORS配置硬编码，未包含生产域名
+
+---
+
+## 🛠️ 尝试的解决方案（2025-09-05）
+
+### ✅ 方案 1：统一端口配置（9:30）
+**操作**：
+1. 修改所有配置文件使用8080端口
+2. 更新服务器环境变量
+3. 重启PM2服务
+
+**结果**：成功
+- 本地开发环境正常
+- 服务器正确监听8080端口
+
+### ❌ 方案 2：Functions代理到服务器IP（10:00）
+**配置**：
+```javascript
+const BACKEND_URL = 'https://45.77.86.20:8443';
+```
+
+**结果**：失败 - 403错误
+- **原因**：Cloudflare Functions安全策略不允许访问IP
+
+### ❌ 方案 3：Functions代理到api子域名（10:30）
+**配置**：
+```javascript
+const BACKEND_HOST = 'api.magicschoolai.net';
+```
+
+**结果**：失败 - 522错误
+- **原因**：形成循环代理
+
+### ✅ 方案 4：修改后端CORS配置（11:00）
+**操作**：
+```javascript
+// 从环境变量读取CORS配置
+const corsOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:3000'];
+```
+
+**结果**：部分成功
+- CORS头部正确返回
+- OPTIONS预检请求通过
+
+### ⚠️ 方案 5：前端直接调用API（11:30）
+**配置**：
+1. 简化Functions中间件（只保留CSS修复）
+2. 前端生产环境配置：
+```javascript
+// 硬编码API地址（因为.env.production被gitignore）
+return 'http://api.magicschoolai.net:8080'
+```
+
+**结果**：待验证
+- 已推送到GitHub
+- 等待Cloudflare部署
+
+### 🔄 方案 6：关闭api子域名橙云（临时）
+**操作**：
+- 将api.magicschoolai.net设置为"仅DNS"模式
+- 直接指向45.77.86.20
+
+**影响**：
+- ✅ 解决登录慢的问题
+- ❌ 暴露服务器真实IP（安全风险）
+
+---
+
+## 📊 架构演变
+
+### 原始架构（有问题）
+```
+用户 → Cloudflare Pages → Functions代理 → ??? (配置错误)
+```
+
+### 中间尝试（失败）
+```
+用户 → Cloudflare Pages → Functions → api.magicschoolai.net → Functions (循环)
+```
+
+### 最终架构（待验证）
+```
+用户 → magicschoolai.net/www.magicschoolai.net
+     ↓ 直接API调用
+api.magicschoolai.net:8080 (灰云) → 45.77.86.20:8080
+```
+
+---
+
+## 📌 当前状态（截至 2025-09-05 11:50）
+
+### 已完成
+1. ✅ 端口配置统一到8080
+2. ✅ 后端CORS配置支持环境变量
+3. ✅ Functions中间件简化（只处理CSS）
+4. ✅ 前端配置硬编码API地址
+5. ✅ 所有更改已推送GitHub
+
+### 未解决问题
+1. ❌ 生产环境登录功能仍不正常
+2. ❌ api子域名安全性（关闭橙云）
+3. ❌ 需要更好的环境变量管理方案
+
+### Git提交记录
+```
+36be195 修复生产环境API调用：硬编码api子域名地址
+fa4e182 解决403错误：前端直接调用api子域名
+0044365 修复: 使用HTTP端口8080连接服务器
+0ac789b 修复 522 错误: 避免 Cloudflare 循环代理
+```
+
+---
+
+## 🎯 关键经验教训
+
+### 技术限制
+1. **Cloudflare Functions限制**：
+   - 不能直接访问IP地址（403）
+   - 需要使用域名访问外部服务
+
+2. **Cloudflare代理问题**：
+   - 橙云模式可能造成循环
+   - 需要正确配置Origin Rules
+
+3. **环境变量管理**：
+   - .env.production被gitignore导致配置丢失
+   - 需要更好的配置管理策略
+
+### 调试技巧
+1. 使用curl测试CORS预检请求
+2. 检查PM2日志确认服务状态
+3. 验证DNS解析结果
+
+---
+
+## 📝 明天的行动计划
+
+### 优先级高
+1. [ ] 在Cloudflare Dashboard创建Origin Rule
+   - 让api.magicschoolai.net正确路由到8080端口
+2. [ ] 测试两个域名的完整功能
+3. [ ] 验证文件可视化功能是否正常
+
+### 优先级中
+1. [ ] 研究如何安全地使用api子域名
+   - 考虑使用Cloudflare Tunnel
+   - 或配置适当的Origin Rules
+2. [ ] 优化环境变量配置方案
+   - 考虑使用Cloudflare环境变量
+   - 或创建独立的配置服务
+
+### 优先级低
+1. [ ] 文档化完整的部署流程
+2. [ ] 创建健康检查和监控
+
+---
+
+## 🔍 问题根源分析
+
+### 为什么会出现这些问题？
+1. **配置分散**：端口、域名、CORS配置分散在多个文件
+2. **缺少测试**：没有在生产环境充分测试
+3. **架构复杂**：Functions、代理、CORS多层嵌套
+4. **文档不足**：缺少清晰的架构图和配置说明
+
+### 如何避免类似问题？
+1. **集中配置管理**：使用单一配置源
+2. **自动化测试**：添加端到端测试
+3. **简化架构**：减少不必要的代理层
+4. **完善文档**：记录所有配置和依赖关系
