@@ -81,8 +81,8 @@ export class APIClient {
   async pollPredictionResult(
     predictionId: string,
     signal?: AbortSignal,
-    maxAttempts = 50,
-    intervalMs = 3000
+    maxAttempts = 60,  // 增加尝试次数：50 → 60次，支持更长任务
+    intervalMs = 5000   // 增加间隔时间：3秒 → 5秒，减少服务器压力
   ): Promise<any> {
     logger.info(`开始轮询预测结果: ${predictionId}`)
     logger.info(`最大尝试次数: ${maxAttempts}, 间隔: ${intervalMs}ms`)

@@ -15,7 +15,7 @@ export const apiConfig: APIConfig = {
   },
   settings: {
     maxFileSize: parseInt(import.meta.env.VITE_MAX_FILE_SIZE || '10485760'), // 10MB
-    requestTimeout: parseInt(import.meta.env.VITE_REQUEST_TIMEOUT || '30000'), // 30s
+    requestTimeout: parseInt(import.meta.env.VITE_REQUEST_TIMEOUT || '120000'), // 120s - 为可视化任务提供足够时间
     maxConcurrentRequests: parseInt(import.meta.env.VITE_MAX_CONCURRENT_REQUESTS || '3'),
     maxTokens: parseInt(import.meta.env.VITE_MAX_TOKENS || '8000'), // 默认高token限制
     promptVersion: (import.meta.env.VITE_PROMPT_VERSION || 'stable') as PromptVersion, // 提示词版本

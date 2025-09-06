@@ -422,8 +422,22 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
               status: 'thinking' 
             })
             
+            // 添加可视化处理状态日志
+            console.log('🎨 可视化开始时间:', new Date().toISOString())
+            console.log('⏰ 预计耗时: 1-3分钟，请耐心等待')
+            console.log('🔧 超时设置: 120秒请求 + 300秒轮询 (60次×5秒)')
+            console.log('📋 任务参数:', { selectedModel, contentLength: userContent.length, language })
+            
             // 调用HTML生成方法，传递选择的模型、取消信号和语言设置
             const htmlResult = await aiService.generateHTMLVisualization(userContent, undefined, selectedModel, abortControllerRef.current?.signal, language)
+            
+            // 记录成功完成日志
+            console.log('✅ 可视化完成时间:', new Date().toISOString())
+            console.log('📊 生成结果:', { 
+              htmlLength: htmlResult.htmlContent.length, 
+              fileSize: htmlResult.fileSize,
+              title: htmlResult.title 
+            })
             
             // 更新消息显示HTML内容
             updateMessage(aiMessageId, {
