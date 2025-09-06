@@ -42,6 +42,16 @@ export const useChatInput = ({
   const cancelProcessing = () => {
     console.log('🛑 用户点击终止按钮，开始取消处理流程')
     
+    // 🔧 取消前状态快照
+    console.log('📸 取消前状态快照:', {
+      isProcessing,
+      isCancelling,
+      hasAbortController: !!abortControllerRef.current,
+      signalAborted: abortControllerRef.current?.signal.aborted,
+      currentMessageId: currentMessageIdRef.current,
+      timestamp: new Date().toISOString()
+    })
+    
     // 1. 立即设置取消状态
     setIsCancelling(true)
     
@@ -94,8 +104,15 @@ export const useChatInput = ({
     setInputText('')
     setIsProcessing(true)
     
-    // 创建新的AbortController
+    // 创建新的AbortController - 添加详细追踪
+    const abortControllerId = `AC_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     abortControllerRef.current = new AbortController()
+    console.log('🔧 AbortController创建:', {
+      id: abortControllerId,
+      timestamp: new Date().toISOString(),
+      isProcessing,
+      messageContent: message.substring(0, 30) + '...'
+    })
     
     // 文件类型检测工具函数
     const isTextFile = (file: File): boolean => {
@@ -375,6 +392,7 @@ export const useChatInput = ({
         
         // 首先检查用户是否已登录
         if (!isAuthenticated || !user) {
+          console.log('🔐 用户未登录，终止处理流程')
           updateMessage(aiMessageId, {
             content: `🔐 **需要登录才能使用AI功能**
 
@@ -392,6 +410,15 @@ export const useChatInput = ({
           })
           return
         }
+        
+        // 🔧 状态追踪：记录进入可视化流程前的状态
+        console.log('📊 流程状态检查:', {
+          isProcessing,
+          hasAbortController: !!abortControllerRef.current,
+          signalAborted: abortControllerRef.current?.signal.aborted,
+          messageId: aiMessageId,
+          timestamp: new Date().toISOString()
+        })
         
         // 🔍 关键调试：详细记录API Token检查状态
         console.log('🔍 API Token检查详情:', {
@@ -434,6 +461,19 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
           })
         } else {
           console.log('✅ 进入可视化流程，原因:', shouldProceed && hasApiToken ? 'hasApiToken=true' : '生产环境备用通道')
+          
+          // 🔧 关键状态追踪：可视化开始前的完整状态快照
+          console.log('🎯 可视化开始前状态快照:', {
+            isProcessing,
+            hasAbortController: !!abortControllerRef.current,
+            signalAborted: abortControllerRef.current?.signal.aborted,
+            currentMessageId: currentMessageIdRef.current,
+            targetMessageId: aiMessageId,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent.substring(0, 50),
+            堆栈跟踪: new Error().stack?.split('\n').slice(0, 3)
+          })
+          
           // 如果配置了API Token，调用HTML生成API
           try {
             // 导入API服务
@@ -483,19 +523,58 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
               throw htmlError
             }
             
-            // 检查signal是否已经被abort或用户是否已停止处理
-            if (abortControllerRef.current?.signal.aborted || !isProcessing) {
-              console.log('🛑 检测到用户已取消或停止处理，不执行降级流程')
+            // 🔧 关键检查点：修复后的状态检查逻辑
+            const signalAborted = abortControllerRef.current?.signal.aborted
+            const hasValidController = !!abortControllerRef.current
+            
+            console.log('🔍 降级前状态检查(修复版):', {
+              isProcessing,
+              signalAborted,
+              hasValidController,
+              currentMessageId: currentMessageIdRef.current,
+              aiMessageId,
+              timestamp: new Date().toISOString(),
+              检查结果: signalAborted ? '终止(由于Signal)' : '继续处理',
+              修复说明: '不再检查isProcessing防止React重渲染导致误判'
+            })
+            
+            // 🚪 修复：只检查AbortSignal状态，不检查isProcessing
+            // 原因：React组件重渲染会导致isProcessing被重置，引起误判
+            if (signalAborted) {
+              console.log('🛑 检测到AbortSignal，终止降级流程', {
+                signalAborted,
+                原因: 'AbortController.signal已被用户或系统取消',
+                修复注释: '不再依赖isProcessing状态，避免组件重渲染干扰'
+              })
               throw new Error('处理已被用户取消')
             }
             
             console.error('HTML生成失败，尝试降级到原有流程:', htmlError)
             
-            // 在降级前再次确认用户没有取消
-            if (abortControllerRef.current?.signal.aborted || !isProcessing) {
-              console.log('🛑 降级前检测：用户已取消，终止所有处理')
+            // 🔧 降级前二次确认：修复后的检查逻辑
+            const finalSignalCheck = abortControllerRef.current?.signal.aborted
+            const finalControllerExists = !!abortControllerRef.current
+            
+            console.log('🔍 降级前二次确认(修复版):', {
+              isProcessing,
+              signalAborted: finalSignalCheck,
+              hasAbortController: finalControllerExists,
+              timestamp: new Date().toISOString(),
+              最终决定: finalSignalCheck ? '终止处理' : '继续降级',
+              修复说明: '只检查Signal状态，不检查isProcessing'
+            })
+            
+            // 🚪 修复：只检查AbortSignal，移除isProcessing检查
+            if (finalSignalCheck) {
+              console.log('🛑 降级前检测：用户已取消，终止所有处理', {
+                signalAborted: finalSignalCheck,
+                原因: 'AbortSignal被激活，用户主动取消',
+                修复效果: '移除isProcessing检查，防止React重渲染干扰'
+              })
               throw new Error('处理已被用户取消')
             }
+            
+            console.log('✅ 降级前检查通过，继续降级流程')
             
             // 如果HTML生成失败，回退到原有的内容分析流程，传递signal
             await processUserInput(userContent, contentType, aiMessageId, abortControllerRef.current?.signal)
@@ -530,8 +609,26 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
         })
       }
     } finally {
+      // 🔧 Finally块状态追踪
+      console.log('🧹 Finally块清理开始:', {
+        isProcessing,
+        hasAbortController: !!abortControllerRef.current,
+        signalAborted: abortControllerRef.current?.signal.aborted,
+        messageId: aiMessageId,
+        timestamp: new Date().toISOString(),
+        修复注释: '修复后的清理逻辑，保持稳定性'
+      })
+      
+      // 🚪 修复：先清理AbortController，再重置isProcessing
+      // 防止编程时序问题
+      if (abortControllerRef.current) {
+        abortControllerRef.current = null
+        console.log('🗑️ AbortController已清理')
+      }
+      
       setIsProcessing(false)
-      abortControllerRef.current = null
+      console.log('✅ Finally块清理完成: isProcessing=false')
+      
       // 延迟清理messageId引用和取消记录
       setTimeout(() => {
         currentMessageIdRef.current = null
@@ -539,6 +636,7 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
         if (aiMessageId) {
           cancelledMessageIds.delete(aiMessageId)
         }
+        console.log('🗑️ 延迟清理完成: messageId和cancelledIds已清理')
       }, 2000)  // 延长到2秒，确保所有处理完成
     }
   }
