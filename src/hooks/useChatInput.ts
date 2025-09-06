@@ -393,7 +393,28 @@ export const useChatInput = ({
           return
         }
         
-        if (!hasApiToken) {
+        // 🔍 关键调试：详细记录API Token检查状态
+        console.log('🔍 API Token检查详情:', {
+          hasApiToken,
+          环境: import.meta.env.PROD ? '生产环境' : '开发环境',
+          环境变量: import.meta.env.VITE_REPLICATE_API_TOKEN ? '存在' : '不存在',
+          当前时间: new Date().toISOString(),
+          用户内容: userContent.substring(0, 50) + '...'
+        })
+
+        // 生产环境备用检查：如果hasApiToken为false但在生产环境，仍然尝试API调用
+        const isProduction = import.meta.env.PROD
+        const shouldProceed = hasApiToken || isProduction
+        
+        console.log('🔧 可视化流程决策:', { 
+          hasApiToken, 
+          isProduction, 
+          shouldProceed,
+          决策依据: shouldProceed ? 'API已配置或生产环境' : 'API未配置且非生产环境'
+        })
+
+        if (!shouldProceed) {
+          console.log('❌ 终止可视化流程：API Token未配置且非生产环境')
           // 如果没有配置API Token，直接显示错误
           updateMessage(aiMessageId, {
             content: `❌ **API配置缺失**
@@ -412,6 +433,7 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
             status: 'error'
           })
         } else {
+          console.log('✅ 进入可视化流程，原因:', shouldProceed && hasApiToken ? 'hasApiToken=true' : '生产环境备用通道')
           // 如果配置了API Token，调用HTML生成API
           try {
             // 导入API服务
