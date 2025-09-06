@@ -5,10 +5,10 @@
 
 // 获取API基础URL
 export const getAPIBaseURL = (): string => {
-  // 生产环境使用api子域名（关闭橙云后使用HTTP）
+  // 生产环境使用api子域名（启用橙云支持HTTPS）
   if (import.meta.env.PROD) {
-    // 直接硬编码生产环境API地址
-    return 'http://api.magicschoolai.net:8080'
+    // 使用HTTPS解决混合内容错误，Cloudflare自动处理端口转发
+    return 'https://api.magicschoolai.net'
   }
   
   // 开发环境使用本地代理
