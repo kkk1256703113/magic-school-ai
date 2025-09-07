@@ -43,28 +43,20 @@ export default defineConfig({
       external: [],
       output: {
         manualChunks: (id) => {
-          // 基于文档经验：保守的分离策略，确保React生态系统完整性
+          // 极简分割策略 - 基于文档教训，避免过度分割导致初始化问题
           if (id.includes('node_modules')) {
             // React完整生态系统 - 避免分离导致Context错误
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router') || id.includes('scheduler')) {
               return 'react-vendor'
             }
-            // 图表库
-            if (id.includes('chart.js') || id.includes('react-chartjs-2') || id.includes('recharts') || id.includes('d3')) {
-              return 'charts'
+            // 大型库单独分离
+            if (id.includes('pdfjs-dist')) {
+              return 'pdf-lib'
             }
-            // 文件处理库
-            if (id.includes('pdfjs-dist') || id.includes('mammoth') || id.includes('xlsx')) {
-              return 'file-processing'
-            }
-            // UI库
-            if (id.includes('framer-motion') || id.includes('lucide-react')) {
-              return 'ui-libs'
-            }
-            // 其他第三方库
+            // 其他所有第三方库合并，避免依赖顺序问题
             return 'vendor'
           }
-          // AI服务相关代码
+          // AI服务相关代码保持分离
           if (id.includes('src/services/ai')) {
             return 'ai-services'
           }
