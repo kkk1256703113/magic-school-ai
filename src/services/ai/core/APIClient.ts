@@ -39,14 +39,20 @@ export class APIClient {
     }
 
     return this.queue.add(async () => {
-      const url = `${this.baseURL}/models/${model}/predictions`
+      const url = `${this.baseURL}/predictions`
       logger.info(`创建预测任务: ${url}`)
 
+      // 根据模型名称获取版本ID
+      const modelVersion = await this.getModelVersion(model)
+      
       try {
         const response = await fetch(url, {
           method: 'POST',
           headers: this.getHeaders(),
-          body: JSON.stringify({ input }),
+          body: JSON.stringify({ 
+            version: modelVersion,
+            input 
+          }),
           signal
         })
 
@@ -146,6 +152,33 @@ export class APIClient {
     }
 
     throw new Error('预测超时，请稍后重试')
+  }
+
+  /**
+   * 获取模型版本ID
+   */
+  private async getModelVersion(model: string): Promise<string> {
+    try {
+      const response = await fetch(`${this.baseURL}/models/${model}`, {
+        method: 'GET',
+        headers: this.getHeaders()
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get model info: ${response.status}`)
+      }
+      
+      const modelInfo = await response.json()
+      return modelInfo.latest_version?.id || modelInfo.version
+    } catch (error) {
+      logger.error(`获取模型版本失败: ${model}`, { error })
+      // 使用已知的版本ID作为fallback
+      const knownVersions: Record<string, string> = {
+        'anthropic/claude-4-sonnet': '3380fe4ca9cac053c89d1df86a5ba850e61cbef1d474a24abded9516e5a73a04',
+        'openai/gpt-5': 'gpt-5-latest'
+      }
+      return knownVersions[model] || 'latest'
+    }
   }
 
   /**
