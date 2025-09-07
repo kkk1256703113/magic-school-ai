@@ -38,5 +38,37 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // 将node_modules中的包按功能分组
+          if (id.includes('node_modules')) {
+            // React相关库
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'react-vendor'
+            }
+            // 图表库
+            if (id.includes('chart.js') || id.includes('react-chartjs-2') || id.includes('recharts') || id.includes('d3')) {
+              return 'charts'
+            }
+            // 文件处理库
+            if (id.includes('pdfjs-dist') || id.includes('mammoth') || id.includes('xlsx')) {
+              return 'file-processing'
+            }
+            // UI库
+            if (id.includes('framer-motion') || id.includes('lucide-react')) {
+              return 'ui-libs'
+            }
+            // 其他第三方库
+            return 'vendor'
+          }
+          // AI服务相关代码
+          if (id.includes('src/services/ai')) {
+            return 'ai-services'
+          }
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000, // 提高警告阈值到1MB
   },
 })

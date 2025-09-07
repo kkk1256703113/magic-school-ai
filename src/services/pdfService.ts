@@ -230,7 +230,8 @@ export class PDFService {
       // 渲染页面
       await page.render({
         canvasContext: context,
-        viewport: viewport
+        viewport: viewport,
+        canvas: canvas
       }).promise
       
       // 转换为base64图片

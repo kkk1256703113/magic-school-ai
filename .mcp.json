@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "env": {}
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"],
+      "env": {
+        "CHROME_PATH": "D:/Program Files/GptChrome/128.0.6541.235/chrome_pwa_launcher.exe"
+      }
+    }
+  }
+}
