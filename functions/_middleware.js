@@ -10,52 +10,9 @@
 export async function onRequest(context) {
   const url = new URL(context.request.url);
   
-  // API请求代理逻辑 - 区分Replicate API和后端API
+  // API请求代理逻辑 - 所有API请求都转发到后端服务器
   if (url.pathname.startsWith('/api/')) {
-    console.log(`Proxying API request: ${url.pathname}`);
-    
-    // Replicate API代理到api.replicate.com
-    if (url.pathname.startsWith('/api/replicate/')) {
-      const replicateUrl = `https://api.replicate.com${url.pathname.replace('/api/replicate', '')}${url.search}`;
-      console.log(`Proxying to Replicate: ${replicateUrl}`);
-      
-      // 准备Replicate API请求头
-      const replicateHeaders = new Headers(context.request.headers);
-      replicateHeaders.delete('cf-ray');
-      replicateHeaders.delete('cf-visitor');
-      replicateHeaders.delete('cf-connecting-ip');
-      replicateHeaders.set('Host', 'api.replicate.com');
-      replicateHeaders.set('Origin', 'https://api.replicate.com');
-      
-      try {
-        const replicateResponse = await fetch(replicateUrl, {
-          method: context.request.method,
-          headers: replicateHeaders,
-          body: context.request.body
-        });
-        
-        const responseHeaders = new Headers(replicateResponse.headers);
-        responseHeaders.set('Access-Control-Allow-Origin', '*');
-        responseHeaders.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        responseHeaders.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-        responseHeaders.set('X-Replicate-Proxy', 'true');
-        
-        return new Response(replicateResponse.body, {
-          status: replicateResponse.status,
-          statusText: replicateResponse.statusText,
-          headers: responseHeaders
-        });
-      } catch (error) {
-        console.error('Replicate proxy error:', error);
-        return new Response(JSON.stringify({
-          error: 'Replicate API proxy failed',
-          details: error.message
-        }), {
-          status: 502,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
-    }
+    console.log(`Proxying API request to backend: ${url.pathname}`);
     
     // 后端API代理到后端服务器 - 通过Nginx反向代理访问80端口
     const backendUrl = `http://api.magicschoolai.net${url.pathname}${url.search}`;
