@@ -797,6 +797,68 @@ app.post('/api/usage/record', async (req, res) => {
     }
 });
 
+// ==================== Replicate API代理 ====================
+
+// Replicate API代理中间件
+app.all('/api/replicate/*', async (req, res) => {
+    try {
+        console.log('🔗 Replicate代理请求:', {
+            method: req.method,
+            path: req.path,
+            hasAuth: !!process.env.REPLICATE_API_KEY
+        });
+
+        // 检查API Key配置
+        if (!process.env.REPLICATE_API_KEY) {
+            console.error('❌ Replicate API Key未配置');
+            return res.status(500).json({
+                error: 'Replicate API未配置',
+                message: '服务器端Replicate API Key未设置'
+            });
+        }
+
+        // 构建目标URL
+        const targetPath = req.path.replace('/api/replicate', '');
+        const targetUrl = `https://api.replicate.com${targetPath}`;
+        
+        console.log('📤 转发到:', targetUrl);
+
+        // 准备请求头
+        const headers = {
+            'Authorization': `Bearer ${process.env.REPLICATE_API_KEY}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'Magic-School-AI/1.0'
+        };
+
+        // 转发请求到Replicate API
+        const response = await fetch(targetUrl, {
+            method: req.method,
+            headers: headers,
+            body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+            console.error('❌ Replicate API错误:', {
+                status: response.status,
+                error: result
+            });
+            return res.status(response.status).json(result);
+        }
+
+        console.log('✅ Replicate代理成功');
+        res.json(result);
+
+    } catch (error) {
+        console.error('❌ Replicate代理错误:', error);
+        res.status(500).json({
+            error: 'Replicate代理失败',
+            message: error.message
+        });
+    }
+});
+
 // ==================== 根路径 ====================
 
 app.get('/', (req, res) => {
