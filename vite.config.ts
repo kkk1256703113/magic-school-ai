@@ -43,17 +43,25 @@ export default defineConfig({
       external: [],
       output: {
         manualChunks: (id) => {
-          // 极简分割策略 - 基于文档教训，避免过度分割导致初始化问题
+          // 基于文档成功经验：确保React生态系统完整性
           if (id.includes('node_modules')) {
-            // React完整生态系统 - 避免分离导致Context错误
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router') || id.includes('scheduler')) {
+            // React完整生态系统 - 包含所有React相关依赖
+            if (id.includes('react') || 
+                id.includes('react-dom') || 
+                id.includes('react-router') || 
+                id.includes('scheduler') ||
+                id.includes('react-hot-toast') ||
+                id.includes('framer-motion') ||
+                id.includes('react-i18next') ||
+                id.includes('react-dropzone') ||
+                id.includes('react-chartjs-2')) {
               return 'react-vendor'
             }
             // 大型库单独分离
             if (id.includes('pdfjs-dist')) {
               return 'pdf-lib'
             }
-            // 其他所有第三方库合并，避免依赖顺序问题
+            // 其他所有第三方库合并
             return 'vendor'
           }
           // AI服务相关代码保持分离
