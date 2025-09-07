@@ -5,7 +5,7 @@
 
 // 获取API基础URL
 export const getAPIBaseURL = (): string => {
-  // 生产环境使用Functions代理（解决522端口连接问题）
+  // 生产环境使用Functions代理（通过Nginx反向代理解决端口访问问题）
   if (import.meta.env.PROD) {
     // 使用空字符串，让API调用走当前域名的/api路径，通过Functions代理到后端
     return ''

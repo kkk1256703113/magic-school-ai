@@ -57,8 +57,8 @@ export async function onRequest(context) {
       }
     }
     
-    // 后端API代理到后端服务器
-    const backendUrl = `http://api.magicschoolai.net:8080${url.pathname}${url.search}`;
+    // 后端API代理到后端服务器 - 通过Nginx反向代理访问80端口
+    const backendUrl = `http://api.magicschoolai.net${url.pathname}${url.search}`;
     
     // 准备请求头 - 设置正确的Host头部避免1003错误
     const headers = new Headers(context.request.headers);
