@@ -39,13 +39,19 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true,
     rollupOptions: {
+      // 确保React Context正确初始化
+      external: [],
       output: {
         manualChunks: (id) => {
           // 将node_modules中的包按功能分组
           if (id.includes('node_modules')) {
-            // React相关库
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+            // React核心 - 必须保持在一起避免Context错误
+            if (id.includes('react/') || id.includes('react-dom/') || id.includes('scheduler/')) {
               return 'react-vendor'
+            }
+            // React路由 - 单独分离
+            if (id.includes('react-router')) {
+              return 'react-router'
             }
             // 图表库
             if (id.includes('chart.js') || id.includes('react-chartjs-2') || id.includes('recharts') || id.includes('d3')) {
@@ -55,8 +61,11 @@ export default defineConfig({
             if (id.includes('pdfjs-dist') || id.includes('mammoth') || id.includes('xlsx')) {
               return 'file-processing'
             }
-            // UI库
-            if (id.includes('framer-motion') || id.includes('lucide-react')) {
+            // UI库 - Framer Motion单独分离避免冲突
+            if (id.includes('framer-motion')) {
+              return 'framer-motion'
+            }
+            if (id.includes('lucide-react')) {
               return 'ui-libs'
             }
             // 其他第三方库
