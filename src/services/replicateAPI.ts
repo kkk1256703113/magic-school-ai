@@ -122,7 +122,6 @@ export class MagicSchoolAIService {
         const response = await fetch(`/api/replicate/v1/predictions/${predictionId}`, {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
             'Content-Type': 'application/json'
           },
           signal  // 添加取消信号
@@ -508,8 +507,8 @@ export class MagicSchoolAIService {
         
         console.log('🧠 Claude 4 Sonnet: 准备发送API请求...')
         console.log('🔑 API Token状态:', {
-          exists: !!import.meta.env.VITE_REPLICATE_API_TOKEN,
-          length: import.meta.env.VITE_REPLICATE_API_TOKEN?.length || 0
+          exists: true, // 由后端管理API Token
+          length: 0 // 前端不再存储API Token
         })
         
         // Claude 3.7 Sonnet 优化参数配置
@@ -580,7 +579,6 @@ export class MagicSchoolAIService {
         const createResponse = await fetch(`/api/replicate/v1/models/${API_CONFIG.models.claude4}/predictions`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
             'Content-Type': 'application/json'
           },
           body: requestBody,
@@ -609,7 +607,7 @@ export class MagicSchoolAIService {
           if (createResponse.status === 404) {
             detailedError = `Claude模型不存在或不可用: ${API_CONFIG.models.claude4}`
           } else if (createResponse.status === 401) {
-            detailedError = `API Token认证失败，请检查VITE_REPLICATE_API_TOKEN配置`
+            detailedError = `API Token认证失败，请联系管理员检查后端API配置`
           } else if (createResponse.status === 429) {
             detailedError = `API调用频率超限，请稍后重试`
           } else if (createResponse.status >= 500) {
@@ -746,7 +744,7 @@ export class MagicSchoolAIService {
         logger.info(`准备调用${selectedModel.toUpperCase()} API进行内容分析`, {
           model: selectedModel,
           modelEndpoint: modelEndpoint,
-          tokenExists: !!import.meta.env.VITE_REPLICATE_API_TOKEN
+          tokenExists: true // 由后端管理
         }, 'Analysis')
         
         console.log(`🌐 创建${selectedModel.toUpperCase()} prediction...`)
@@ -754,8 +752,8 @@ export class MagicSchoolAIService {
         // 第一步：创建prediction
         console.log('📤 replicateAPI.ts: 准备发送API请求...')
         console.log('🔑 API Token状态:', {
-          exists: !!import.meta.env.VITE_REPLICATE_API_TOKEN,
-          length: import.meta.env.VITE_REPLICATE_API_TOKEN?.length || 0
+          exists: true, // 由后端管理API Token
+          length: 0 // 前端不再存储API Token
         })
         
         const requestBody = JSON.stringify({
@@ -825,7 +823,6 @@ export class MagicSchoolAIService {
         const createResponse = await fetch(apiUrl, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
             'Content-Type': 'application/json'
           },
           body: requestBody,
@@ -1033,7 +1030,6 @@ export class MagicSchoolAIService {
         const createResponse = await fetch(apiUrl, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_REPLICATE_API_TOKEN}`,
             'Content-Type': 'application/json'
           },
           body: requestBody,
@@ -1218,7 +1214,7 @@ export class MagicSchoolAIService {
    */
   getAPIStatus() {
     return {
-      isConfigured: !!import.meta.env.VITE_REPLICATE_API_TOKEN,
+      isConfigured: true, // 由后端管理配置
       models: API_CONFIG.models,
       settings: API_CONFIG.settings,
       temporaryStorageCount: temporaryStorage.getAllFiles().length,

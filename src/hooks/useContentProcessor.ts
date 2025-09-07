@@ -81,9 +81,7 @@ export const useContentProcessor = ({
       try {
         console.log('🤖 开始内容分析，调用API:', typeof apiService.analyzeContent)
         
-        if (!import.meta.env.VITE_REPLICATE_API_TOKEN) {
-          throw new Error('API Token未配置，请检查 .env.local 文件中的 VITE_REPLICATE_API_TOKEN 配置')
-        }
+        // API Token现在由后端管理，前端不再需要检查
         
         // 显示等待提示
         updateMessage(aiMessageId, { content: '🤖 正在创建AI任务...（预计需要30-60秒）', status: 'thinking' })

@@ -170,7 +170,7 @@ export class MagicSchoolAIService {
    */
   getAPIStatus() {
     return {
-      isConfigured: !!import.meta.env.VITE_REPLICATE_API_TOKEN,
+      isConfigured: true, // 由后端管理配置
       models: {
         gpt5: import.meta.env.VITE_GPT5_MODEL || 'openai/gpt-5',
         claude4: import.meta.env.VITE_CLAUDE4_MODEL || 'anthropic/claude-4-sonnet'

@@ -18,13 +18,8 @@ export class APIClient {
    * 获取请求头
    */
   private getHeaders(): HeadersInit {
-    const token = import.meta.env.VITE_REPLICATE_API_TOKEN
-    if (!token) {
-      throw new APIError(401, 'Unauthorized', 'Replicate API token未配置')
-    }
-
+    // API Token现在由后端管理，前端不再需要提供
     return {
-      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     }
   }
