@@ -36,11 +36,15 @@ export const useChatInput = ({
   const abortControllerRef = useRef<AbortController | null>(null)
   const currentMessageIdRef = useRef<string | null>(null)
   const cancelledMessageIds = useRef(new Set<string>()).current  // 追踪已取消的消息
+  const userCancelledRef = useRef(false)  // 追踪用户主动终止标志
   const { t } = useTranslation()
 
   // 取消处理函数 - 增强版本，提供即时反馈并彻底清理资源
   const cancelProcessing = () => {
     console.log('🛑 用户点击终止按钮，开始取消处理流程')
+    
+    // 🎯 立即设置用户主动终止标志，防止降级处理执行
+    userCancelledRef.current = true
     
     // 🔧 取消前状态快照
     console.log('📸 取消前状态快照:', {
@@ -99,6 +103,9 @@ export const useChatInput = ({
 
   const handleSendMessage = async (message: string = inputText, files?: File[]) => {
     if ((!message.trim() && (!files || files.length === 0)) || isProcessing) return
+    
+    // 🔄 重置用户终止标志，开始新的处理流程
+    userCancelledRef.current = false
     
     let userContent = message.trim()
     setInputText('')
@@ -549,6 +556,16 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
               throw new Error('处理已被用户取消')
             }
             
+            // 🚫 优先检查用户是否主动终止，如果是则不执行任何降级处理
+            if (userCancelledRef.current) {
+              console.log('🛑 用户主动终止处理，不执行降级流程，直接退出', {
+                userCancelled: userCancelledRef.current,
+                timestamp: new Date().toISOString(),
+                htmlError: htmlError instanceof Error ? htmlError.message : String(htmlError)
+              })
+              return  // 直接退出，不执行降级处理
+            }
+            
             console.error('HTML生成失败，尝试降级到原有流程:', htmlError)
             
             // 🔧 降级前二次确认：修复后的检查逻辑
@@ -564,12 +581,13 @@ VITE_REPLICATE_API_TOKEN=你的API密钥
               修复说明: '只检查Signal状态，不检查isProcessing'
             })
             
-            // 🚪 修复：只检查AbortSignal，移除isProcessing检查
-            if (finalSignalCheck) {
-              console.log('🛑 降级前检测：用户已取消，终止所有处理', {
+            // 🚪 修复：检查AbortSignal和用户主动终止标志
+            if (finalSignalCheck || userCancelledRef.current) {
+              console.log('🛑 降级前最终检测：用户已取消，终止所有处理', {
                 signalAborted: finalSignalCheck,
-                原因: 'AbortSignal被激活，用户主动取消',
-                修复效果: '移除isProcessing检查，防止React重渲染干扰'
+                userCancelled: userCancelledRef.current,
+                原因: finalSignalCheck ? 'AbortSignal被激活' : '用户主动终止',
+                修复效果: '双重检查确保用户终止时不执行降级处理'
               })
               throw new Error('处理已被用户取消')
             }
