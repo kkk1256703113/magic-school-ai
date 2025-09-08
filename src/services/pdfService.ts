@@ -2,8 +2,11 @@ import * as pdfjsLib from 'pdfjs-dist'
 import axios from 'axios'
 import { logger } from '@/utils/logger'
 
-// 配置PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+// 配置PDF.js worker - 使用Vite兼容的本地版本
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString()
 
 // PDF处理结果类型
 export interface PDFProcessResult {
