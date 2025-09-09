@@ -57,15 +57,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
     setErrorMessage('')
     
     try {
-      const result = await sendVerificationCode(email)
+      await sendVerificationCode(email)
       setIsCodeSent(true)
       setCountdown(60) // 设置60秒倒计时
       toast.success('验证码已发送到您的邮箱，请注意查收')
-      
-      // 如果返回了过期时间，可以用来设置更准确的倒计时
-      if (result && result.expiresIn) {
-        console.log(`验证码将在 ${result.expiresIn} 秒后过期`)
-      }
     } catch (error: any) {
       setErrorMessage(error.message || '发送验证码失败')
       toast.error(error.message || '发送验证码失败')
