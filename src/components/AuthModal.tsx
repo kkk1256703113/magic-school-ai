@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { X, Mail, ArrowLeft, Chrome, AlertCircle, Clock } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
 interface AuthModalProps {
@@ -24,6 +25,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
   const [countdown, setCountdown] = useState(0)
   
   const { login, register, forgotPassword, sendVerificationCode, verifyCode, googleLogin, isDevMode } = useAuth()
+  const navigate = useNavigate()
 
   // 倒计时效果
   useEffect(() => {
@@ -180,9 +182,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
   }
   
   const showForgotPassword = () => {
-    setIsForgotPassword(true)
-    setErrorMessage('')
-    setSuccessMessage('')
+    // 关闭模态框并跳转到重置密码页面
+    onClose()
+    
+    // 通过URL参数传递邮箱信息
+    const urlParams = new URLSearchParams()
+    if (email.trim()) {
+      urlParams.set('email', email)
+    }
+    
+    // 跳转到重置密码页面
+    navigate(`/reset-password?${urlParams.toString()}`)
   }
   
   const backToLogin = () => {
