@@ -139,8 +139,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
         resetForm()
         onSuccess?.()
       } else {
-        // 验证验证码
-        const isCodeValid = await verifyCode(email, verificationCode)
+        // 验证验证码 - 明确传递注册类型
+        const isCodeValid = await verifyCode(email, verificationCode, 'register')
         if (!isCodeValid) {
           setErrorMessage('验证码错误')
           setIsLoading(false)

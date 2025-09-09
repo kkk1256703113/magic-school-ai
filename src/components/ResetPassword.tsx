@@ -19,7 +19,7 @@ export const ResetPassword: React.FC = () => {
   
   const navigate = useNavigate()
   const location = useLocation()
-  const { resetPassword, sendVerificationCode } = useAuth()
+  const { resetPassword, sendVerificationCode, verifyCode } = useAuth()
   
   // 从URL参数获取邮箱并预填充
   useEffect(() => {
@@ -60,7 +60,8 @@ export const ResetPassword: React.FC = () => {
     setErrorMessage('')
     
     try {
-      await sendVerificationCode(email)
+      // 发送密码重置验证码，传递 type 参数
+      await sendVerificationCode(email, 'reset')
       setIsCodeSent(true)
       setCountdown(60) // 60秒倒计时
       toast.success('验证码已发送到您的邮箱，请注意查收')
@@ -117,6 +118,14 @@ export const ResetPassword: React.FC = () => {
     setErrorMessage('')
     
     try {
+      // 首先验证验证码是否正确（对于密码重置类型）
+      const isCodeValid = await verifyCode(email, code, 'reset')
+      if (!isCodeValid) {
+        setErrorMessage('验证码错误或已过期')
+        return
+      }
+      
+      // 验证码正确，执行密码重置
       await resetPassword(email, code, password)
       setIsSuccess(true)
       toast.success('密码重置成功！')

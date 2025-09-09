@@ -25,8 +25,8 @@ interface AuthContextType {
   resetPassword: (email: string, code: string, password: string) => Promise<void>
   checkAPILimit: () => Promise<{ canUse: boolean; remaining: number }>
   recordAPIUsage: (endpoint: string, model: string, cost: number, success: boolean) => Promise<void>
-  sendVerificationCode: (email: string) => Promise<void>
-  verifyCode: (email: string, code: string) => Promise<boolean>
+  sendVerificationCode: (email: string, type?: 'register' | 'reset') => Promise<void>
+  verifyCode: (email: string, code: string, type?: 'register' | 'reset') => Promise<boolean>
   googleLogin: () => Promise<void>
   isDevMode: boolean
 }
@@ -220,19 +220,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   // 发送验证码
-  const sendVerificationCode = async (email: string) => {
+  const sendVerificationCode = async (email: string, type: 'register' | 'reset' = 'register') => {
     try {
-      // 总是调用真实API发送验证码
-      const response = await axios.post(API_ROUTES.AUTH.SEND_CODE, { email })
+      // 调用统一的验证码发送接口，传递类型参数
+      const response = await axios.post(API_ROUTES.AUTH.SEND_CODE, { email, type })
       
       if (response.data.success) {
-        console.log(`[AUTH] Verification code sent to ${email}`);
+        console.log(`[AUTH] ${type} verification code sent to ${email}`);
         return response.data;
       } else {
         throw new Error(response.data.message || '发送验证码失败');
       }
     } catch (error: any) {
-      console.error('[AUTH] Send verification code error:', error);
+      console.error(`[AUTH] Send ${type} verification code error:`, error);
       if (error.response?.status === 429) {
         // 频率限制错误
         const waitTime = error.response.data.waitTime || 60;
@@ -243,24 +243,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   // 验证验证码
-  const verifyCode = async (email: string, code: string): Promise<boolean> => {
+  const verifyCode = async (email: string, code: string, type: 'register' | 'reset' = 'register'): Promise<boolean> => {
     try {
-      // 总是调用真实API验证
-      const response = await axios.post(API_ROUTES.AUTH.VERIFY_CODE, { email, code })
+      // 调用统一的验证码验证接口，传递类型参数
+      const response = await axios.post(API_ROUTES.AUTH.VERIFY_CODE, { email, code, type })
       
-      if (response.data.success && response.data.token) {
+      // 只有注册验证码验证成功时才自动登录
+      if (response.data.success && response.data.token && type === 'register') {
         // 如果返回了token，自动登录
         const { token: newToken, user: userData } = response.data;
         setToken(newToken);
         setUser(userData);
         localStorage.setItem('token', newToken);
         setAuthHeader(newToken);
-        console.log(`[AUTH] User logged in via email verification: ${email}`);
+        console.log(`[AUTH] User logged in via ${type} verification: ${email}`);
       }
       
       return response.data.success
     } catch (error: any) {
-      console.error('[AUTH] Verify code error:', error);
+      console.error(`[AUTH] Verify ${type} code error:`, error);
       return false
     }
   }
