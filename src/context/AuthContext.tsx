@@ -22,7 +22,7 @@ interface AuthContextType {
   register: (email: string, password: string, username?: string) => Promise<void>
   logout: () => void
   forgotPassword: (email: string) => Promise<void>
-  resetPassword: (token: string, password: string) => Promise<void>
+  resetPassword: (email: string, code: string, password: string) => Promise<void>
   checkAPILimit: () => Promise<{ canUse: boolean; remaining: number }>
   recordAPIUsage: (endpoint: string, model: string, cost: number, success: boolean) => Promise<void>
   sendVerificationCode: (email: string) => Promise<void>
@@ -156,10 +156,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }
 
-  // 重置密码
-  const resetPassword = async (token: string, password: string) => {
+  // 重置密码 - 使用验证码验证
+  const resetPassword = async (email: string, code: string, password: string) => {
     try {
-      const response = await axios.post(API_ROUTES.AUTH.RESET_PASSWORD, { token, password })
+      const response = await axios.post(API_ROUTES.AUTH.RESET_PASSWORD, { email, code, password })
       return response.data
     } catch (error: any) {
       if (error.response) {
@@ -169,7 +169,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } else {
           switch (error.response.status) {
             case 400:
-              throw new Error('重置链接无效或已过期')
+              throw new Error('验证码无效或已过期')
             case 500:
               throw new Error('服务器错误，请稍后重试')
             default:

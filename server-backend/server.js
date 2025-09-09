@@ -364,7 +364,7 @@ app.post('/api/auth/logout', (req, res) => {
     });
 });
 
-// 忘记密码
+// 忘记密码 - 发送验证码
 app.post('/api/auth/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
@@ -373,6 +373,15 @@ app.post('/api/auth/forgot-password', async (req, res) => {
             return res.status(400).json({
                 error: 'Missing email',
                 message: '请提供邮箱地址'
+            });
+        }
+        
+        // 邮箱格式验证
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                error: 'Invalid email',
+                message: '请提供有效的邮箱地址'
             });
         }
         
@@ -387,44 +396,62 @@ app.post('/api/auth/forgot-password', async (req, res) => {
             console.log(`Password reset requested for non-existent user: ${email}`);
             return res.json({
                 success: true,
-                message: '如果该邮箱已注册，您将收到密码重置邮件'
+                message: '如果该邮箱已注册，您将收到验证码'
             });
         }
         
-        const user = result.rows[0];
+        // 频率限制检查（60秒内只能发送一次）
+        const rateLimitKey = `forgot_password_${email}`;
+        if (rateLimitStore[rateLimitKey] && Date.now() - rateLimitStore[rateLimitKey] < 60000) {
+            const waitTime = Math.ceil((60000 - (Date.now() - rateLimitStore[rateLimitKey])) / 1000);
+            return res.status(429).json({
+                error: 'Rate limit exceeded',
+                message: `请等待 ${waitTime} 秒后再试`,
+                waitTime
+            });
+        }
         
-        // 生成重置令牌（32字节的随机字符串）
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetTokenExpires = new Date(Date.now() + 30 * 60 * 1000); // 30分钟后过期
+        // 生成6位验证码
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5分钟后过期
         
-        // 保存重置令牌到数据库
-        await pool.query(
-            'UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3',
-            [resetToken, resetTokenExpires, user.id]
-        );
+        // 存储验证码（用于密码重置）
+        const resetCodeKey = `reset_${email}`;
+        verificationCodes.set(resetCodeKey, {
+            code,
+            email,
+            expiresAt,
+            attempts: 0
+        });
         
-        // 构造重置链接
-        const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+        // 设置清理定时器
+        setTimeout(() => {
+            verificationCodes.delete(resetCodeKey);
+            console.log(`[CLEANUP] Reset code for ${email} expired and removed`);
+        }, 5 * 60 * 1000);
         
-        // 发送密码重置邮件
+        // 记录频率限制
+        rateLimitStore[rateLimitKey] = Date.now();
+        
+        // 发送验证码邮件
         try {
-            const emailResult = await sendPasswordResetEmail(user.email, resetUrl);
-            console.log(`[FORGOT PASSWORD] Email sent successfully to ${user.email}, MessageID: ${emailResult.messageId}`);
+            const emailResult = await sendVerificationCode(email, code);
+            console.log(`[RESET CODE] Email sent successfully to ${email}, MessageID: ${emailResult.messageId}`);
+            console.log(`[SUCCESS] Reset code sent to ${email}, expires at ${expiresAt.toISOString()}`);
         } catch (emailError) {
-            console.error(`[FORGOT PASSWORD] Failed to send email to ${user.email}:`, emailError);
-            // 即使邮件发送失败，也返回成功响应（安全考虑，不透露真实错误）
-            // 但在服务器日志中记录真实错误
+            console.error(`[RESET CODE] Failed to send email to ${email}:`, emailError);
+            // 即使邮件发送失败，也返回成功响应（安全考虑）
         }
         
         res.json({
             success: true,
-            message: '密码重置邮件已发送到您的邮箱'
+            message: '验证码已发送到您的邮箱'
         });
     } catch (error) {
         console.error('Forgot password error:', error);
         res.status(500).json({
             error: 'Server error',
-            message: '发送重置邮件失败，请稍后再试'
+            message: '发送验证码失败，请稍后再试'
         });
     }
 });
@@ -432,12 +459,12 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 // 重置密码
 app.post('/api/auth/reset-password', async (req, res) => {
     try {
-        const { token, password } = req.body;
+        const { email, code, password } = req.body;
         
-        if (!token || !password) {
+        if (!email || !code || !password) {
             return res.status(400).json({
                 error: 'Missing required fields',
-                message: '缺少必要参数'
+                message: '请填写所有必要字段'
             });
         }
         
@@ -448,30 +475,72 @@ app.post('/api/auth/reset-password', async (req, res) => {
             });
         }
         
-        // 查找有效的重置令牌
-        const result = await pool.query(
-            'SELECT id, email FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()',
-            [token]
-        );
+        // 检查验证码
+        const resetCodeKey = `reset_${email}`;
+        const storedCodeInfo = verificationCodes.get(resetCodeKey);
         
-        if (result.rows.length === 0) {
+        if (!storedCodeInfo) {
             return res.status(400).json({
-                error: 'Invalid or expired token',
-                message: '重置链接无效或已过期'
+                error: 'Code not found',
+                message: '验证码不存在或已过期'
             });
         }
         
-        const user = result.rows[0];
+        // 检查验证码是否过期
+        if (new Date() > storedCodeInfo.expiresAt) {
+            verificationCodes.delete(resetCodeKey);
+            return res.status(400).json({
+                error: 'Code expired',
+                message: '验证码已过期'
+            });
+        }
+        
+        // 检查尝试次数（最多5次）
+        if (storedCodeInfo.attempts >= 5) {
+            verificationCodes.delete(resetCodeKey);
+            return res.status(400).json({
+                error: 'Too many attempts',
+                message: '验证次数过多，请重新获取验证码'
+            });
+        }
+        
+        // 验证码不正确
+        if (storedCodeInfo.code !== code) {
+            storedCodeInfo.attempts++;
+            return res.status(400).json({
+                error: 'Invalid code',
+                message: '验证码不正确'
+            });
+        }
+        
+        // 检查用户是否存在
+        const userResult = await pool.query(
+            'SELECT id, email FROM users WHERE email = $1',
+            [email]
+        );
+        
+        if (userResult.rows.length === 0) {
+            verificationCodes.delete(resetCodeKey);
+            return res.status(400).json({
+                error: 'User not found',
+                message: '用户不存在'
+            });
+        }
+        
+        const user = userResult.rows[0];
         
         // 哈希新密码
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
         
-        // 更新密码并清除重置令牌
+        // 更新密码
         await pool.query(
-            'UPDATE users SET password_hash = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2',
+            'UPDATE users SET password_hash = $1 WHERE id = $2',
             [passwordHash, user.id]
         );
+        
+        // 删除已使用的验证码
+        verificationCodes.delete(resetCodeKey);
         
         console.log(`Password reset successful for user: ${user.email}`);
         

@@ -5,7 +5,8 @@ import { useAuth } from '@/context/AuthContext'
 import toast from 'react-hot-toast'
 
 export const ResetPassword: React.FC = () => {
-  const [token, setToken] = useState('')
+  const [email, setEmail] = useState('')
+  const [code, setCode] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -14,21 +15,8 @@ export const ResetPassword: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [isSuccess, setIsSuccess] = useState(false)
   
-  const location = useLocation()
   const navigate = useNavigate()
   const { resetPassword } = useAuth()
-
-  // 从URL参数中提取token
-  useEffect(() => {
-    const urlParams = new URLSearchParams(location.search)
-    const tokenParam = urlParams.get('token')
-    
-    if (tokenParam) {
-      setToken(tokenParam)
-    } else {
-      setErrorMessage('无效的重置链接')
-    }
-  }, [location])
 
   // 密码强度检查
   const getPasswordStrength = (password: string) => {
@@ -44,13 +32,20 @@ export const ResetPassword: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!token) {
-      setErrorMessage('缺少重置令牌')
+    if (!email || !code || !password || !confirmPassword) {
+      setErrorMessage('请填写所有字段')
       return
     }
     
-    if (!password || !confirmPassword) {
-      setErrorMessage('请填写所有字段')
+    // 邮箱格式验证
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setErrorMessage('请输入有效的邮箱地址')
+      return
+    }
+    
+    if (code.length !== 6) {
+      setErrorMessage('验证码应为6位数字')
       return
     }
     
@@ -68,7 +63,7 @@ export const ResetPassword: React.FC = () => {
     setErrorMessage('')
     
     try {
-      await resetPassword(token, password)
+      await resetPassword(email, code, password)
       setIsSuccess(true)
       toast.success('密码重置成功！')
     } catch (error: any) {
@@ -149,6 +144,40 @@ export const ResetPassword: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              邮箱地址
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+              placeholder="请输入邮箱地址"
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              验证码
+            </label>
+            <input
+              type="text"
+              id="code"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-center text-2xl font-mono tracking-widest"
+              placeholder="000000"
+              maxLength={6}
+              required
+            />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              请输入邮箱中收到的6位验证码
+            </p>
+          </div>
+
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               新密码
@@ -237,7 +266,7 @@ export const ResetPassword: React.FC = () => {
 
           <button
             type="submit"
-            disabled={isLoading || !token || !password || !confirmPassword || password !== confirmPassword}
+            disabled={isLoading || !email || !code || !password || !confirmPassword || password !== confirmPassword}
             className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           >
             {isLoading ? '重置中...' : '重置密码'}
@@ -246,7 +275,7 @@ export const ResetPassword: React.FC = () => {
 
         <div className="text-center">
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            重置链接将在30分钟后过期
+            验证码将在5分钟后过期，请及时使用
           </p>
         </div>
       </div>
