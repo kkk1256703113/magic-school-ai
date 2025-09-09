@@ -118,14 +118,7 @@ export const ResetPassword: React.FC = () => {
     setErrorMessage('')
     
     try {
-      // 首先验证验证码是否正确（对于密码重置类型）
-      const isCodeValid = await verifyCode(email, code, 'reset')
-      if (!isCodeValid) {
-        setErrorMessage('验证码错误或已过期')
-        return
-      }
-      
-      // 验证码正确，执行密码重置
+      // 直接执行密码重置，resetPassword API内部会验证验证码
       await resetPassword(email, code, password)
       setIsSuccess(true)
       toast.success('密码重置成功！')
