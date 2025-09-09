@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { API_ROUTES, getRouteDocumentation } = require('./config/apiRoutes');
-const { sendVerificationCode } = require('./services/emailService');
+const { sendVerificationCode, sendPasswordResetEmail } = require('./services/emailService');
 require('dotenv').config();
 
 const app = express();
@@ -406,18 +406,15 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         // 构造重置链接
         const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
         
-        // 模拟邮件发送（实际项目中这里应该调用邮件服务）
-        console.log('===========================================');
-        console.log('📧 密码重置邮件（模拟发送）');
-        console.log('===========================================');
-        console.log(`收件人: ${user.email}`);
-        console.log(`重置令牌: ${resetToken}`);
-        console.log(`重置链接: ${resetUrl}`);
-        console.log(`过期时间: ${resetTokenExpires.toLocaleString()}`);
-        console.log('===========================================');
-        
-        // TODO: 实际项目中在这里集成真实的邮件服务
-        // 例如：await sendResetEmail(user.email, resetUrl);
+        // 发送密码重置邮件
+        try {
+            const emailResult = await sendPasswordResetEmail(user.email, resetUrl);
+            console.log(`[FORGOT PASSWORD] Email sent successfully to ${user.email}, MessageID: ${emailResult.messageId}`);
+        } catch (emailError) {
+            console.error(`[FORGOT PASSWORD] Failed to send email to ${user.email}:`, emailError);
+            // 即使邮件发送失败，也返回成功响应（安全考虑，不透露真实错误）
+            // 但在服务器日志中记录真实错误
+        }
         
         res.json({
             success: true,
