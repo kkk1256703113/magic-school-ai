@@ -223,34 +223,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 发送验证码
   const sendVerificationCode = async (email: string) => {
     try {
-      if (isDevMode) {
-        // 开发模式：模拟发送验证码
-        const mockCode = import.meta.env.VITE_MOCK_VERIFICATION_CODE || '123456'
-        verificationCodes.set(email, mockCode)
-        console.log(`[DEV MODE] 验证码已发送到 ${email}: ${mockCode}`)
-        return
-      }
+      // 总是调用真实API发送验证码
+      const response = await axios.post(API_ROUTES.AUTH.SEND_CODE, { email })
       
-      // 生产模式：调用真实API
-      await axios.post(API_ROUTES.AUTH.SEND_CODE, { email })
+      if (response.data.success) {
+        console.log(`[AUTH] Verification code sent to ${email}`);
+        return response.data;
+      } else {
+        throw new Error(response.data.message || '发送验证码失败');
+      }
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || '发送验证码失败')
+      console.error('[AUTH] Send verification code error:', error);
+      if (error.response?.status === 429) {
+        // 频率限制错误
+        const waitTime = error.response.data.waitTime || 60;
+        throw new Error(`请等待 ${waitTime} 秒后再试`);
+      }
+      throw new Error(error.response?.data?.message || error.message || '发送验证码失败');
     }
   }
 
   // 验证验证码
   const verifyCode = async (email: string, code: string): Promise<boolean> => {
     try {
-      if (isDevMode) {
-        // 开发模式：验证模拟验证码
-        const mockCode = import.meta.env.VITE_MOCK_VERIFICATION_CODE || '123456'
-        return code === mockCode
+      // 总是调用真实API验证
+      const response = await axios.post(API_ROUTES.AUTH.VERIFY_CODE, { email, code })
+      
+      if (response.data.success && response.data.token) {
+        // 如果返回了token，自动登录
+        const { token: newToken, user: userData } = response.data;
+        setToken(newToken);
+        setUser(userData);
+        localStorage.setItem('token', newToken);
+        setAuthHeader(newToken);
+        console.log(`[AUTH] User logged in via email verification: ${email}`);
       }
       
-      // 生产模式：调用真实API
-      const response = await axios.post(API_ROUTES.AUTH.VERIFY_CODE, { email, code })
       return response.data.success
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[AUTH] Verify code error:', error);
       return false
     }
   }

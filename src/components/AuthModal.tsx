@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { X, Mail, ArrowLeft, Chrome, AlertCircle } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { X, Mail, ArrowLeft, Chrome, AlertCircle, Clock } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import toast from 'react-hot-toast'
 
@@ -21,8 +21,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [countdown, setCountdown] = useState(0)
   
   const { login, register, forgotPassword, sendVerificationCode, verifyCode, googleLogin, isDevMode } = useAuth()
+
+  // 倒计时效果
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1)
+      }, 1000)
+      return () => clearTimeout(timer)
+    } else if (countdown === 0 && isCodeSent) {
+      // 倒计时结束，允许重新发送
+      setIsCodeSent(false)
+    }
+  }, [countdown, isCodeSent])
 
   const handleSendCode = async () => {
     if (!email) {
@@ -30,15 +44,29 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
       return
     }
     
+    // 邮箱格式验证
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setErrorMessage('请输入有效的邮箱地址')
+      return
+    }
+    
     setIsLoading(true)
     setErrorMessage('')
     
     try {
-      await sendVerificationCode(email)
+      const result = await sendVerificationCode(email)
       setIsCodeSent(true)
-      toast.success(isDevMode ? `验证码已发送（开发模式：123456）` : '验证码已发送到您的邮箱')
+      setCountdown(60) // 设置60秒倒计时
+      toast.success('验证码已发送到您的邮箱，请注意查收')
+      
+      // 如果返回了过期时间，可以用来设置更准确的倒计时
+      if (result && result.expiresIn) {
+        console.log(`验证码将在 ${result.expiresIn} 秒后过期`)
+      }
     } catch (error: any) {
       setErrorMessage(error.message || '发送验证码失败')
+      toast.error(error.message || '发送验证码失败')
     } finally {
       setIsLoading(false)
     }
@@ -318,23 +346,39 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                       type="text"
                       id="verificationCode"
                       value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="请输入验证码"
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white font-mono text-lg tracking-wider text-center"
+                      placeholder="请输入6位验证码"
                       maxLength={6}
                     />
                     <button
                       type="button"
                       onClick={handleSendCode}
-                      disabled={isLoading || isCodeSent}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white text-sm font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
+                      disabled={isLoading || countdown > 0}
+                      className={`px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors min-w-[120px] ${
+                        countdown > 0 
+                          ? 'bg-gray-400 cursor-not-allowed' 
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      } disabled:bg-gray-400 disabled:cursor-not-allowed`}
                     >
-                      {isCodeSent ? '已发送' : '发送验证码'}
+                      {isLoading ? (
+                        '发送中...'
+                      ) : countdown > 0 ? (
+                        <span className="flex items-center justify-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {countdown}秒
+                        </span>
+                      ) : isCodeSent ? (
+                        '重新发送'
+                      ) : (
+                        '发送验证码'
+                      )}
                     </button>
                   </div>
-                  {isCodeSent && isDevMode && (
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      开发模式验证码：123456
+                  {isCodeSent && (
+                    <p className="mt-2 text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                      <Mail className="w-3 h-3" />
+                      验证码已发送至 {email}，5分钟内有效
                     </p>
                   )}
                 </div>

@@ -7,6 +7,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { API_ROUTES, getRouteDocumentation } = require('./config/apiRoutes');
+const { sendVerificationCode } = require('./services/emailService');
 require('dotenv').config();
 
 const app = express();
@@ -31,6 +32,7 @@ const MOCK_GOOGLE_EMAIL = process.env.MOCK_GOOGLE_EMAIL || 'test@gmail.com';
 const MOCK_GOOGLE_USER = process.env.MOCK_GOOGLE_USER || '测试用户';
 
 // 存储验证码（生产环境应使用Redis）
+// 格式: email -> { code, timestamp, expires, lastSent }
 const verificationCodes = new Map();
 
 // 中间件配置
@@ -503,36 +505,94 @@ app.post('/api/auth/send-code', async (req, res) => {
             });
         }
         
-        if (DEV_MODE) {
-            // 开发模式：存储模拟验证码
-            verificationCodes.set(email, MOCK_VERIFICATION_CODE);
-            console.log(`[DEV MODE] 验证码已发送到 ${email}: ${MOCK_VERIFICATION_CODE}`);
-            
-            return res.json({
-                success: true,
-                message: '验证码已发送（开发模式）',
-                devMode: true
+        // 邮箱格式验证
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                error: 'Invalid email',
+                message: '请提供有效的邮箱地址'
             });
         }
         
-        // 生产模式：生成6位随机验证码
+        // 频率限制检查（60秒内只能发送一次）
+        const existingCode = verificationCodes.get(email);
+        if (existingCode && existingCode.lastSent) {
+            const timeSinceLastSent = Date.now() - existingCode.lastSent;
+            if (timeSinceLastSent < 60000) { // 60秒
+                const waitTime = Math.ceil((60000 - timeSinceLastSent) / 1000);
+                return res.status(429).json({
+                    error: 'Too many requests',
+                    message: `请等待 ${waitTime} 秒后再试`,
+                    waitTime
+                });
+            }
+        }
+        
+        // 生成6位随机验证码
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        verificationCodes.set(email, code);
+        const timestamp = Date.now();
+        const expires = timestamp + 5 * 60 * 1000; // 5分钟后过期
         
-        // TODO: 实际发送邮件
-        console.log(`验证码已生成: ${email} -> ${code}`);
+        // 发送真实邮件
+        try {
+            console.log(`[EMAIL] Sending verification code to ${email}`);
+            const emailResult = await sendVerificationCode(email, code);
+            console.log(`[EMAIL] Send result:`, emailResult);
+            
+            // 存储验证码信息
+            verificationCodes.set(email, {
+                code,
+                timestamp,
+                expires,
+                lastSent: timestamp,
+                messageId: emailResult.messageId
+            });
+            
+            // 5分钟后自动删除
+            setTimeout(() => {
+                const stored = verificationCodes.get(email);
+                if (stored && stored.code === code) {
+                    verificationCodes.delete(email);
+                    console.log(`[CLEANUP] Verification code for ${email} expired and removed`);
+                }
+            }, 5 * 60 * 1000);
+            
+            console.log(`[SUCCESS] Verification code sent to ${email}, expires at ${new Date(expires).toISOString()}`);
+            
+            res.json({
+                success: true,
+                message: '验证码已发送到您的邮箱，请注意查收',
+                expiresIn: 300 // 5分钟（秒）
+            });
+            
+        } catch (emailError) {
+            console.error(`[EMAIL ERROR] Failed to send to ${email}:`, emailError);
+            
+            // 邮件发送失败时的降级处理（仅在开发环境）
+            if (process.env.NODE_ENV === 'development') {
+                console.log(`[FALLBACK] Verification code for ${email}: ${code}`);
+                verificationCodes.set(email, {
+                    code,
+                    timestamp,
+                    expires,
+                    lastSent: timestamp
+                });
+                
+                return res.json({
+                    success: true,
+                    message: '验证码发送失败，已在控制台输出（开发模式）',
+                    devMode: true
+                });
+            }
+            
+            return res.status(500).json({
+                error: 'Email service error',
+                message: '邮件发送失败，请稍后重试'
+            });
+        }
         
-        // 5分钟后过期
-        setTimeout(() => {
-            verificationCodes.delete(email);
-        }, 5 * 60 * 1000);
-        
-        res.json({
-            success: true,
-            message: '验证码已发送到您的邮箱'
-        });
     } catch (error) {
-        console.error('Send code error:', error);
+        console.error('[SEND CODE ERROR]:', error);
         res.status(500).json({
             error: 'Server error',
             message: '发送验证码失败'
@@ -552,30 +612,55 @@ app.post('/api/auth/verify-code', async (req, res) => {
             });
         }
         
-        const storedCode = verificationCodes.get(email);
+        const storedData = verificationCodes.get(email);
         
-        if (!storedCode) {
+        if (!storedData) {
+            console.log(`[VERIFY] No verification code found for ${email}`);
             return res.json({
                 success: false,
-                message: '验证码已过期或不存在'
+                message: '验证码不存在，请重新发送'
             });
         }
         
-        if (storedCode === code) {
-            // 验证成功，删除验证码
+        // 检查是否过期
+        if (Date.now() > storedData.expires) {
+            console.log(`[VERIFY] Verification code expired for ${email}`);
             verificationCodes.delete(email);
             return res.json({
-                success: true,
-                message: '验证成功'
+                success: false,
+                message: '验证码已过期，请重新发送'
             });
         }
         
+        // 验证码匹配检查
+        if (storedData.code === code) {
+            console.log(`[VERIFY SUCCESS] Verification successful for ${email}`);
+            
+            // 验证成功，删除验证码
+            verificationCodes.delete(email);
+            
+            // 生成JWT token（如果需要自动登录）
+            const token = jwt.sign(
+                { email, type: 'email_verification' },
+                JWT_SECRET,
+                { expiresIn: '7d' }
+            );
+            
+            return res.json({
+                success: true,
+                message: '验证成功',
+                token, // 返回token以便前端自动登录
+                user: { email }
+            });
+        }
+        
+        console.log(`[VERIFY FAILED] Wrong code for ${email}: provided ${code}, expected ${storedData.code}`);
         res.json({
             success: false,
             message: '验证码错误'
         });
     } catch (error) {
-        console.error('Verify code error:', error);
+        console.error('[VERIFY CODE ERROR]:', error);
         res.status(500).json({
             error: 'Server error',
             message: '验证失败'
