@@ -19,7 +19,7 @@ export const ResetPassword: React.FC = () => {
   
   const navigate = useNavigate()
   const location = useLocation()
-  const { resetPassword, sendVerificationCode, verifyCode } = useAuth()
+  const { resetPassword, sendVerificationCode } = useAuth()
   
   // 从URL参数获取邮箱并预填充
   useEffect(() => {
