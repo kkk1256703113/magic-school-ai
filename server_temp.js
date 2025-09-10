@@ -8,7 +8,6 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { API_ROUTES, getRouteDocumentation } = require('./config/apiRoutes');
 const { sendVerificationCode, sendPasswordResetEmail } = require('./services/emailService');
-const OAuthService = require('./services/oauthService');
 require('dotenv').config();
 
 const app = express();
@@ -26,15 +25,6 @@ const pool = new Pool({
 // JWT密钥
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-// 初始化OAuth服务
-let oauthService;
-pool.connect().then(() => {
-    oauthService = new OAuthService(pool, JWT_SECRET);
-    console.log('[OAuth] Service initialized');
-}).catch(err => {
-    console.error('[OAuth] Failed to initialize service:', err);
-});
-
 // 开发模式
 const DEV_MODE = process.env.DEV_MODE === 'true';
 const MOCK_VERIFICATION_CODE = process.env.MOCK_VERIFICATION_CODE || '123456';
@@ -44,10 +34,6 @@ const MOCK_GOOGLE_USER = process.env.MOCK_GOOGLE_USER || '测试用户';
 // 存储验证码（生产环境应使用Redis）
 // 格式: email -> { code, timestamp, expires, lastSent }
 const verificationCodes = new Map();
-
-// 频率限制存储（生产环境应使用Redis）
-// 格式: key -> timestamp
-const rateLimitStore = {};
 
 // 中间件配置
 app.use(helmet({
@@ -381,7 +367,7 @@ app.post('/api/auth/logout', (req, res) => {
 // 忘记密码 - 发送验证码
 app.post('/api/auth/forgot-password', async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, type } = req.body;
         
         if (!email) {
             return res.status(400).json({
@@ -576,7 +562,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
 // 发送验证码
 app.post('/api/auth/send-code', async (req, res) => {
     try {
-        const { email, type = 'register' } = req.body;
+        const { email, type } = req.body;
         
         if (!email) {
             return res.status(400).json({
@@ -594,18 +580,19 @@ app.post('/api/auth/send-code', async (req, res) => {
             });
         }
         
-        // 根据类型确定存储键和频率限制键
-        const storageKey = type === 'reset' ? `reset_${email}` : email;
-        const rateLimitKey = `${type}_${email}`;
-        
         // 频率限制检查（60秒内只能发送一次）
-        if (rateLimitStore[rateLimitKey] && Date.now() - rateLimitStore[rateLimitKey] < 60000) {
-            const waitTime = Math.ceil((60000 - (Date.now() - rateLimitStore[rateLimitKey])) / 1000);
-            return res.status(429).json({
-                error: 'Too many requests',
-                message: `请等待 ${waitTime} 秒后再试`,
-                waitTime
-            });
+        const storageKey = type === "reset" ? `reset_${email}` : email;
+        const existingCode = verificationCodes.get(storageKey);
+        if (existingCode && existingCode.lastSent) {
+            const timeSinceLastSent = Date.now() - existingCode.lastSent;
+            if (timeSinceLastSent < 60000) { // 60秒
+                const waitTime = Math.ceil((60000 - timeSinceLastSent) / 1000);
+                return res.status(429).json({
+                    error: 'Too many requests',
+                    message: `请等待 ${waitTime} 秒后再试`,
+                    waitTime
+                });
+            }
         }
         
         // 生成6位随机验证码
@@ -615,33 +602,29 @@ app.post('/api/auth/send-code', async (req, res) => {
         
         // 发送真实邮件
         try {
-            console.log(`[EMAIL] Sending ${type} verification code to ${email}`);
+            console.log(`[EMAIL] Sending verification code to ${email}`);
             const emailResult = await sendVerificationCode(email, code);
             console.log(`[EMAIL] Send result:`, emailResult);
             
-            // 存储验证码信息 - 使用正确的存储键
+            // 存储验证码信息
             verificationCodes.set(storageKey, {
                 code,
                 timestamp,
                 expires,
                 lastSent: timestamp,
-                messageId: emailResult.messageId,
-                type // 记录验证码类型
+                messageId: emailResult.messageId
             });
-            
-            // 记录频率限制
-            rateLimitStore[rateLimitKey] = timestamp;
             
             // 5分钟后自动删除
             setTimeout(() => {
                 const stored = verificationCodes.get(storageKey);
                 if (stored && stored.code === code) {
                     verificationCodes.delete(storageKey);
-                    console.log(`[CLEANUP] ${type} verification code for ${email} expired and removed`);
+                    console.log(`[CLEANUP] Verification code for ${email} expired and removed`);
                 }
             }, 5 * 60 * 1000);
             
-            console.log(`[SUCCESS] ${type} verification code sent to ${email}, expires at ${new Date(expires).toISOString()}`);
+            console.log(`[SUCCESS] Verification code sent to ${email}, expires at ${new Date(expires).toISOString()}`);
             
             res.json({
                 success: true,
@@ -650,21 +633,17 @@ app.post('/api/auth/send-code', async (req, res) => {
             });
             
         } catch (emailError) {
-            console.error(`[EMAIL ERROR] Failed to send ${type} code to ${email}:`, emailError);
+            console.error(`[EMAIL ERROR] Failed to send to ${email}:`, emailError);
             
             // 邮件发送失败时的降级处理（仅在开发环境）
             if (process.env.NODE_ENV === 'development') {
-                console.log(`[FALLBACK] ${type} verification code for ${email}: ${code}`);
+                console.log(`[FALLBACK] Verification code for ${email}: ${code}`);
                 verificationCodes.set(storageKey, {
                     code,
                     timestamp,
                     expires,
-                    lastSent: timestamp,
-                    type
+                    lastSent: timestamp
                 });
-                
-                // 记录频率限制
-                rateLimitStore[rateLimitKey] = timestamp;
                 
                 return res.json({
                     success: true,
@@ -691,7 +670,7 @@ app.post('/api/auth/send-code', async (req, res) => {
 // 验证验证码
 app.post('/api/auth/verify-code', async (req, res) => {
     try {
-        const { email, code, type = 'register' } = req.body;
+        const { email, code } = req.body;
         
         if (!email || !code) {
             return res.status(400).json({
@@ -700,12 +679,10 @@ app.post('/api/auth/verify-code', async (req, res) => {
             });
         }
         
-        // 根据类型确定存储键
-        const storageKey = type === 'reset' ? `reset_${email}` : email;
-        const storedData = verificationCodes.get(storageKey);
+        const storedData = verificationCodes.get(email);
         
         if (!storedData) {
-            console.log(`[VERIFY] No ${type} verification code found for ${email}`);
+            console.log(`[VERIFY] No verification code found for ${email}`);
             return res.json({
                 success: false,
                 message: '验证码不存在，请重新发送'
@@ -714,8 +691,8 @@ app.post('/api/auth/verify-code', async (req, res) => {
         
         // 检查是否过期
         if (Date.now() > storedData.expires) {
-            console.log(`[VERIFY] ${type} verification code expired for ${email}`);
-            verificationCodes.delete(storageKey);
+            console.log(`[VERIFY] Verification code expired for ${email}`);
+            verificationCodes.delete(email);
             return res.json({
                 success: false,
                 message: '验证码已过期，请重新发送'
@@ -724,36 +701,27 @@ app.post('/api/auth/verify-code', async (req, res) => {
         
         // 验证码匹配检查
         if (storedData.code === code) {
-            console.log(`[VERIFY SUCCESS] ${type} verification successful for ${email}`);
+            console.log(`[VERIFY SUCCESS] Verification successful for ${email}`);
             
             // 验证成功，删除验证码
-            verificationCodes.delete(storageKey);
+            verificationCodes.delete(email);
             
-            // 只有注册验证码才需要生成JWT token进行自动登录
-            // 密码重置验证码不需要自动登录
-            if (type === 'register') {
-                const token = jwt.sign(
-                    { email, type: 'email_verification' },
-                    JWT_SECRET,
-                    { expiresIn: '7d' }
-                );
-                
-                return res.json({
-                    success: true,
-                    message: '验证成功',
-                    token, // 返回token以便前端自动登录
-                    user: { email }
-                });
-            } else {
-                // 密码重置验证码验证成功，不返回token
-                return res.json({
-                    success: true,
-                    message: '验证成功'
-                });
-            }
+            // 生成JWT token（如果需要自动登录）
+            const token = jwt.sign(
+                { email, type: 'email_verification' },
+                JWT_SECRET,
+                { expiresIn: '7d' }
+            );
+            
+            return res.json({
+                success: true,
+                message: '验证成功',
+                token, // 返回token以便前端自动登录
+                user: { email }
+            });
         }
         
-        console.log(`[VERIFY FAILED] Wrong ${type} code for ${email}: provided ${code}, expected ${storedData.code}`);
+        console.log(`[VERIFY FAILED] Wrong code for ${email}: provided ${code}, expected ${storedData.code}`);
         res.json({
             success: false,
             message: '验证码错误'
@@ -820,139 +788,16 @@ app.post('/api/auth/google', async (req, res) => {
         }
         
         // 生产模式：真实Google OAuth验证
-        if (!oauthService) {
-            return res.status(503).json({
-                error: 'Service unavailable',
-                message: 'OAuth服务尚未初始化'
-            });
-        }
-        
-        const { idToken } = req.body;
-        if (!idToken) {
-            return res.status(400).json({
-                error: 'Missing token',
-                message: '缺少Google ID Token'
-            });
-        }
-        
-        const result = await oauthService.handleGoogleAuth(idToken);
-        res.json(result);
+        // TODO: 实现真实的Google OAuth验证
+        res.status(501).json({
+            error: 'Not implemented',
+            message: 'Google OAuth尚未在生产环境实现'
+        });
     } catch (error) {
         console.error('Google auth error:', error);
         res.status(500).json({
             error: 'Server error',
             message: 'Google登录失败'
-        });
-    }
-});
-
-// GitHub OAuth登录
-app.post('/api/auth/github', async (req, res) => {
-    try {
-        if (!oauthService) {
-            return res.status(503).json({
-                error: 'Service unavailable',
-                message: 'OAuth服务尚未初始化'
-            });
-        }
-        
-        // 返回GitHub OAuth URL供前端跳转
-        const authUrl = oauthService.getGitHubAuthUrl();
-        res.json({
-            success: true,
-            authUrl
-        });
-    } catch (error) {
-        console.error('GitHub auth error:', error);
-        res.status(500).json({
-            error: 'Server error',
-            message: 'GitHub登录失败'
-        });
-    }
-});
-
-// Google OAuth回调处理
-app.get('/api/auth/oauth/google/callback', async (req, res) => {
-    try {
-        if (!oauthService) {
-            return res.redirect(`${process.env.OAUTH_CALLBACK_DOMAIN}/?error=service_unavailable`);
-        }
-        
-        const { code } = req.query;
-        if (!code) {
-            return res.redirect(`${process.env.OAUTH_CALLBACK_DOMAIN}/?error=missing_code`);
-        }
-        
-        const result = await oauthService.handleGoogleCallback(code);
-        
-        // 重定向到前端，带上token
-        const redirectUrl = `${process.env.OAUTH_CALLBACK_DOMAIN}/app?token=${result.token}&provider=google`;
-        res.redirect(redirectUrl);
-    } catch (error) {
-        console.error('Google OAuth callback error:', error);
-        res.redirect(`${process.env.OAUTH_CALLBACK_DOMAIN}/?error=auth_failed&message=${encodeURIComponent(error.message)}`);
-    }
-});
-
-// GitHub OAuth回调处理
-app.get('/api/auth/oauth/github/callback', async (req, res) => {
-    try {
-        if (!oauthService) {
-            return res.redirect(`${process.env.OAUTH_CALLBACK_DOMAIN}/?error=service_unavailable`);
-        }
-        
-        const { code } = req.query;
-        if (!code) {
-            return res.redirect(`${process.env.OAUTH_CALLBACK_DOMAIN}/?error=missing_code`);
-        }
-        
-        const result = await oauthService.handleGitHubCallback(code);
-        
-        // 重定向到前端，带上token
-        const redirectUrl = `${process.env.OAUTH_CALLBACK_DOMAIN}/app?token=${result.token}&provider=github`;
-        res.redirect(redirectUrl);
-    } catch (error) {
-        console.error('GitHub OAuth callback error:', error);
-        res.redirect(`${process.env.OAUTH_CALLBACK_DOMAIN}/?error=auth_failed&message=${encodeURIComponent(error.message)}`);
-    }
-});
-
-// 获取OAuth URL（新的统一接口）
-app.get('/api/auth/oauth/:provider/url', async (req, res) => {
-    try {
-        if (!oauthService) {
-            return res.status(503).json({
-                error: 'Service unavailable',
-                message: 'OAuth服务尚未初始化'
-            });
-        }
-        
-        const { provider } = req.params;
-        let authUrl;
-        
-        switch (provider) {
-            case 'google':
-                authUrl = oauthService.getGoogleAuthUrl();
-                break;
-            case 'github':
-                authUrl = oauthService.getGitHubAuthUrl();
-                break;
-            default:
-                return res.status(400).json({
-                    error: 'Invalid provider',
-                    message: '不支持的OAuth提供商'
-                });
-        }
-        
-        res.json({
-            success: true,
-            authUrl
-        });
-    } catch (error) {
-        console.error(`${req.params.provider} OAuth URL error:`, error);
-        res.status(500).json({
-            error: 'Server error',
-            message: '获取OAuth URL失败'
         });
     }
 });

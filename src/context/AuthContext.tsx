@@ -28,6 +28,7 @@ interface AuthContextType {
   sendVerificationCode: (email: string, type?: 'register' | 'reset') => Promise<void>
   verifyCode: (email: string, code: string, type?: 'register' | 'reset') => Promise<boolean>
   googleLogin: () => Promise<void>
+  githubLogin: () => Promise<void>
   isDevMode: boolean
 }
 
@@ -294,17 +295,90 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       
       // 生产模式：真实Google OAuth流程
-      const response = await axios.post(API_ROUTES.AUTH.GOOGLE)
-      const { token: newToken, user: userData } = response.data
-      
-      setToken(newToken)
-      setUser(userData)
-      localStorage.setItem('token', newToken)
-      setAuthHeader(newToken)
+      // 获取OAuth URL并跳转
+      const response = await axios.get('/api/auth/oauth/google/url')
+      if (response.data.success && response.data.authUrl) {
+        // 保存当前页面URL，OAuth成功后返回
+        sessionStorage.setItem('oauth_redirect', window.location.pathname)
+        window.location.href = response.data.authUrl
+      } else {
+        throw new Error('无法获取Google登录链接')
+      }
     } catch (error: any) {
       throw new Error(error.response?.data?.error || 'Google登录失败')
     }
   }
+
+  // GitHub登录
+  const githubLogin = async () => {
+    try {
+      // 获取OAuth URL并跳转
+      const response = await axios.get('/api/auth/oauth/github/url')
+      if (response.data.success && response.data.authUrl) {
+        // 保存当前页面URL，OAuth成功后返回
+        sessionStorage.setItem('oauth_redirect', window.location.pathname)
+        window.location.href = response.data.authUrl
+      } else {
+        throw new Error('无法获取GitHub登录链接')
+      }
+    } catch (error: any) {
+      throw new Error(error.response?.data?.error || 'GitHub登录失败')
+    }
+  }
+
+  // 处理OAuth回调（在组件挂载时检查URL参数）
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search)
+      const oauthToken = urlParams.get('token')
+      const provider = urlParams.get('provider')
+      
+      if (oauthToken && provider) {
+        console.log(`[OAuth] Processing ${provider} callback`)
+        
+        // 设置token和获取用户信息
+        setToken(oauthToken)
+        localStorage.setItem('token', oauthToken)
+        setAuthHeader(oauthToken)
+        
+        try {
+          // 验证token并获取用户信息
+          const response = await axios.get(API_ROUTES.AUTH.STATUS)
+          if (response.data.authenticated) {
+            setUser(response.data.user)
+            console.log(`[OAuth] ${provider} login successful`)
+            
+            // 清除URL参数
+            const cleanUrl = window.location.pathname
+            window.history.replaceState({}, document.title, cleanUrl)
+            
+            // 返回之前的页面或默认页面
+            const redirectPath = sessionStorage.getItem('oauth_redirect') || '/app'
+            sessionStorage.removeItem('oauth_redirect')
+            if (window.location.pathname !== redirectPath) {
+              window.location.href = redirectPath
+            }
+          }
+        } catch (error) {
+          console.error('[OAuth] Failed to verify token:', error)
+          logout()
+        }
+      }
+      
+      // 处理OAuth错误
+      const error = urlParams.get('error')
+      if (error) {
+        const message = urlParams.get('message') || 'OAuth登录失败'
+        console.error(`[OAuth] Error: ${error} - ${message}`)
+        // 清除URL参数
+        window.history.replaceState({}, document.title, window.location.pathname)
+      }
+    }
+    
+    if (!isLoading) {
+      handleOAuthCallback()
+    }
+  }, [isLoading])
 
   const value = {
     user,
@@ -321,6 +395,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     sendVerificationCode,
     verifyCode,
     googleLogin,
+    githubLogin,
     isDevMode
   }
 

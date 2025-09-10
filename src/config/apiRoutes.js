@@ -32,6 +32,14 @@ export const API_ROUTES = {
     
     // OAuth登录
     GOOGLE: '/api/auth/google',
+    GITHUB: '/api/auth/github',
+    
+    // OAuth回调
+    OAUTH_GOOGLE_CALLBACK: '/api/auth/oauth/google/callback',
+    OAUTH_GITHUB_CALLBACK: '/api/auth/oauth/github/callback',
+    
+    // OAuth URL获取
+    OAUTH_URL: '/api/auth/oauth/:provider/url',
   },
 
   // 使用量管理路由

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, Mail, ArrowLeft, Chrome, AlertCircle, Clock } from 'lucide-react'
+import { X, Mail, ArrowLeft, Chrome, Github, AlertCircle, Clock } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -24,7 +24,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
   const [successMessage, setSuccessMessage] = useState('')
   const [countdown, setCountdown] = useState(0)
   
-  const { login, register, forgotPassword, sendVerificationCode, verifyCode, googleLogin, isDevMode } = useAuth()
+  const { login, register, forgotPassword, sendVerificationCode, verifyCode, googleLogin, githubLogin, isDevMode } = useAuth()
   const navigate = useNavigate()
 
   // 倒计时效果
@@ -75,13 +75,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
     
     try {
       await googleLogin()
-      toast.success('Google登录成功！')
-      onClose()
-      resetForm()
-      onSuccess?.()
+      // OAuth会跳转到外部页面，不需要关闭模态框
     } catch (error: any) {
       setErrorMessage(error.message || 'Google登录失败')
-    } finally {
+      setIsLoading(false)
+    }
+  }
+  
+  const handleGitHubLogin = async () => {
+    setIsLoading(true)
+    setErrorMessage('')
+    
+    try {
+      await githubLogin()
+      // OAuth会跳转到外部页面，不需要关闭模态框
+    } catch (error: any) {
+      setErrorMessage(error.message || 'GitHub登录失败')
       setIsLoading(false)
     }
   }
@@ -449,16 +458,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
               </div>
             </div>
             
-            {/* Google登录按钮 */}
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Chrome className="w-5 h-5" />
-              {isDevMode ? '模拟Google登录' : '使用Google登录'}
-            </button>
+            {/* 社交登录按钮 */}
+            <div className="space-y-3">
+              {/* Google登录按钮 */}
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Chrome className="w-5 h-5" />
+                {isDevMode ? '模拟Google登录' : '使用Google登录'}
+              </button>
+              
+              {/* GitHub登录按钮 */}
+              <button
+                type="button"
+                onClick={handleGitHubLogin}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Github className="w-5 h-5" />
+                使用GitHub登录
+              </button>
+            </div>
           </form>
         )}
 
