@@ -8,6 +8,7 @@ import { LanguageProvider } from './context/LanguageContext'
 import HomePage from './pages/HomePage'
 import LandingPage from './pages/LandingPage'
 import { ResetPassword } from './components/ResetPassword'
+import { OAuthCallback } from './components/OAuthCallback'
 import './i18n' // Initialize i18n
 import './index.css'
 import './styles/landing.css'
@@ -27,6 +28,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               
               {/* 根路径 - 落地页作为首页 */}
               <Route path="/" element={<LandingPage />} />
+              
+              {/* OAuth回调路由 */}
+              <Route path="/api/auth/oauth/google/callback" element={<OAuthCallback />} />
+              <Route path="/api/auth/oauth/github/callback" element={<OAuthCallback />} />
               
               <Route path="/reset-password" element={<ResetPassword />} />
             </Routes>
