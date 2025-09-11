@@ -2,10 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const session = require('express-session');
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const passport = require('./config/passport'); // OAuth配置
 const { API_ROUTES, getRouteDocumentation } = require('./config/apiRoutes');
 const { sendVerificationCode, sendPasswordResetEmail } = require('./services/emailService');
 require('dotenv').config();
@@ -81,6 +83,21 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Session配置 (OAuth需要)
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'magic-school-ai-session-secret-2025',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // HTTPS环境下设置为true
+        maxAge: 24 * 60 * 60 * 1000 // 24小时
+    }
+}));
+
+// Passport中间件
+app.use(passport.initialize());
+app.use(passport.session());
 
 // 速率限制配置
 const limiter = rateLimit({
@@ -735,7 +752,143 @@ app.post('/api/auth/verify-code', async (req, res) => {
     }
 });
 
-// Google OAuth登录
+// ==================== OAuth路由 ====================
+
+// Google OAuth - 获取认证URL
+app.get('/api/auth/oauth/google/url', (req, res) => {
+    try {
+        console.log('Google OAuth URL请求');
+        
+        if (DEV_MODE) {
+            // 开发模式：模拟Google登录
+            console.log(`[DEV MODE] 模拟Google登录`);
+            return res.json({
+                success: true,
+                authUrl: '/api/auth/oauth/google/mock' // 模拟URL
+            });
+        }
+        
+        // 生产模式：构建真实的Google OAuth URL
+        const baseURL = process.env.NODE_ENV === 'production' 
+            ? 'https://www.magicschoolai.net'
+            : `http://localhost:${PORT}`;
+        
+        const scope = 'openid email profile';
+        const authUrl = `https://accounts.google.com/oauth/authorize?` + 
+            `client_id=${process.env.GOOGLE_CLIENT_ID}&` +
+            `redirect_uri=${encodeURIComponent(baseURL + '/api/auth/oauth/google/callback')}&` +
+            `scope=${encodeURIComponent(scope)}&` +
+            `response_type=code&` +
+            `access_type=offline&` +
+            `state=${crypto.randomBytes(16).toString('hex')}`;
+            
+        console.log('Generated Google Auth URL:', authUrl);
+        
+        res.json({
+            success: true,
+            authUrl: authUrl
+        });
+    } catch (error) {
+        console.error('Google OAuth URL error:', error);
+        res.status(500).json({
+            error: 'Server error',
+            message: '无法生成Google登录链接'
+        });
+    }
+});
+
+// Google OAuth回调处理
+app.get('/api/auth/oauth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/?error=google_auth_failed' }),
+    async (req, res) => {
+        try {
+            console.log('Google OAuth 回调成功:', req.user);
+            
+            // 生成JWT
+            const token = jwt.sign(
+                { 
+                    id: req.user.id, 
+                    email: req.user.email,
+                    plan: req.user.plan_type 
+                },
+                JWT_SECRET,
+                { expiresIn: '24h' }
+            );
+            
+            // 获取原始重定向URL
+            const redirectUrl = req.session.oauth_redirect || '/app';
+            
+            // 重定向到前端，附带token
+            res.redirect(`${redirectUrl}?token=${token}&success=google_login`);
+        } catch (error) {
+            console.error('Google OAuth callback error:', error);
+            res.redirect('/?error=google_auth_callback_failed');
+        }
+    }
+);
+
+// GitHub OAuth - 获取认证URL
+app.get('/api/auth/oauth/github/url', (req, res) => {
+    try {
+        console.log('GitHub OAuth URL请求');
+        
+        const baseURL = process.env.NODE_ENV === 'production' 
+            ? 'https://www.magicschoolai.net'
+            : `http://localhost:${PORT}`;
+        
+        const scope = 'user:email';
+        const authUrl = `https://github.com/login/oauth/authorize?` + 
+            `client_id=${process.env.GITHUB_CLIENT_ID}&` +
+            `redirect_uri=${encodeURIComponent(baseURL + '/api/auth/oauth/github/callback')}&` +
+            `scope=${encodeURIComponent(scope)}&` +
+            `state=${crypto.randomBytes(16).toString('hex')}`;
+            
+        console.log('Generated GitHub Auth URL:', authUrl);
+        
+        res.json({
+            success: true,
+            authUrl: authUrl
+        });
+    } catch (error) {
+        console.error('GitHub OAuth URL error:', error);
+        res.status(500).json({
+            error: 'Server error',
+            message: '无法生成GitHub登录链接'
+        });
+    }
+});
+
+// GitHub OAuth回调处理
+app.get('/api/auth/oauth/github/callback', 
+    passport.authenticate('github', { failureRedirect: '/?error=github_auth_failed' }),
+    async (req, res) => {
+        try {
+            console.log('GitHub OAuth 回调成功:', req.user);
+            
+            // 生成JWT
+            const token = jwt.sign(
+                { 
+                    id: req.user.id, 
+                    email: req.user.email,
+                    plan: req.user.plan_type 
+                },
+                JWT_SECRET,
+                { expiresIn: '24h' }
+            );
+            
+            // 获取原始重定向URL
+            const redirectUrl = req.session.oauth_redirect || '/app';
+            
+            // 重定向到前端，附带token
+            res.redirect(`${redirectUrl}?token=${token}&success=github_login`);
+        } catch (error) {
+            console.error('GitHub OAuth callback error:', error);
+            res.redirect('/?error=github_auth_callback_failed');
+        }
+    }
+);
+
+// 兼容旧的Google OAuth端点 (开发模式)
 app.post('/api/auth/google', async (req, res) => {
     try {
         if (DEV_MODE) {
@@ -787,11 +940,10 @@ app.post('/api/auth/google', async (req, res) => {
             });
         }
         
-        // 生产模式：真实Google OAuth验证
-        // TODO: 实现真实的Google OAuth验证
-        res.status(501).json({
-            error: 'Not implemented',
-            message: 'Google OAuth尚未在生产环境实现'
+        // 生产模式：重定向到新的OAuth流程
+        res.status(400).json({
+            error: 'Deprecated endpoint',
+            message: '请使用 /api/auth/oauth/google/url 获取登录链接'
         });
     } catch (error) {
         console.error('Google auth error:', error);

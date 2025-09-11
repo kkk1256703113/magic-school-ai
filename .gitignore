@@ -1,6 +1,8 @@
 # 密码管理文档（敏感信息）
 docs/密码管理.md
 password*.md
+OAUTH_SECRETS.md
+*_SECRETS.md
 
 # Logs
 logs
