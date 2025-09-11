@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px;
+            background: #4285f4;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .github {
+            background: #333;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            padding: 5px;
+            margin: 5px 0;
+            border-left: 3px solid #4285f4;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>OAuth Login Test Page</h1>
+    
+    <div>
+        <button class="button" onclick="testGoogleOAuth()">Test Google OAuth</button>
+        <button class="button github" onclick="testGitHubOAuth()">Test GitHub OAuth</button>
+    </div>
+    
+    <div class="log" id="log">
+        <div class="log-entry">Ready to test OAuth...</div>
+    </div>
+    
+    <script>
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        async function testGoogleOAuth() {
+            log('Starting Google OAuth test...');
+            
+            try {
+                // 1. Get OAuth URL
+                log('Fetching Google OAuth URL...');
+                const response = await fetch('https://www.magicschoolai.net/api/auth/oauth/google/url');
+                const data = await response.json();
+                
+                if (data.success && data.authUrl) {
+                    log('Got OAuth URL: ' + data.authUrl.substring(0, 100) + '...');
+                    log('Redirecting to Google login...');
+                    
+                    // Save test mode flag
+                    sessionStorage.setItem('oauth_test_mode', 'true');
+                    
+                    // Redirect to Google
+                    window.location.href = data.authUrl;
+                } else {
+                    log('Error: Failed to get OAuth URL');
+                }
+            } catch (error) {
+                log('Error: ' + error.message);
+            }
+        }
+        
+        async function testGitHubOAuth() {
+            log('Starting GitHub OAuth test...');
+            
+            try {
+                // 1. Get OAuth URL
+                log('Fetching GitHub OAuth URL...');
+                const response = await fetch('https://www.magicschoolai.net/api/auth/oauth/github/url');
+                const data = await response.json();
+                
+                if (data.success && data.authUrl) {
+                    log('Got OAuth URL: ' + data.authUrl.substring(0, 100) + '...');
+                    log('Redirecting to GitHub login...');
+                    
+                    // Save test mode flag
+                    sessionStorage.setItem('oauth_test_mode', 'true');
+                    
+                    // Redirect to GitHub
+                    window.location.href = data.authUrl;
+                } else {
+                    log('Error: Failed to get OAuth URL');
+                }
+            } catch (error) {
+                log('Error: ' + error.message);
+            }
+        }
+        
+        // Check if we're returning from OAuth
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const provider = urlParams.get('provider');
+            const error = urlParams.get('error');
+            
+            if (token && provider) {
+                log('OAuth Success!');
+                log('Provider: ' + provider);
+                log('Token: ' + token.substring(0, 50) + '...');
+                log('✅ OAuth login successful! User can now access /app');
+                
+                // Clear test mode
+                sessionStorage.removeItem('oauth_test_mode');
+                
+                // Test accessing /app
+                setTimeout(() => {
+                    log('Testing access to /app...');
+                    window.location.href = '/app';
+                }, 2000);
+            } else if (error) {
+                log('OAuth Error: ' + error);
+                const message = urlParams.get('message');
+                if (message) {
+                    log('Error Message: ' + decodeURIComponent(message));
+                }
+            }
+            
+            // If in test mode but no OAuth params, we might be on callback
+            if (sessionStorage.getItem('oauth_test_mode') && !token && !error) {
+                const path = window.location.pathname;
+                if (path.includes('callback')) {
+                    log('On OAuth callback page, waiting for redirect...');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
