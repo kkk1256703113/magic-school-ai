@@ -1,14 +1,36 @@
 import React, { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
 export const OAuthCallback: React.FC = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const location = useLocation()
 
   useEffect(() => {
     const handleCallback = async () => {
-      // 获取URL中的code参数
+      // 先检查URL中是否直接有token（后端302重定向的情况）
+      const tokenFromUrl = searchParams.get('token')
+      const providerFromUrl = searchParams.get('provider')
+      
+      if (tokenFromUrl) {
+        console.log('[OAuth] Found token in URL, using it directly');
+        // 直接使用URL中的token
+        localStorage.setItem('token', tokenFromUrl)
+        
+        // 显示成功消息
+        const providerName = providerFromUrl === 'google' ? 'Google' : 'GitHub'
+        toast.success(`${providerName}登录成功！`)
+        
+        // 清理URL中的参数并跳转
+        setTimeout(() => {
+          navigate('/app', { replace: true })
+          window.location.reload()
+        }, 100)
+        return
+      }
+      
+      // 获取URL中的code参数（OAuth流程的第一步）
       const code = searchParams.get('code')
       const error = searchParams.get('error')
       
@@ -42,31 +64,38 @@ export const OAuthCallback: React.FC = () => {
           method: 'GET',
           headers: {
             'Accept': 'application/json'
-          }
+          },
+          credentials: 'same-origin'
         })
         
-        if (!response.ok) {
-          throw new Error('OAuth回调处理失败')
-        }
+        // 检查响应类型
+        const contentType = response.headers.get('content-type')
         
-        const data = await response.json()
-        
-        if (data.success && data.token) {
-          // 保存token并自动获取用户信息
-          localStorage.setItem('token', data.token)
+        if (contentType && contentType.includes('application/json')) {
+          // JSON响应，按原逻辑处理
+          const data = await response.json()
           
-          // 显示成功消息
-          toast.success(`${provider === 'google' ? 'Google' : 'GitHub'}登录成功！`)
-          
-          // 使用navigate确保正确跳转到app页面
-          // 先等待一小段时间确保token已保存
-          setTimeout(() => {
-            navigate('/app')
-            // 强制刷新以触发AuthContext的token验证
-            window.location.reload()
-          }, 100)
+          if (data.success && data.token) {
+            localStorage.setItem('token', data.token)
+            toast.success(`${provider === 'google' ? 'Google' : 'GitHub'}登录成功！`)
+            
+            setTimeout(() => {
+              navigate('/app')
+              window.location.reload()
+            }, 100)
+          } else {
+            throw new Error(data.error || 'OAuth登录失败')
+          }
         } else {
-          throw new Error(data.error || 'OAuth登录失败')
+          // 非JSON响应，可能是重定向或HTML
+          // 后端可能已经处理了OAuth并重定向
+          console.log('[OAuth] Non-JSON response, checking if redirected');
+          
+          // 如果是重定向响应，浏览器会自动跟随
+          // 这里处理意外情况
+          if (!response.ok) {
+            throw new Error('OAuth回调处理失败')
+          }
         }
       } catch (err: any) {
         console.error('OAuth callback error:', err)
@@ -76,7 +105,7 @@ export const OAuthCallback: React.FC = () => {
     }
     
     handleCallback()
-  }, [searchParams, navigate])
+  }, [searchParams, navigate, location])
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-600 to-purple-700">

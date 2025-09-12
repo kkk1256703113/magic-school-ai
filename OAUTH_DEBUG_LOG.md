@@ -59,11 +59,27 @@
    - 修改OAuthCallback组件，在生产环境直接使用相对路径`/api/auth/oauth/...`
    - 优化跳转逻辑，使用navigate配合reload确保页面正确刷新
 
-### Step 5: 验证测试 [开始时间: ]
-- [ ] 本地编译验证
-- [ ] GitHub推送
+### Step 5: 验证测试 [开始时间: 2025-09-12 08:50]
+- [x] 本地编译验证 - 通过
+- [x] GitHub推送 - 准备中
 - [ ] 线上最终测试
+
+### 最终修复方案
+**问题分析**:
+1. 前端OAuthCallback组件期望JSON响应，但后端使用302重定向
+2. 后端重定向到`/app?token=xxx&provider=google`
+3. 前端无法处理重定向中的token参数
+
+**解决方案**:
+1. 修改OAuthCallback组件，支持从URL中直接提取token
+2. 修改HomePage组件，处理OAuth重定向带来的token参数
+3. 两处修改确保无论哪种路径都能正确处理OAuth登录
 
 ---
 
 ## 详细调试记录
+### 2025-09-12 调试总结
+- 发现并修复了Mixed Content问题（HTTP/HTTPS混用）
+- 发现并修复了OAuth回调处理问题（JSON vs 重定向）
+- 成功连接服务器验证后端正常运行
+- OAuth流程在后端已成功，问题在前端处理逻辑
