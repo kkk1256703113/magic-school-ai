@@ -91,17 +91,55 @@ export const OAuthCallback: React.FC = () => {
         return
       }
       
-      // 构建API URL - 确保使用正确的HTTPS地址
-      // 在生产环境中，直接使用相对路径，避免环境变量问题
-      const apiUrl = window.location.origin.includes('localhost') 
-        ? `${import.meta.env.VITE_API_BASE_URL || '/api'}/auth/oauth/${provider}/callback?code=${code}`
-        : `/api/auth/oauth/${provider}/callback?code=${code}`
+      // 直接调用后端API获取token（不依赖浏览器重定向）
+      console.log('[OAuth] Calling backend API to exchange code for token')
       
-      console.log('[OAuth] Redirecting to backend API:', apiUrl)
-      
-      // 直接跳转到后端API，让浏览器处理302重定向
-      // 后端会重定向到 /app?token=xxx&provider=xxx
-      window.location.href = apiUrl
+      try {
+        // 使用fetch直接调用后端（后端需要支持返回JSON）
+        const apiUrl = window.location.origin.includes('localhost')
+          ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/auth/oauth/${provider}/callback`
+          : `https://www.magicschoolai.net:8080/api/auth/oauth/${provider}/callback`
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code }),
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.token) {
+            console.log('[OAuth] Token received, saving and redirecting')
+            localStorage.setItem('token', data.token)
+            
+            // 保存用户信息
+            if (data.user) {
+              localStorage.setItem('user_data', JSON.stringify(data.user))
+            }
+            
+            // 显示成功消息
+            const providerName = provider === 'google' ? 'Google' : 'GitHub'
+            toast.success(`${providerName}登录成功！`)
+            
+            // 跳转到功能页面
+            navigate('/app', { replace: true })
+            setTimeout(() => {
+              window.location.reload()
+            }, 100)
+          } else {
+            throw new Error('未收到有效的token')
+          }
+        } else {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.message || '认证失败')
+        }
+      } catch (error: any) {
+        console.error('[OAuth] Error exchanging code for token:', error)
+        toast.error(`OAuth登录失败: ${error.message}`)
+        navigate('/')
+      }
     }
     
     // 延迟执行，确保DOM完全渲染
