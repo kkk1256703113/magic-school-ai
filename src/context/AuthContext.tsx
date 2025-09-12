@@ -354,44 +354,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         
         console.log(`[OAuth] Processing ${provider} callback with token: ${oauthToken.substring(0, 20)}...`)
         
-        try {
-          // 立即设置token和认证头
-          setToken(oauthToken)
-          localStorage.setItem('token', oauthToken)
-          setAuthHeader(oauthToken)
-          console.log('[OAuth] Token saved to localStorage')
-          
-          // 验证token并获取用户信息
-          const response = await axios.get(API_ROUTES.AUTH.STATUS)
-          if (response.data.authenticated) {
-            setUser(response.data.user)
-            console.log(`[OAuth] ${provider} login successful`)
-            
-            // 显示成功消息
-            const providerName = provider === 'google' ? 'Google' : 
-                                provider === 'github' ? 'GitHub' : 'OAuth'
-            toast.success(`${providerName}登录成功！`)
-            
-            // 清除URL参数和处理标记
-            const cleanUrl = window.location.pathname
-            window.history.replaceState({}, document.title, cleanUrl)
-            sessionStorage.removeItem('oauth_processing')
-            
-            // 强制刷新页面以确保状态更新
-            setTimeout(() => {
-              window.location.reload()
-            }, 500)
-            
-          } else {
-            console.error('[OAuth] Token verification failed')
-            logout()
-            sessionStorage.removeItem('oauth_processing')
-          }
-        } catch (error) {
-          console.error('[OAuth] Failed to verify token:', error)
-          logout()
-          sessionStorage.removeItem('oauth_processing')
-        }
+        // 不验证token，直接保存并刷新页面
+        // 让正常的初始化流程处理token验证
+        console.log('[OAuth] Saving token and refreshing page')
+        
+        // 保存token到localStorage
+        localStorage.setItem('token', oauthToken)
+        console.log('[OAuth] Token saved to localStorage')
+        
+        // 显示成功消息
+        const providerName = provider === 'google' ? 'Google' : 
+                            provider === 'github' ? 'GitHub' : 'OAuth'
+        toast.success(`${providerName}登录成功！`)
+        
+        // 清除URL参数
+        const cleanUrl = window.location.pathname
+        window.history.replaceState({}, document.title, cleanUrl)
+        
+        // 清除处理标记
+        sessionStorage.removeItem('oauth_processing')
+        
+        // 强制刷新页面，让正常的初始化流程处理token
+        setTimeout(() => {
+          console.log('[OAuth] Reloading page to initialize with token')
+          window.location.reload()
+        }, 100)
         
         return // 处理完OAuth回调后退出
       }
