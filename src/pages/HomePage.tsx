@@ -9,9 +9,17 @@ const HomePage = () => {
 
   // OAuth token处理逻辑 - 备用方案
   useEffect(() => {
+    console.log('[HomePage] Component mounted, checking for OAuth token')
+    
     const handleOAuthToken = () => {
       const tokenFromUrl = searchParams.get('token')
       const providerFromUrl = searchParams.get('provider')
+      
+      console.log('[HomePage] URL params check:', {
+        hasToken: !!tokenFromUrl,
+        provider: providerFromUrl,
+        currentURL: window.location.href
+      })
       
       if (tokenFromUrl && providerFromUrl) {
         console.log('[HomePage] Processing OAuth token from URL')

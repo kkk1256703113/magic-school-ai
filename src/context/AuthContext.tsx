@@ -329,10 +329,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // 处理OAuth回调（在组件挂载时检查URL参数）
   useEffect(() => {
+    console.log('[AuthContext] OAuth useEffect triggered')
+    
     const handleOAuthCallback = async () => {
       const urlParams = new URLSearchParams(window.location.search)
       const oauthToken = urlParams.get('token')
       const provider = urlParams.get('provider')
+      
+      console.log('[AuthContext] Checking URL params:', {
+        hasToken: !!oauthToken,
+        provider: provider,
+        url: window.location.href
+      })
       
       if (oauthToken && provider) {
         // 检查是否已经处理过
@@ -344,13 +352,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // 设置处理标记，防止重复执行
         sessionStorage.setItem('oauth_processing', 'true')
         
-        console.log(`[OAuth] Processing ${provider} callback with token`)
+        console.log(`[OAuth] Processing ${provider} callback with token: ${oauthToken.substring(0, 20)}...`)
         
         try {
           // 立即设置token和认证头
           setToken(oauthToken)
           localStorage.setItem('token', oauthToken)
           setAuthHeader(oauthToken)
+          console.log('[OAuth] Token saved to localStorage')
           
           // 验证token并获取用户信息
           const response = await axios.get(API_ROUTES.AUTH.STATUS)
@@ -398,9 +407,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
     
-    // 立即执行，不等待isLoading状态
-    handleOAuthCallback()
-  }, []) // 移除isLoading依赖，确保始终执行
+    // 使用定时器延迟执行，确保DOM已加载
+    const timer = setTimeout(() => {
+      handleOAuthCallback()
+    }, 0)
+    
+    return () => clearTimeout(timer)
+  }, []) // 空依赖数组，只在组件挂载时执行一次
 
   const value = {
     user,
