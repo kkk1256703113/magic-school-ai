@@ -29,8 +29,16 @@ export const OAuthCallback: React.FC = () => {
       }
       
       try {
+        // 构建API URL - 确保使用正确的HTTPS地址
+        // 在生产环境中，直接使用相对路径，避免环境变量问题
+        const apiUrl = window.location.origin.includes('localhost') 
+          ? `${import.meta.env.VITE_API_BASE_URL || '/api'}/auth/oauth/${provider}/callback?code=${code}`
+          : `/api/auth/oauth/${provider}/callback?code=${code}`;
+        
+        console.log('[OAuth] Calling backend API:', apiUrl);
+        
         // 调用后端API处理OAuth回调
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/oauth/${provider}/callback?code=${code}`, {
+        const response = await fetch(apiUrl, {
           method: 'GET',
           headers: {
             'Accept': 'application/json'
@@ -50,8 +58,13 @@ export const OAuthCallback: React.FC = () => {
           // 显示成功消息
           toast.success(`${provider === 'google' ? 'Google' : 'GitHub'}登录成功！`)
           
-          // 重新加载页面以触发AuthContext的token验证
-          window.location.href = '/app'
+          // 使用navigate确保正确跳转到app页面
+          // 先等待一小段时间确保token已保存
+          setTimeout(() => {
+            navigate('/app')
+            // 强制刷新以触发AuthContext的token验证
+            window.location.reload()
+          }, 100)
         } else {
           throw new Error(data.error || 'OAuth登录失败')
         }
