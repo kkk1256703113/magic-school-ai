@@ -335,14 +335,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const provider = urlParams.get('provider')
       
       if (oauthToken && provider) {
-        console.log(`[OAuth] Processing ${provider} callback`)
+        // 检查是否已经处理过
+        if (sessionStorage.getItem('oauth_processing')) {
+          console.log('[OAuth] Already processing, skipping duplicate')
+          return
+        }
         
-        // 设置token和获取用户信息
-        setToken(oauthToken)
-        localStorage.setItem('token', oauthToken)
-        setAuthHeader(oauthToken)
+        // 设置处理标记，防止重复执行
+        sessionStorage.setItem('oauth_processing', 'true')
+        
+        console.log(`[OAuth] Processing ${provider} callback with token`)
         
         try {
+          // 立即设置token和认证头
+          setToken(oauthToken)
+          localStorage.setItem('token', oauthToken)
+          setAuthHeader(oauthToken)
+          
           // 验证token并获取用户信息
           const response = await axios.get(API_ROUTES.AUTH.STATUS)
           if (response.data.authenticated) {
@@ -354,21 +363,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                                 provider === 'github' ? 'GitHub' : 'OAuth'
             toast.success(`${providerName}登录成功！`)
             
-            // 清除URL参数
+            // 清除URL参数和处理标记
             const cleanUrl = window.location.pathname
             window.history.replaceState({}, document.title, cleanUrl)
+            sessionStorage.removeItem('oauth_processing')
             
-            // 返回之前的页面或默认页面
-            const redirectPath = sessionStorage.getItem('oauth_redirect') || '/app'
-            sessionStorage.removeItem('oauth_redirect')
-            if (window.location.pathname !== redirectPath) {
-              window.location.href = redirectPath
-            }
+            // 强制刷新页面以确保状态更新
+            setTimeout(() => {
+              window.location.reload()
+            }, 500)
+            
+          } else {
+            console.error('[OAuth] Token verification failed')
+            logout()
+            sessionStorage.removeItem('oauth_processing')
           }
         } catch (error) {
           console.error('[OAuth] Failed to verify token:', error)
           logout()
+          sessionStorage.removeItem('oauth_processing')
         }
+        
+        return // 处理完OAuth回调后退出
       }
       
       // 处理OAuth错误
@@ -376,15 +392,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (error) {
         const message = urlParams.get('message') || 'OAuth登录失败'
         console.error(`[OAuth] Error: ${error} - ${message}`)
+        toast.error(`OAuth登录失败: ${message}`)
         // 清除URL参数
         window.history.replaceState({}, document.title, window.location.pathname)
       }
     }
     
-    if (!isLoading) {
-      handleOAuthCallback()
-    }
-  }, [isLoading])
+    // 立即执行，不等待isLoading状态
+    handleOAuthCallback()
+  }, []) // 移除isLoading依赖，确保始终执行
 
   const value = {
     user,
