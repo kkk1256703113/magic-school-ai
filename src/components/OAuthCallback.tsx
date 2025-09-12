@@ -20,37 +20,54 @@ export const OAuthCallback: React.FC = () => {
       isProcessing.current = true
       hasHandledCallback.current = true
       
-      // 添加sessionStorage标记，防止页面刷新重复处理
-      const callbackKey = 'oauth_callback_processed'
-      if (sessionStorage.getItem(callbackKey)) {
-        console.log('[OAuth] Already processed in this session')
-        navigate('/app')
-        return
-      }
-      sessionStorage.setItem(callbackKey, 'true')
-      
       console.log('[OAuth] Starting callback processing')
       
-      // 先检查URL中是否直接有token（后端302重定向的情况）
+      // 首先检查URL中是否直接有token（后端302重定向的情况）
+      // 这个检查必须在sessionStorage检查之前，确保token能被正确处理
       const tokenFromUrl = searchParams.get('token')
       const providerFromUrl = searchParams.get('provider')
       
       if (tokenFromUrl) {
-        console.log('[OAuth] Found token in URL, using it directly')
+        console.log('[OAuth] Found token in URL, processing it')
         // 直接使用URL中的token
-        localStorage.setItem('token', tokenFromUrl)
+        localStorage.setItem('auth_token', tokenFromUrl)
+        
+        // 尝试解析用户信息并保存
+        try {
+          const response = await fetch('/api/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${tokenFromUrl}`
+            }
+          })
+          
+          if (response.ok) {
+            const userData = await response.json()
+            localStorage.setItem('user_data', JSON.stringify(userData))
+          }
+        } catch (error) {
+          console.error('[OAuth] Error fetching user data:', error)
+        }
         
         // 显示成功消息
         const providerName = providerFromUrl === 'google' ? 'Google' : 'GitHub'
         toast.success(`${providerName}登录成功！`)
         
         // 清理URL中的参数并跳转
+        navigate('/app', { replace: true })
         setTimeout(() => {
-          navigate('/app', { replace: true })
           window.location.reload()
         }, 100)
         return
       }
+      
+      // 如果没有token，再检查sessionStorage标记，防止重复处理
+      const callbackKey = 'oauth_callback_processed'
+      if (sessionStorage.getItem(callbackKey)) {
+        console.log('[OAuth] Already processed in this session, no token found')
+        navigate('/app')
+        return
+      }
+      sessionStorage.setItem(callbackKey, 'true')
       
       // 获取URL中的code参数（OAuth流程的第一步）
       const code = searchParams.get('code')
