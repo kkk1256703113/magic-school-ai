@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
 
@@ -6,9 +6,18 @@ export const OAuthCallback: React.FC = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const location = useLocation()
+  const hasHandledCallback = useRef(false)
 
   useEffect(() => {
+    // 防止重复执行
+    if (hasHandledCallback.current) {
+      return
+    }
+    
     const handleCallback = async () => {
+      // 标记已经处理过，防止重复执行
+      hasHandledCallback.current = true
+      
       // 先检查URL中是否直接有token（后端302重定向的情况）
       const tokenFromUrl = searchParams.get('token')
       const providerFromUrl = searchParams.get('provider')
