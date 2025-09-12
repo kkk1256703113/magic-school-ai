@@ -61,8 +61,21 @@
 
 ### Step 5: 验证测试 [开始时间: 2025-09-12 08:50]
 - [x] 本地编译验证 - 通过
-- [x] GitHub推送 - 准备中
-- [ ] 线上最终测试
+- [x] GitHub推送 - 已完成
+- [x] 线上最终测试 - 发现无限循环仍存在！
+
+### Step 6: 修复无限循环问题 [开始时间: 2025-09-12 10:30]
+- [x] 添加useRef防止重复执行 - 已实现
+- [x] 提交并推送到GitHub - 已完成
+- [x] 尝试触发Cloudflare重新部署 - 已更新版本号
+- [ ] 等待Cloudflare部署（延迟中）
+- [ ] 验证修复是否生效
+
+**发现问题**: 
+- 控制台日志显示"[OAuth] Redirecting to backend API"被重复执行几百次
+- 说明useEffect仍在重复执行window.location.href
+- 原因：Cloudflare部署延迟，生产环境仍在使用旧版本代码（index-76d1e9db.js）
+- 本地构建生成新版本（index-0657d5ba.js）但未部署成功
 
 ### 最终修复方案
 **问题分析**:
@@ -85,3 +98,31 @@
 - OAuth流程在后端已成功，问题在前端处理逻辑
 - 最终问题：fetch API不会跟随302重定向到不同路径
 - 最终解决：使用window.location.href直接跳转，让浏览器处理重定向
+
+## 最终修复总结 [2025-09-12 11:00]
+
+### 已完成的修复：
+1. **OAuthCallback.tsx修复**：
+   - 添加useRef防止无限循环
+   - 使用window.location.href替代fetch处理302重定向
+   - 正确处理OAuth provider判断
+
+2. **HomePage.tsx修复**：
+   - 添加URL参数token处理逻辑
+   - 保存token到localStorage
+   - 自动刷新页面以更新认证状态
+
+3. **环境变量修复**：
+   - 生产环境使用相对路径/api/auth/oauth
+   - 避免HTTP/HTTPS混用问题
+
+### 当前状态：
+- ✅ 代码修复已完成并推送到GitHub
+- ⏳ 等待Cloudflare Pages部署最新代码
+- ⚠️ 生产环境仍在使用旧版本（index-76d1e9db.js）
+- 📦 本地构建新版本（index-0657d5ba.js）待部署
+
+### 下一步行动：
+1. 等待Cloudflare自动部署完成
+2. 或手动在Cloudflare Dashboard触发重新部署
+3. 部署成功后进行最终验证测试

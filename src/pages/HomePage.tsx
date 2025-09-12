@@ -15,6 +15,9 @@ const HomePage = () => {
     if (tokenFromUrl) {
       console.log('[HomePage] Found OAuth token in URL, processing...')
       
+      // 清理OAuth回调处理标记
+      sessionStorage.removeItem('oauth_callback_processed')
+      
       // 保存token到localStorage
       localStorage.setItem('token', tokenFromUrl)
       
