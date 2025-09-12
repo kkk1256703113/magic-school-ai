@@ -331,7 +331,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     console.log('[AuthContext] OAuth useEffect triggered')
     
-    const handleOAuthCallback = async () => {
+    const handleOAuthCallback = () => {
       const urlParams = new URLSearchParams(window.location.search)
       const oauthToken = urlParams.get('token')
       const provider = urlParams.get('provider')
@@ -343,24 +343,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       })
       
       if (oauthToken && provider) {
-        // 检查是否已经处理过
-        if (sessionStorage.getItem('oauth_processing')) {
-          console.log('[OAuth] Already processing, skipping duplicate')
-          return
-        }
+        console.log(`[OAuth] Found ${provider} token in URL, processing...`)
         
-        // 设置处理标记，防止重复执行
-        sessionStorage.setItem('oauth_processing', 'true')
-        
-        console.log(`[OAuth] Processing ${provider} callback with token: ${oauthToken.substring(0, 20)}...`)
-        
-        // 不验证token，直接保存并刷新页面
-        // 让正常的初始化流程处理token验证
-        console.log('[OAuth] Saving token and refreshing page')
-        
-        // 保存token到localStorage
+        // 立即保存token到localStorage（不做任何验证）
         localStorage.setItem('token', oauthToken)
         console.log('[OAuth] Token saved to localStorage')
+        
+        // 同时更新组件状态
+        setToken(oauthToken)
+        setAuthHeader(oauthToken)
         
         // 显示成功消息
         const providerName = provider === 'google' ? 'Google' : 
@@ -371,14 +362,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const cleanUrl = window.location.pathname
         window.history.replaceState({}, document.title, cleanUrl)
         
-        // 清除处理标记
-        sessionStorage.removeItem('oauth_processing')
-        
-        // 强制刷新页面，让正常的初始化流程处理token
+        // 延迟刷新页面，确保token已经保存
         setTimeout(() => {
-          console.log('[OAuth] Reloading page to initialize with token')
+          console.log('[OAuth] Reloading page with saved token')
           window.location.reload()
-        }, 100)
+        }, 500)
         
         return // 处理完OAuth回调后退出
       }
