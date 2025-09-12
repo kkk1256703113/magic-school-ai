@@ -98,7 +98,7 @@ export const OAuthCallback: React.FC = () => {
         // 使用fetch直接调用后端（后端需要支持返回JSON）
         const apiUrl = window.location.origin.includes('localhost')
           ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/auth/oauth/${provider}/callback`
-          : `https://www.magicschoolai.net:8080/api/auth/oauth/${provider}/callback`
+          : `https://api.magicschoolai.net/api/auth/oauth/${provider}/callback`
         
         const response = await fetch(apiUrl, {
           method: 'POST',
