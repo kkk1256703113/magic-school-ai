@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import axios from 'axios'
+import toast from 'react-hot-toast'
 import { API_ROUTES } from '@/config/apiRoutes'
 import { configureAxios } from '@/config/api'
 
@@ -347,6 +348,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           if (response.data.authenticated) {
             setUser(response.data.user)
             console.log(`[OAuth] ${provider} login successful`)
+            
+            // 显示成功消息
+            const providerName = provider === 'google' ? 'Google' : 
+                                provider === 'github' ? 'GitHub' : 'OAuth'
+            toast.success(`${providerName}登录成功！`)
             
             // 清除URL参数
             const cleanUrl = window.location.pathname
