@@ -30,7 +30,7 @@ export const OAuthCallback: React.FC = () => {
       if (tokenFromUrl) {
         console.log('[OAuth] Found token in URL, processing it')
         // 直接使用URL中的token
-        localStorage.setItem('auth_token', tokenFromUrl)
+        localStorage.setItem('token', tokenFromUrl)
         
         // 尝试解析用户信息并保存
         try {
