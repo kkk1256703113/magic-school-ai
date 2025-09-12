@@ -91,21 +91,20 @@ export const OAuthCallback: React.FC = () => {
         return
       }
       
-      // 直接调用后端API获取token（不依赖浏览器重定向）
-      console.log('[OAuth] Calling backend API to exchange code for token')
+      // 使用备用方案：直接向后端发送请求
+      console.log('[OAuth] Exchanging code for token via backend proxy')
       
       try {
-        // 使用fetch直接调用后端（后端需要支持返回JSON）
-        const apiUrl = window.location.origin.includes('localhost')
-          ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/auth/oauth/${provider}/callback`
-          : `https://api.magicschoolai.net/api/auth/oauth/${provider}/callback`
-        
-        const response = await fetch(apiUrl, {
+        // 使用fetch调用后端的代理接口
+        const response = await fetch('/api/auth/oauth/exchange', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ code }),
+          body: JSON.stringify({ 
+            code,
+            provider 
+          }),
         })
         
         if (response.ok) {
