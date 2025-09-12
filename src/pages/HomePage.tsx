@@ -20,18 +20,23 @@ const HomePage = () => {
       
       // 保存token到localStorage
       localStorage.setItem('token', tokenFromUrl)
+      console.log('[HomePage] Token saved to localStorage:', tokenFromUrl.substring(0, 20) + '...')
       
       // 显示成功消息
       const providerName = providerFromUrl === 'google' ? 'Google' : 
                           providerFromUrl === 'github' ? 'GitHub' : 'OAuth'
       toast.success(`${providerName}登录成功！`)
       
-      // 清理URL中的参数
-      navigate('/app', { replace: true })
-      
-      // 刷新页面以触发AuthContext更新
+      // 延迟清理URL和刷新，确保token保存完成
       setTimeout(() => {
-        window.location.reload()
+        // 清理URL中的参数
+        navigate('/app', { replace: true })
+        
+        // 再延迟一下刷新页面以触发AuthContext更新
+        setTimeout(() => {
+          console.log('[HomePage] Reloading page to update AuthContext')
+          window.location.reload()
+        }, 200)
       }, 100)
     }
   }, [searchParams, navigate])
