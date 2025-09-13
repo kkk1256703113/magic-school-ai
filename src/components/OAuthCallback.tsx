@@ -91,54 +91,15 @@ export const OAuthCallback: React.FC = () => {
         return
       }
       
-      // 使用备用方案：直接向后端发送请求
-      console.log('[OAuth] Exchanging code for token via backend proxy')
-      
-      try {
-        // 使用fetch调用后端的代理接口
-        const response = await fetch('/api/auth/oauth/exchange', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            code,
-            provider 
-          }),
-        })
-        
-        if (response.ok) {
-          const data = await response.json()
-          if (data.token) {
-            console.log('[OAuth] Token received, saving and redirecting')
-            localStorage.setItem('token', data.token)
-            
-            // 保存用户信息
-            if (data.user) {
-              localStorage.setItem('user_data', JSON.stringify(data.user))
-            }
-            
-            // 显示成功消息
-            const providerName = provider === 'google' ? 'Google' : 'GitHub'
-            toast.success(`${providerName}登录成功！`)
-            
-            // 跳转到功能页面
-            navigate('/app', { replace: true })
-            setTimeout(() => {
-              window.location.reload()
-            }, 100)
-          } else {
-            throw new Error('未收到有效的token')
-          }
-        } else {
-          const errorData = await response.json().catch(() => ({}))
-          throw new Error(errorData.message || '认证失败')
-        }
-      } catch (error: any) {
-        console.error('[OAuth] Error exchanging code for token:', error)
-        toast.error(`OAuth登录失败: ${error.message}`)
-        navigate('/')
-      }
+      // 直接使用window.location.href跳转到后端GET端点
+      // 让后端处理OAuth并返回302重定向，避免code重复使用问题
+      console.log('[OAuth] Redirecting to backend GET endpoint for token exchange')
+
+      const backendUrl = `/api/auth/oauth/${provider}/callback?code=${code}`
+      console.log('[OAuth] Backend URL:', backendUrl)
+
+      // 使用window.location.href让浏览器处理302重定向
+      window.location.href = backendUrl
     }
     
     // 延迟执行，确保DOM完全渲染
