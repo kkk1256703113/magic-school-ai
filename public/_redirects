@@ -1,2 +1,5 @@
-# All routes - serve index.html for SPA (React Router will handle routing)
+# API路由 - 代理到后端服务器
+/api/*  http://45.77.86.20:8080/api/:splat  200
+
+# 所有其他路由 - 服务index.html用于SPA (React Router将处理路由)
 /*    /index.html   200
