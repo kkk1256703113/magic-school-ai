@@ -14,8 +14,8 @@ export async function onRequest(context) {
   if (url.pathname.startsWith('/api/')) {
     console.log(`Proxying API request to backend: ${url.pathname}`);
     
-    // 后端API代理到后端服务器 - 通过Nginx反向代理访问80端口
-    const backendUrl = `http://api.magicschoolai.net${url.pathname}${url.search}`;
+    // 后端API代理到后端服务器 - 通过SSL证书访问443端口
+    const backendUrl = `https://api.magicschoolai.net${url.pathname}${url.search}`;
     
     // 准备请求头 - 设置正确的Host头部避免1003错误
     const headers = new Headers(context.request.headers);
