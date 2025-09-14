@@ -19,7 +19,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
   const [username, setUsername] = useState('')
   const [verificationCode, setVerificationCode] = useState('')
   const [isCodeSent, setIsCodeSent] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isSocialLoading, setIsSocialLoading] = useState(false)
+  const [isCodeSending, setIsCodeSending] = useState(false)
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [countdown, setCountdown] = useState(0)
@@ -53,9 +55,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
       return
     }
     
-    setIsLoading(true)
+    setIsCodeSending(true)
     setErrorMessage('')
-    
+
     try {
       await sendVerificationCode(email)
       setIsCodeSent(true)
@@ -65,33 +67,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
       setErrorMessage(error.message || '发送验证码失败')
       toast.error(error.message || '发送验证码失败')
     } finally {
-      setIsLoading(false)
+      setIsCodeSending(false)
     }
   }
 
   const handleGoogleLogin = async () => {
-    setIsLoading(true)
+    setIsSocialLoading(true)
     setErrorMessage('')
-    
+
     try {
       await googleLogin()
       // OAuth会跳转到外部页面，不需要关闭模态框
     } catch (error: any) {
       setErrorMessage(error.message || 'Google登录失败')
-      setIsLoading(false)
+      setIsSocialLoading(false)
     }
   }
   
   const handleGitHubLogin = async () => {
-    setIsLoading(true)
+    setIsSocialLoading(true)
     setErrorMessage('')
-    
+
     try {
       await githubLogin()
       // OAuth会跳转到外部页面，不需要关闭模态框
     } catch (error: any) {
       setErrorMessage(error.message || 'GitHub登录失败')
-      setIsLoading(false)
+      setIsSocialLoading(false)
     }
   }
 
@@ -105,9 +107,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
         return
       }
       
-      setIsLoading(true)
+      setIsFormSubmitting(true)
       setErrorMessage('')
-      
+
       try {
         await forgotPassword(email)
         setSuccessMessage('密码重置邮件已发送到您的邮箱，请查收！')
@@ -115,7 +117,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
       } catch (error: any) {
         setErrorMessage(error.message || '发送重置邮件失败')
       } finally {
-        setIsLoading(false)
+        setIsFormSubmitting(false)
       }
       return
     }
@@ -137,9 +139,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
       return
     }
 
-    setIsLoading(true)
+    setIsFormSubmitting(true)
     setErrorMessage('')
-    
+
     try {
       if (isLogin) {
         await login(email, password)
@@ -152,10 +154,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
         const isCodeValid = await verifyCode(email, verificationCode, 'register')
         if (!isCodeValid) {
           setErrorMessage('验证码错误')
-          setIsLoading(false)
+          setIsFormSubmitting(false)
           return
         }
-        
+
         await register(email, password, username)
         toast.success('注册成功！')
         onClose()
@@ -165,7 +167,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
     } catch (error: any) {
       setErrorMessage(error.message || (isLogin ? '登录失败' : '注册失败'))
     } finally {
-      setIsLoading(false)
+      setIsFormSubmitting(false)
     }
   }
 
@@ -299,10 +301,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
 
             <button
               type="submit"
-              disabled={isLoading || !!successMessage}
+              disabled={isFormSubmitting || !!successMessage}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:cursor-not-allowed"
             >
-              {isLoading ? '发送中...' : (successMessage ? '已发送' : '发送重置邮件')}
+              {isFormSubmitting ? '发送中...' : (successMessage ? '已发送' : '发送重置邮件')}
             </button>
             
             {successMessage && (
@@ -368,14 +370,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
                     <button
                       type="button"
                       onClick={handleSendCode}
-                      disabled={isLoading || countdown > 0}
+                      disabled={isCodeSending || countdown > 0}
                       className={`px-4 py-2 text-white text-sm font-medium rounded-lg transition-colors min-w-[120px] ${
-                        countdown > 0 
-                          ? 'bg-gray-400 cursor-not-allowed' 
+                        countdown > 0 || isCodeSending
+                          ? 'bg-gray-400 cursor-not-allowed'
                           : 'bg-blue-600 hover:bg-blue-700'
                       } disabled:bg-gray-400 disabled:cursor-not-allowed`}
                     >
-                      {isLoading ? (
+                      {isCodeSending ? (
                         '发送中...'
                       ) : countdown > 0 ? (
                         <span className="flex items-center justify-center gap-1">
@@ -442,10 +444,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isFormSubmitting}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? '处理中...' : (isLogin ? '登录' : '注册')}
+              {isFormSubmitting ? '处理中...' : (isLogin ? '登录' : '注册')}
             </button>
             
             {/* 分隔线 */}
@@ -464,22 +466,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                disabled={isLoading}
+                disabled={isSocialLoading || isFormSubmitting}
                 className="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Chrome className="w-5 h-5" />
-                {isDevMode ? '模拟Google登录' : '使用Google登录'}
+                {isSocialLoading ? '登录中...' : (isDevMode ? '模拟Google登录' : '使用Google登录')}
               </button>
               
               {/* GitHub登录按钮 */}
               <button
                 type="button"
                 onClick={handleGitHubLogin}
-                disabled={isLoading}
+                disabled={isSocialLoading || isFormSubmitting}
                 className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Github className="w-5 h-5" />
-                使用GitHub登录
+                {isSocialLoading ? '登录中...' : '使用GitHub登录'}
               </button>
             </div>
           </form>
