@@ -381,7 +381,7 @@ app.post('/api/auth/logout', (req, res) => {
 // 忘记密码 - 发送验证码
 app.post('/api/auth/forgot-password', async (req, res) => {
     try {
-        const { email } = req.body;
+        const { email, language = 'en' } = req.body;
         
         if (!email) {
             return res.status(400).json({
@@ -449,8 +449,8 @@ app.post('/api/auth/forgot-password', async (req, res) => {
         
         // 发送验证码邮件
         try {
-            const emailResult = await sendVerificationCode(email, code);
-            console.log(`[RESET CODE] Email sent successfully to ${email}, MessageID: ${emailResult.messageId}`);
+            const emailResult = await sendVerificationCode(email, code, language);
+            console.log(`[RESET CODE] Email sent successfully to ${email} in language: ${language}, MessageID: ${emailResult.messageId}`);
             console.log(`[SUCCESS] Reset code sent to ${email}, expires at ${expiresAt.toISOString()}`);
         } catch (emailError) {
             console.error(`[RESET CODE] Failed to send email to ${email}:`, emailError);
@@ -576,7 +576,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
 // 发送验证码
 app.post('/api/auth/send-code', async (req, res) => {
     try {
-        const { email, type = 'register' } = req.body;
+        const { email, type = 'register', language = 'en' } = req.body;
         
         if (!email) {
             return res.status(400).json({
@@ -615,8 +615,8 @@ app.post('/api/auth/send-code', async (req, res) => {
         
         // 发送真实邮件
         try {
-            console.log(`[EMAIL] Sending ${type} verification code to ${email}`);
-            const emailResult = await sendVerificationCode(email, code);
+            console.log(`[EMAIL] Sending ${type} verification code to ${email} in language: ${language}`);
+            const emailResult = await sendVerificationCode(email, code, language);
             console.log(`[EMAIL] Send result:`, emailResult);
             
             // 存储验证码信息 - 使用正确的存储键

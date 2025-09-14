@@ -42,6 +42,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'))
   const [isLoading, setIsLoading] = useState(true)
+
+  // 获取当前语言设置（注意：这里可能会有依赖循环问题，需要特殊处理）
+  const getCurrentLanguage = () => {
+    // 直接从localStorage获取语言设置，避免循环依赖
+    const savedLanguage = localStorage.getItem('language')
+    return savedLanguage || 'en' // 默认英文
+  }
   
   // 检查是否为开发模式
   const isDevMode = import.meta.env.VITE_DEV_MODE === 'true'
@@ -144,7 +151,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 忘记密码
   const forgotPassword = async (email: string) => {
     try {
-      const response = await axios.post(API_ROUTES.AUTH.FORGOT_PASSWORD, { email })
+      const currentLanguage = getCurrentLanguage()
+      const response = await axios.post(API_ROUTES.AUTH.FORGOT_PASSWORD, { email, language: currentLanguage })
       return response.data
     } catch (error: any) {
       if (error.response) {
@@ -224,8 +232,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // 发送验证码
   const sendVerificationCode = async (email: string, type: 'register' | 'reset' = 'register') => {
     try {
-      // 调用统一的验证码发送接口，传递类型参数
-      const response = await axios.post(API_ROUTES.AUTH.SEND_CODE, { email, type })
+      const currentLanguage = getCurrentLanguage()
+      // 调用统一的验证码发送接口，传递类型和语言参数
+      const response = await axios.post(API_ROUTES.AUTH.SEND_CODE, { email, type, language: currentLanguage })
       
       if (response.data.success) {
         console.log(`[AUTH] ${type} verification code sent to ${email}`);
