@@ -12,7 +12,8 @@ export const CTASection = ({ onGetStarted }: CTASectionProps) => {
   const features = [
     t('landing.cta.feature1', '30秒快速注册'),
     t('landing.cta.feature2', '每日免费额度'),
-    t('landing.cta.feature3', '随时可以升级')
+    t('landing.cta.feature3', '随时可以升级'),
+    t('landing.cta.feature4', '立即体验双 AI 能力')
   ]
 
   return (

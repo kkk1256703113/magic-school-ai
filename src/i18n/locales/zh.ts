@@ -492,7 +492,8 @@ export default {
       button: '立即免费开始',
       feature1: '30秒快速注册',
       feature2: '每日免费额度',
-      feature3: '随时可以升级'
+      feature3: '随时可以升级',
+      feature4: '立即体验双 AI 能力'
     }
   }
 }

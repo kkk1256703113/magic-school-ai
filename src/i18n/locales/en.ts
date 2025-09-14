@@ -492,7 +492,8 @@ export default {
       button: 'Start Free Now',
       feature1: '30-second quick signup',
       feature2: 'Daily free quota',
-      feature3: 'Upgrade anytime'
+      feature3: 'Upgrade anytime',
+      feature4: 'Experience dual AI power now'
     }
   }
 }

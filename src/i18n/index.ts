@@ -13,7 +13,7 @@ i18n
   // 初始化i18next
   .init({
     debug: false,
-    fallbackLng: 'zh',
+    fallbackLng: 'en',
     interpolation: {
       escapeValue: false // React已经默认转义了
     },

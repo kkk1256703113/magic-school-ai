@@ -4,9 +4,6 @@ import { useAuth } from '@/context/AuthContext'
 import { AuthModal } from '@/components/AuthModal'
 import { HeroSection } from '@/components/landing/HeroSection'
 import { FeaturesSection } from '@/components/landing/FeaturesSection'
-import { DemoSection } from '@/components/landing/DemoSection'
-import { PricingSection } from '@/components/landing/PricingSection'
-import { TrustSection } from '@/components/landing/TrustSection'
 import { CTASection } from '@/components/landing/CTASection'
 
 const LandingPage = () => {
@@ -38,15 +35,6 @@ const LandingPage = () => {
 
       {/* Features Section */}
       <FeaturesSection />
-
-      {/* Demo Section */}
-      <DemoSection />
-
-      {/* Pricing Section */}
-      <PricingSection onSelectPlan={handleGetStarted} />
-
-      {/* Trust Section */}
-      <TrustSection />
 
       {/* CTA Section */}
       <CTASection onGetStarted={handleGetStarted} />

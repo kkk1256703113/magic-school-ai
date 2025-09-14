@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { motion } from 'framer-motion'
-import { Brain, FileText, Sparkles, Rocket } from 'lucide-react'
+import { Brain, FileText, Sparkles } from 'lucide-react'
 
 export const FeaturesSection = () => {
   const { t } = useTranslation()
@@ -23,12 +23,6 @@ export const FeaturesSection = () => {
       title: t('landing.features.output.title', '专业输出'),
       description: t('landing.features.output.description', '一键生成精美 HTML 作品集'),
       gradient: 'from-orange-500 to-red-500'
-    },
-    {
-      icon: Rocket,
-      title: t('landing.features.quick.title', '即刻使用'),
-      description: t('landing.features.quick.description', '30秒注册，立即体验'),
-      gradient: 'from-green-500 to-teal-500'
     }
   ]
 
@@ -50,7 +44,7 @@ export const FeaturesSection = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => {
             const Icon = feature.icon
             return (
