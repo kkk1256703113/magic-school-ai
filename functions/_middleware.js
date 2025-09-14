@@ -27,11 +27,12 @@ export async function onRequest(context) {
     headers.set('X-Real-IP', context.request.headers.get('CF-Connecting-IP') || 'unknown');
     
     try {
-      // 代理请求到后端
+      // 代理请求到后端 - 保持重定向响应不自动跟随
       const backendResponse = await fetch(backendUrl, {
         method: context.request.method,
         headers: headers,
-        body: context.request.body
+        body: context.request.body,
+        redirect: 'manual'  // 关键：不自动跟随重定向，保持302状态码
       });
       
       // 创建新的响应并添加CORS头部
