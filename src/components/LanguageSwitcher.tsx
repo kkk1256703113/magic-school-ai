@@ -25,7 +25,7 @@ export const LanguageSwitcher = ({ className = '', dropdownAlign = 'right' }: La
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`${className.includes('fixed') ? '' : 'relative'} ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700 hover:border-gray-600 text-white text-sm transition-all duration-200"
