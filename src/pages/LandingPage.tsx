@@ -32,7 +32,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white overflow-x-hidden">
       {/* 语言切换按钮 - 右上角固定位置 */}
-      <LanguageSwitcher className="fixed top-4 right-4 z-50" />
+      <LanguageSwitcher className="fixed top-4 right-4 z-50" dropdownAlign="right" />
 
       {/* Hero Section */}
       <HeroSection onGetStarted={handleGetStarted} />

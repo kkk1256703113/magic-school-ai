@@ -5,9 +5,10 @@ import { Globe, ChevronDown } from 'lucide-react'
 
 interface LanguageSwitcherProps {
   className?: string
+  dropdownAlign?: 'left' | 'right'
 }
 
-export const LanguageSwitcher = ({ className = '' }: LanguageSwitcherProps) => {
+export const LanguageSwitcher = ({ className = '', dropdownAlign = 'right' }: LanguageSwitcherProps) => {
   const { i18n } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -50,7 +51,7 @@ export const LanguageSwitcher = ({ className = '' }: LanguageSwitcherProps) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -10 }}
               transition={{ duration: 0.15 }}
-              className="absolute right-0 top-full mt-2 w-40 bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl z-20"
+              className={`absolute ${dropdownAlign === 'right' ? 'right-0' : 'left-0'} top-full mt-2 w-40 bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl z-20`}
             >
               <div className="py-1">
                 {languages.map((language) => (
