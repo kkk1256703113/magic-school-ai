@@ -18,7 +18,6 @@ import { Sidebar } from '@/components/Sidebar'
 import { UpgradeModal } from '@/components/UpgradeModal'
 import { UserMenu } from '@/components/UserMenu'
 import { AuthModal } from '@/components/AuthModal'
-import { APIUsageDisplay } from '@/components/APIUsageDisplay'
 
 export const ChatContainer = () => {
   const { theme } = useTheme()
@@ -165,11 +164,6 @@ export const ChatContainer = () => {
               <Sparkles className="h-4 w-4" />
               {t('navbar.upgrade')}
             </button>
-
-            {/* API使用量显示 */}
-            {isAuthenticated && (
-              <APIUsageDisplay onUpgradeClick={() => setShowUpgradeModal(true)} />
-            )}
 
             {/* 用户菜单 */}
             <UserMenu onShowAuthModal={() => setShowAuthModal(true)} />
