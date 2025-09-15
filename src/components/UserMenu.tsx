@@ -22,9 +22,9 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
   
   // 获取用户名首字母作为头像，未登录时使用默认图标
-  const avatarLetter = user?.username 
-    ? user.username.charAt(0).toUpperCase() 
-    : user?.email?.charAt(0).toUpperCase() 
+  const avatarLetter = user?.username
+    ? user.username.charAt(0).toUpperCase()
+    : user?.email?.charAt(0).toUpperCase()
     || 'U'
 
   // 处理退出登录
