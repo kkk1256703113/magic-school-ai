@@ -362,20 +362,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setToken(oauthToken)
         setAuthHeader(oauthToken)
         
-        // 显示成功消息
-        const providerName = provider === 'google' ? 'Google' : 
-                            provider === 'github' ? 'GitHub' : 'OAuth'
-        toast.success(`${providerName}登录成功！`)
-        
         // 清除URL参数
         const cleanUrl = window.location.pathname
         window.history.replaceState({}, document.title, cleanUrl)
-        
-        // 延迟刷新页面，确保token已经保存
-        setTimeout(() => {
-          console.log('[OAuth] Reloading page with saved token')
-          window.location.reload()
-        }, 500)
+
+        // 验证token并获取用户信息，而不是强制刷新页面
+        const verifyOAuthToken = async () => {
+          try {
+            const response = await axios.get(API_ROUTES.AUTH.STATUS)
+            if (response.data.authenticated) {
+              setUser(response.data.user)
+
+              // 显示成功消息
+              const providerName = provider === 'google' ? 'Google' :
+                                  provider === 'github' ? 'GitHub' : 'OAuth'
+              toast.success(`${providerName}登录成功！`)
+
+              console.log(`[OAuth] ${providerName} login successful, user authenticated`)
+            } else {
+              console.error('[OAuth] Token verification failed')
+              toast.error('登录验证失败，请重试')
+              logout()
+            }
+          } catch (error) {
+            console.error('[OAuth] Token verification error:', error)
+            toast.error('登录验证失败，请重试')
+            logout()
+          }
+        }
+
+        // 延迟验证，确保token已经设置到axios头中
+        setTimeout(verifyOAuthToken, 100)
         
         return // 处理完OAuth回调后退出
       }

@@ -19,7 +19,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
   const [username, setUsername] = useState('')
   const [verificationCode, setVerificationCode] = useState('')
   const [isCodeSent, setIsCodeSent] = useState(false)
-  const [isSocialLoading, setIsSocialLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+  const [isGithubLoading, setIsGithubLoading] = useState(false)
   const [isCodeSending, setIsCodeSending] = useState(false)
   const [isFormSubmitting, setIsFormSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -72,7 +73,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
   }
 
   const handleGoogleLogin = async () => {
-    setIsSocialLoading(true)
+    setIsGoogleLoading(true)
     setErrorMessage('')
 
     try {
@@ -80,12 +81,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
       // OAuth会跳转到外部页面，不需要关闭模态框
     } catch (error: any) {
       setErrorMessage(error.message || 'Google登录失败')
-      setIsSocialLoading(false)
+      setIsGoogleLoading(false)
     }
   }
   
   const handleGitHubLogin = async () => {
-    setIsSocialLoading(true)
+    setIsGithubLoading(true)
     setErrorMessage('')
 
     try {
@@ -93,7 +94,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
       // OAuth会跳转到外部页面，不需要关闭模态框
     } catch (error: any) {
       setErrorMessage(error.message || 'GitHub登录失败')
-      setIsSocialLoading(false)
+      setIsGithubLoading(false)
     }
   }
 
@@ -466,22 +467,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                disabled={isSocialLoading || isFormSubmitting}
+                disabled={isGoogleLoading || isGithubLoading || isFormSubmitting}
                 className="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium py-2 px-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Chrome className="w-5 h-5" />
-                {isSocialLoading ? '登录中...' : (isDevMode ? '模拟Google登录' : '使用Google登录')}
+                {isGoogleLoading ? '登录中...' : (isDevMode ? '模拟Google登录' : '使用Google登录')}
               </button>
               
               {/* GitHub登录按钮 */}
               <button
                 type="button"
                 onClick={handleGitHubLogin}
-                disabled={isSocialLoading || isFormSubmitting}
+                disabled={isGoogleLoading || isGithubLoading || isFormSubmitting}
                 className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Github className="w-5 h-5" />
-                {isSocialLoading ? '登录中...' : '使用GitHub登录'}
+                {isGithubLoading ? '登录中...' : '使用GitHub登录'}
               </button>
             </div>
           </form>
