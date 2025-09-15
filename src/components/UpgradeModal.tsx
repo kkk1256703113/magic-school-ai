@@ -158,7 +158,7 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
             </div>
 
             {/* 低余额警告 */}
-            {!loading && usage?.breakdown?.total <= 2 && usage?.breakdown?.total > 0 && (
+            {!loading && usage?.breakdown?.total !== undefined && usage.breakdown.total <= 2 && usage.breakdown.total > 0 && (
               <div className="flex items-start gap-2 mt-3 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
                 <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                 <div className="text-xs">
