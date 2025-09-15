@@ -67,16 +67,18 @@ export const APIUsageDisplay = ({ onUpgradeClick }: APIUsageDisplayProps) => {
   }
 
   const getStatusColor = () => {
-    if (usage.breakdown.total > 10) return 'text-green-600 dark:text-green-400'
-    if (usage.breakdown.total > 5) return 'text-blue-600 dark:text-blue-400'
-    if (usage.breakdown.total > 0) return 'text-amber-600 dark:text-amber-400'
+    const total = usage?.breakdown?.total || 0
+    if (total > 10) return 'text-green-600 dark:text-green-400'
+    if (total > 5) return 'text-blue-600 dark:text-blue-400'
+    if (total > 0) return 'text-amber-600 dark:text-amber-400'
     return 'text-red-600 dark:text-red-400'
   }
 
   const getStatusBg = () => {
-    if (usage.breakdown.total > 10) return 'bg-green-50 dark:bg-green-900/20'
-    if (usage.breakdown.total > 5) return 'bg-blue-50 dark:bg-blue-900/20'
-    if (usage.breakdown.total > 0) return 'bg-amber-50 dark:bg-amber-900/20'
+    const total = usage?.breakdown?.total || 0
+    if (total > 10) return 'bg-green-50 dark:bg-green-900/20'
+    if (total > 5) return 'bg-blue-50 dark:bg-blue-900/20'
+    if (total > 0) return 'bg-amber-50 dark:bg-amber-900/20'
     return 'bg-red-50 dark:bg-red-900/20'
   }
 
@@ -104,7 +106,7 @@ export const APIUsageDisplay = ({ onUpgradeClick }: APIUsageDisplayProps) => {
               {t('usage.available') || 'Available'}
             </span>
             <span className={`text-2xl font-bold ${getStatusColor()}`}>
-              {usage.breakdown.total}
+              {usage?.breakdown?.total || 0}
             </span>
           </div>
           <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -113,7 +115,7 @@ export const APIUsageDisplay = ({ onUpgradeClick }: APIUsageDisplayProps) => {
         </div>
 
         {/* 新用户提示 */}
-        {usage.breakdown.isFirstTimeUser && (
+        {usage?.breakdown?.isFirstTimeUser && (
           <div className="flex items-start gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <Gift className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
             <div className="text-xs">
@@ -128,7 +130,7 @@ export const APIUsageDisplay = ({ onUpgradeClick }: APIUsageDisplayProps) => {
         )}
 
         {/* 低余额警告 */}
-        {usage.breakdown.total <= 2 && usage.breakdown.total > 0 && (
+        {usage?.breakdown?.total <= 2 && usage?.breakdown?.total > 0 && (
           <div className="flex items-start gap-2 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
             <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
             <div className="text-xs">
@@ -143,7 +145,7 @@ export const APIUsageDisplay = ({ onUpgradeClick }: APIUsageDisplayProps) => {
         )}
 
         {/* 无余额提示 */}
-        {usage.needsPayment && (
+        {usage?.needsPayment && (
           <div className="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
             <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
             <div className="text-xs">
@@ -158,7 +160,7 @@ export const APIUsageDisplay = ({ onUpgradeClick }: APIUsageDisplayProps) => {
         )}
 
         {/* 充值按钮 */}
-        {(usage.needsPayment || usage.breakdown.total <= 5) && (
+        {(usage?.needsPayment || (usage?.breakdown?.total || 0) <= 5) && (
           <button
             onClick={onUpgradeClick}
             className="w-full py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium transition-all text-sm"
