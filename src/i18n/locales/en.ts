@@ -189,6 +189,29 @@ export default {
     recommended: 'Recommended',
     choosePlan: 'Choose This Plan',
     paymentMethods: 'Supports Alipay, WeChat Pay, Credit Card · Cancel anytime',
+    kofi: {
+      title: 'Support Us & Get More API Calls',
+      donationRewards: 'Donation Rewards',
+      reward1: '💰 Every $1 = 2 permanent API calls',
+      reward2: '⭐ Credits never expire',
+      reward3: '🎁 Bonus credits for larger donations',
+      newUserPolicy: 'New User Benefits',
+      newUser1: '🆓 5 free calls for new users',
+      newUser2: '🎯 Test all features before paying',
+      newUser3: '💎 Upgrade anytime for more calls',
+      donation: 'Donation',
+      apiCalls: 'API Calls',
+      bonus: 'bonus',
+      perCall: 'call',
+      supportButton: 'Support',
+      popular: 'Popular',
+      bestValue: 'Best Value',
+      important: 'Important',
+      useEmail: 'Please use your registered email',
+      forAutoCredit: 'for automatic credit',
+      visitPage: 'Visit our Ko-fi page',
+      processingNote: 'Credits are added automatically after payment processing (usually within 1 minute)'
+    },
     plans: {
       monthly: {
         name: 'Monthly',
@@ -288,6 +311,20 @@ export default {
     notAuthenticated: 'User not authenticated',
     updateSuccess: 'Profile updated successfully',
     updateFailed: 'Failed to update profile'
+  },
+
+  // API Usage
+  usage: {
+    title: 'API Usage',
+    available: 'Available',
+    apiCalls: 'API calls remaining',
+    welcomeBonus: 'Welcome Bonus!',
+    newUserGift: 'You have 5 free API calls to try our service',
+    lowBalance: 'Low Balance',
+    considerRecharge: 'Consider adding more credits',
+    noCredits: 'No Credits',
+    needRecharge: 'Add credits to continue using the service',
+    addCredits: 'Add Credits'
   },
 
   // Account Management

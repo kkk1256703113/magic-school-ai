@@ -189,6 +189,29 @@ export default {
     recommended: '推荐',
     choosePlan: '选择此套餐',
     paymentMethods: '支持支付宝、微信支付、银行卡 · 随时可取消订阅',
+    kofi: {
+      title: '支持我们，获得更多API调用次数',
+      donationRewards: '捐赠奖励',
+      reward1: '💰 每捐赠$1 = 2次永久API调用',
+      reward2: '⭐ 积分永不过期',
+      reward3: '🎁 大额捐赠享受额外奖励',
+      newUserPolicy: '新用户福利',
+      newUser1: '🆓 新用户免费5次调用',
+      newUser2: '🎯 付费前测试所有功能',
+      newUser3: '💎 随时升级获得更多次数',
+      donation: '捐赠',
+      apiCalls: 'API调用次数',
+      bonus: '奖励',
+      perCall: '次',
+      supportButton: '支持',
+      popular: '热门',
+      bestValue: '最优惠',
+      important: '重要',
+      useEmail: '请使用注册邮箱',
+      forAutoCredit: '以便自动到账',
+      visitPage: '访问我们的Ko-fi页面',
+      processingNote: '支付处理后积分将自动添加（通常1分钟内）'
+    },
     plans: {
       monthly: {
         name: '月会员',
@@ -288,6 +311,20 @@ export default {
     notAuthenticated: '用户未认证',
     updateSuccess: '个人资料更新成功',
     updateFailed: '个人资料更新失败'
+  },
+
+  // API使用量
+  usage: {
+    title: 'API使用量',
+    available: '可用',
+    apiCalls: '剩余API调用次数',
+    welcomeBonus: '欢迎奖励！',
+    newUserGift: '您有5次免费API调用机会来体验我们的服务',
+    lowBalance: '余额不足',
+    considerRecharge: '建议充值获得更多次数',
+    noCredits: '没有积分',
+    needRecharge: '充值以继续使用服务',
+    addCredits: '充值'
   },
 
   // 账户管理

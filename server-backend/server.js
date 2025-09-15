@@ -268,12 +268,12 @@ app.post('/api/auth/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
         
-        // 创建用户
+        // 创建用户 - 新用户获得5次免费调用
         const result = await pool.query(
-            `INSERT INTO users (email, password_hash, username, plan_type, api_calls_today, created_at) 
-             VALUES ($1, $2, $3, $4, $5, NOW()) 
-             RETURNING id, email, username, plan_type`,
-            [email, passwordHash, username || email.split('@')[0], 'free', 0]
+            `INSERT INTO users (email, password_hash, username, plan_type, api_calls_today, bonus_api_calls, is_first_time_user, created_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+             RETURNING id, email, username, plan_type, bonus_api_calls`,
+            [email, passwordHash, username || email.split('@')[0], 'free', 0, 5, true]
         );
         
         const newUser = result.rows[0];
@@ -782,12 +782,12 @@ app.post('/api/auth/google', async (req, res) => {
             
             let user;
             if (result.rows.length === 0) {
-                // 创建新用户
+                // 创建新用户 - OAuth新用户也获得5次免费调用
                 const createResult = await pool.query(
-                    `INSERT INTO users (email, username, plan_type, api_calls_today, created_at) 
-                     VALUES ($1, $2, $3, $4, NOW()) 
-                     RETURNING id, email, username, plan_type, api_calls_today`,
-                    [MOCK_GOOGLE_EMAIL, MOCK_GOOGLE_USER, 'free', 0]
+                    `INSERT INTO users (email, username, plan_type, api_calls_today, bonus_api_calls, is_first_time_user, created_at)
+                     VALUES ($1, $2, $3, $4, $5, $6, NOW())
+                     RETURNING id, email, username, plan_type, api_calls_today, bonus_api_calls`,
+                    [MOCK_GOOGLE_EMAIL, MOCK_GOOGLE_USER, 'free', 0, 5, true]
                 );
                 user = createResult.rows[0];
             } else {
@@ -957,55 +957,166 @@ app.get('/api/auth/oauth/:provider/url', async (req, res) => {
     }
 });
 
+// ==================== Ko-fi支付集成 ====================
+
+// Ko-fi Webhook处理端点
+app.post('/api/webhooks/kofi', async (req, res) => {
+    try {
+        // Ko-fi发送的数据在data字段中，是JSON字符串
+        const webhookData = typeof req.body.data === 'string' ? JSON.parse(req.body.data) : req.body;
+
+        console.log('[Ko-fi] Received webhook:', JSON.stringify(webhookData, null, 2));
+
+        // 1. 验证webhook token（暂时使用环境变量中的token验证）
+        const expectedToken = process.env.KOFI_WEBHOOK_TOKEN || 'a17a9688-d731-4060-b338-45e503d0716c';
+        if (webhookData.verification_token !== expectedToken) {
+            console.error('[Ko-fi] Invalid webhook token');
+            return res.status(400).json({ error: 'Invalid webhook signature' });
+        }
+
+        // 2. 解析支付数据
+        const {
+            kofi_transaction_id,
+            message_id,
+            amount,
+            email,
+            from_name,
+            type,
+            message,
+            is_public,
+            currency,
+            verification_token
+        } = webhookData;
+
+        // 3. 只处理捐赠类型
+        if (type !== 'Donation') {
+            console.log('[Ko-fi] Not a donation, type:', type);
+            return res.status(200).json({ message: 'Not a donation, ignored' });
+        }
+
+        // 4. 防重复处理
+        const existingPayment = await pool.query(
+            'SELECT id FROM kofi_payments WHERE kofi_transaction_id = $1',
+            [kofi_transaction_id]
+        );
+
+        if (existingPayment.rows.length > 0) {
+            console.log('[Ko-fi] Payment already processed');
+            return res.status(200).json({ message: 'Payment already processed' });
+        }
+
+        // 5. 计算奖励次数（每$1 = 2次调用，包含bonus）
+        const amountFloat = parseFloat(amount);
+        const baseCalls = Math.floor(amountFloat) * 2;
+
+        // Bonus计算
+        let bonusPercentage = 0;
+        if (amountFloat >= 20) bonusPercentage = 25;
+        else if (amountFloat >= 10) bonusPercentage = 25;
+        else if (amountFloat >= 5) bonusPercentage = 20;
+
+        const bonusCalls = Math.floor(baseCalls * bonusPercentage / 100);
+        const totalCalls = baseCalls + bonusCalls;
+
+        console.log(`[Ko-fi] Processing $${amountFloat} donation = ${baseCalls} base + ${bonusCalls} bonus = ${totalCalls} total calls`);
+
+        // 6. 查找用户（通过邮箱匹配）
+        const userResult = await pool.query(
+            'SELECT id, email, bonus_api_calls FROM users WHERE email = $1',
+            [email]
+        );
+
+        let userId = null;
+        let currentBonusCalls = 0;
+
+        if (userResult.rows.length > 0) {
+            const user = userResult.rows[0];
+            userId = user.id;
+            currentBonusCalls = user.bonus_api_calls || 0;
+
+            // 7. 更新用户API调用次数
+            await pool.query(
+                'UPDATE users SET bonus_api_calls = bonus_api_calls + $1, kofi_email = $2, is_first_time_user = false WHERE id = $3',
+                [totalCalls, email, userId]
+            );
+
+            console.log(`[Ko-fi] User ${email} updated: +${totalCalls} calls, new total: ${currentBonusCalls + totalCalls}`);
+        } else {
+            console.log(`[Ko-fi] Payment from unregistered user: ${email}`);
+        }
+
+        // 8. 记录支付（无论用户是否存在）
+        await pool.query(`
+            INSERT INTO kofi_payments
+            (user_id, kofi_transaction_id, message_id, donor_email, donor_name, amount, currency,
+             bonus_calls_awarded, bonus_percentage, message, is_public, verification_token, raw_webhook_data)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        `, [
+            userId, kofi_transaction_id, message_id, email, from_name, amountFloat, currency || 'USD',
+            totalCalls, bonusPercentage, message, is_public !== false, verification_token, JSON.stringify(webhookData)
+        ]);
+
+        console.log(`[Ko-fi] Payment processed successfully: ${email} +${totalCalls} API calls`);
+
+        res.status(200).json({
+            success: true,
+            message: 'Payment processed successfully',
+            bonusCalls: totalCalls,
+            newTotal: userId ? currentBonusCalls + totalCalls : null
+        });
+
+    } catch (error) {
+        console.error('[Ko-fi] Webhook processing error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // ==================== 使用量路由 ====================
 
-// 检查使用量
+// 检查使用量（改进版 - 支持Ko-fi充值系统）
 app.get('/api/usage/check', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
-        
+
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return res.json({
                 apiCallsRemaining: 0,
-                apiCallsToday: 0,
-                plan: 'none',
+                bonusCalls: 0,
+                isFirstTimeUser: false,
                 message: 'Authentication required'
             });
         }
-        
+
         const token = authHeader.substring(7);
-        
+
         try {
             const decoded = jwt.verify(token, JWT_SECRET);
-            
+
             const result = await pool.query(
-                'SELECT plan_type, api_calls_today FROM users WHERE id = $1',
+                'SELECT email, bonus_api_calls, is_first_time_user, created_at FROM users WHERE id = $1',
                 [decoded.id]
             );
-            
+
             if (result.rows.length === 0) {
                 return res.status(404).json({
                     error: 'User not found'
                 });
             }
-            
+
             const user = result.rows[0];
-            const limits = {
-                free: 10,
-                monthly: 1000,
-                quarterly: 3000,
-                yearly: 10000
-            };
-            
-            const limit = limits[user.plan_type] || 10;
-            const used = user.api_calls_today || 0;
-            
+            const bonusCalls = user.bonus_api_calls || 0;
+
             res.json({
-                plan: user.plan_type,
-                apiCallsToday: used,
-                apiCallsRemaining: Math.max(0, limit - used),
-                dailyLimit: limit,
-                resetTime: new Date(new Date().setHours(24, 0, 0, 0)).toISOString()
+                success: true,
+                apiCallsRemaining: bonusCalls,
+                breakdown: {
+                    bonusCalls: bonusCalls,
+                    isFirstTimeUser: user.is_first_time_user || false,
+                    total: bonusCalls
+                },
+                needsPayment: bonusCalls <= 0,
+                kofiUrl: 'https://ko-fi.com/magicschoolai',  // 替换为你的Ko-fi URL
+                email: user.email  // 用于提醒用户使用此邮箱支付
             });
         } catch (error) {
             res.status(401).json({
@@ -1056,44 +1167,92 @@ app.get('/api/usage/history', async (req, res) => {
     }
 });
 
-// 记录API使用
+// 记录API使用（改进版 - 支持Ko-fi充值系统）
 app.post('/api/usage/record', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
-        
+
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return res.status(401).json({
                 error: 'Authentication required'
             });
         }
-        
+
         const token = authHeader.substring(7);
-        
+
         try {
             const decoded = jwt.verify(token, JWT_SECRET);
-            const { endpoint, model, cost, success } = req.body;
-            
-            // 更新用户的API调用次数
-            await pool.query(
-                'UPDATE users SET api_calls_today = api_calls_today + 1, api_calls_total = COALESCE(api_calls_total, 0) + 1 WHERE id = $1',
-                [decoded.id]
-            );
-            
-            // 可选：记录详细的使用日志到usage_history表（如果存在）
-            // await pool.query(
-            //     'INSERT INTO usage_history (user_id, endpoint, model, cost, success, created_at) VALUES ($1, $2, $3, $4, $5, NOW())',
-            //     [decoded.id, endpoint, model, cost, success]
-            // );
-            
-            res.json({
-                success: true,
-                message: 'Usage recorded successfully'
-            });
+            const { endpoint, model, cost = 1, success = true } = req.body;
+
+            // 开始事务
+            const client = await pool.connect();
+
+            try {
+                await client.query('BEGIN');
+
+                // 获取当前用户状态
+                const userResult = await client.query(
+                    'SELECT bonus_api_calls, email FROM users WHERE id = $1 FOR UPDATE',
+                    [decoded.id]
+                );
+
+                if (userResult.rows.length === 0) {
+                    throw new Error('User not found');
+                }
+
+                const user = userResult.rows[0];
+
+                // 检查是否有可用次数
+                if (user.bonus_api_calls <= 0) {
+                    await client.query('ROLLBACK');
+                    return res.status(429).json({
+                        error: 'No API calls remaining',
+                        code: 'NO_CALLS_REMAINING',
+                        needsPayment: true,
+                        kofiUrl: 'https://ko-fi.com/magicschoolai'
+                    });
+                }
+
+                // 扣除API调用次数
+                const newBonusCalls = Math.max(user.bonus_api_calls - cost, 0);
+
+                await client.query(
+                    'UPDATE users SET bonus_api_calls = $1, api_calls_total = COALESCE(api_calls_total, 0) + 1 WHERE id = $2',
+                    [newBonusCalls, decoded.id]
+                );
+
+                // 记录API使用日志
+                await client.query(
+                    'INSERT INTO api_usage_logs (user_id, endpoint, model, cost, success, used_type, created_at) VALUES ($1, $2, $3, $4, $5, $6, NOW())',
+                    [decoded.id, endpoint, model, cost, success, 'bonus']
+                );
+
+                await client.query('COMMIT');
+
+                res.json({
+                    success: true,
+                    remaining: newBonusCalls,
+                    message: 'Usage recorded successfully'
+                });
+
+            } catch (error) {
+                await client.query('ROLLBACK');
+                throw error;
+            } finally {
+                client.release();
+            }
+
         } catch (error) {
-            res.status(401).json({
-                error: 'Invalid token',
-                message: 'Please login again'
-            });
+            if (error.message === 'User not found') {
+                res.status(404).json({ error: 'User not found' });
+            } else if (error.code === 'INVALID_TOKEN') {
+                res.status(401).json({
+                    error: 'Invalid token',
+                    message: 'Please login again'
+                });
+            } else {
+                throw error;
+            }
         }
     } catch (error) {
         console.error('Usage record error:', error);
