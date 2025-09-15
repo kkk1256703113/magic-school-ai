@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
 import { ProfileModal } from './ProfileModal'
 import { AccountModal } from './AccountModal'
+import { SubscriptionStatusModal } from './SubscriptionStatusModal'
 import { UpgradeModal } from './UpgradeModal'
 
 interface UserMenuProps {
@@ -15,6 +16,7 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
   const [showMenu, setShowMenu] = useState(false)
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [showAccountModal, setShowAccountModal] = useState(false)
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const { user, isAuthenticated, logout, isLoading } = useAuth()
   const { t } = useTranslation()
@@ -223,7 +225,7 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
                   <button
                     onClick={() => {
                       setShowMenu(false)
-                      setShowUpgradeModal(true)
+                      setShowSubscriptionModal(true)
                     }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-900/20 dark:hover:to-emerald-900/20 transition-all duration-150 group"
                     role="menuitem"
@@ -293,9 +295,14 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
         isOpen={showProfileModal} 
         onClose={() => setShowProfileModal(false)} 
       />
-      <AccountModal 
-        isOpen={showAccountModal} 
-        onClose={() => setShowAccountModal(false)} 
+      <AccountModal
+        isOpen={showAccountModal}
+        onClose={() => setShowAccountModal(false)}
+      />
+      <SubscriptionStatusModal
+        isOpen={showSubscriptionModal}
+        onClose={() => setShowSubscriptionModal(false)}
+        onOpenUpgrade={() => setShowUpgradeModal(true)}
       />
       <UpgradeModal
         isOpen={showUpgradeModal}

@@ -1,75 +1,17 @@
-import { X, ExternalLink, Gift, Zap, Coffee, RefreshCw, AlertCircle } from 'lucide-react'
+import { X, ExternalLink, Gift, Zap, Coffee } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useTranslation } from 'react-i18next'
-import { useEffect, useState } from 'react'
-import axios from 'axios'
 
 interface UpgradeModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
-interface UsageData {
-  apiCallsRemaining: number
-  breakdown: {
-    bonusCalls: number
-    isFirstTimeUser: boolean
-    total: number
-  }
-  needsPayment: boolean
-  email: string
-}
-
 export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
-  const { user, token } = useAuth()
+  const { user } = useAuth()
   const { t, i18n } = useTranslation()
-  const [usage, setUsage] = useState<UsageData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
-
-  const fetchUsage = async () => {
-    if (!token) {
-      setLoading(false)
-      return
-    }
-
-    try {
-      setRefreshing(true)
-      const response = await axios.get('/api/usage/check', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      setUsage(response.data)
-    } catch (error) {
-      console.error('Failed to fetch usage:', error)
-    } finally {
-      setLoading(false)
-      setRefreshing(false)
-    }
-  }
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchUsage()
-    }
-  }, [isOpen, token])
 
   if (!isOpen) return null
-
-  const getStatusColor = () => {
-    const total = usage?.breakdown?.total || 0
-    if (total > 10) return 'text-green-600 dark:text-green-400'
-    if (total > 5) return 'text-blue-600 dark:text-blue-400'
-    if (total > 0) return 'text-amber-600 dark:text-amber-400'
-    return 'text-red-600 dark:text-red-400'
-  }
-
-  const getStatusBg = () => {
-    const total = usage?.breakdown?.total || 0
-    if (total > 10) return 'bg-green-50 dark:bg-green-900/20'
-    if (total > 5) return 'bg-blue-50 dark:bg-blue-900/20'
-    if (total > 0) return 'bg-amber-50 dark:bg-amber-900/20'
-    return 'bg-red-50 dark:bg-red-900/20'
-  }
 
   // Ko-fi充值套餐
   const packages = [
@@ -110,7 +52,7 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
     }
   ]
 
-  const kofiUrl = 'https://ko-fi.com/magicschoolai'  // 替换为实际的Ko-fi用户名
+  const kofiUrl = 'https://ko-fi.com/magicschoolai'
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
@@ -129,79 +71,6 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
           >
             <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           </button>
-        </div>
-
-        {/* 当前API使用量显示 */}
-        <div className="mb-6">
-          <div className={`${getStatusBg()} rounded-xl p-4 border border-gray-200 dark:border-gray-700`}>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                <Zap className="h-4 w-4 text-blue-600" />
-                {t('usage.title') || 'Your API Usage'}
-              </h3>
-              <button
-                onClick={fetchUsage}
-                disabled={refreshing}
-                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-              >
-                <RefreshCw className={`h-4 w-4 text-gray-500 ${refreshing ? 'animate-spin' : ''}`} />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-700 dark:text-gray-300">
-                {t('usage.available') || 'Available Calls'}
-              </span>
-              <span className={`text-3xl font-bold ${getStatusColor()}`}>
-                {loading ? '...' : (usage?.breakdown?.total || 0)}
-              </span>
-            </div>
-
-            {/* 低余额警告 */}
-            {!loading && usage?.breakdown?.total !== undefined && usage.breakdown.total <= 2 && usage.breakdown.total > 0 && (
-              <div className="flex items-start gap-2 mt-3 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
-                <div className="text-xs">
-                  <p className="text-amber-800 dark:text-amber-200 font-medium">
-                    {t('usage.lowBalance') || 'Low Balance'}
-                  </p>
-                  <p className="text-amber-700 dark:text-amber-300 mt-0.5">
-                    {t('usage.considerRecharge') || 'Consider adding more credits below'}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* 无余额提示 */}
-            {!loading && usage?.needsPayment && (
-              <div className="flex items-start gap-2 mt-3 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                <div className="text-xs">
-                  <p className="text-red-800 dark:text-red-200 font-medium">
-                    {t('usage.noCredits') || 'No Credits'}
-                  </p>
-                  <p className="text-red-700 dark:text-red-300 mt-0.5">
-                    {t('usage.needRecharge') || 'Choose a package below to continue'}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* 新用户提示 */}
-            {!loading && usage?.breakdown?.isFirstTimeUser && (
-              <div className="flex items-start gap-2 mt-3 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                <Gift className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                <div className="text-xs">
-                  <p className="text-blue-800 dark:text-blue-200 font-medium">
-                    {t('usage.welcomeBonus') || 'Welcome Bonus!'}
-                  </p>
-                  <p className="text-blue-700 dark:text-blue-300 mt-0.5">
-                    {t('usage.newUserGift') || 'You have 5 free API calls to try our service'}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* 说明信息 */}
