@@ -32,7 +32,6 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
     setShowMenu(false)
     try {
       logout()
-      toast.success(t('userMenu.loggedOut'))
     } catch (error) {
       toast.error(t('userMenu.logoutFailed'))
     }

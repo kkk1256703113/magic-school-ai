@@ -373,11 +373,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             if (response.data.authenticated) {
               setUser(response.data.user)
 
-              // 显示成功消息
               const providerName = provider === 'google' ? 'Google' :
                                   provider === 'github' ? 'GitHub' : 'OAuth'
-              toast.success(`${providerName}登录成功！`)
-
               console.log(`[OAuth] ${providerName} login successful, user authenticated`)
             } else {
               console.error('[OAuth] Token verification failed')

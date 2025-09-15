@@ -25,7 +25,6 @@ export const OAuthCallback: React.FC = () => {
       // 首先检查URL中是否直接有token（后端302重定向的情况）
       // 这个检查必须在sessionStorage检查之前，确保token能被正确处理
       const tokenFromUrl = searchParams.get('token')
-      const providerFromUrl = searchParams.get('provider')
       
       if (tokenFromUrl) {
         console.log('[OAuth] Found token in URL, processing it')
@@ -47,10 +46,6 @@ export const OAuthCallback: React.FC = () => {
         } catch (error) {
           console.error('[OAuth] Error fetching user data:', error)
         }
-        
-        // 显示成功消息
-        const providerName = providerFromUrl === 'google' ? 'Google' : 'GitHub'
-        toast.success(`${providerName}登录成功！`)
         
         // 清理URL中的参数并跳转
         navigate('/app', { replace: true })

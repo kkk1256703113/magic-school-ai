@@ -146,7 +146,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
     try {
       if (isLogin) {
         await login(email, password)
-        toast.success('登录成功！')
         onClose()
         resetForm()
         onSuccess?.()
@@ -160,7 +159,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMo
         }
 
         await register(email, password, username)
-        toast.success('注册成功！')
         onClose()
         resetForm()
         onSuccess?.()
