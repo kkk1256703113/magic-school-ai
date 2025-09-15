@@ -44,20 +44,15 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
 
     try {
       setRefreshing(true)
-      const [usageResponse, statsResponse] = await Promise.all([
-        axios.get('/api/usage/check', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('/api/usage/stats', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ])
+      const usageResponse = await axios.get('/api/usage/check', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
 
       setUsage(usageResponse.data)
       setStats({
         todayUsed: user?.api_calls_today || 0,
-        weekUsed: statsResponse.data?.week_used || 0,
-        totalUsed: statsResponse.data?.total_used || 0,
+        weekUsed: 0, // 暂时设为0，避免API调用失败
+        totalUsed: 0, // 暂时设为0，避免API调用失败
         lastRefreshDate: new Date().toLocaleDateString()
       })
     } catch (error) {
