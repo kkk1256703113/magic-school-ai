@@ -52,7 +52,7 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
     }
   ]
 
-  const kofiUrl = 'https://ko-fi.com/magicschoolai'
+  const kofiUrl = 'https://ko-fi.com/blueli10830'
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>

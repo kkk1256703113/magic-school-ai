@@ -1115,7 +1115,7 @@ app.get('/api/usage/check', async (req, res) => {
                     total: bonusCalls
                 },
                 needsPayment: bonusCalls <= 0,
-                kofiUrl: 'https://ko-fi.com/magicschoolai',  // 替换为你的Ko-fi URL
+                kofiUrl: 'https://ko-fi.com/blueli10830',  // Ko-fi账户URL
                 email: user.email  // 用于提醒用户使用此邮箱支付
             });
         } catch (error) {
@@ -1209,7 +1209,7 @@ app.post('/api/usage/record', async (req, res) => {
                         error: 'No API calls remaining',
                         code: 'NO_CALLS_REMAINING',
                         needsPayment: true,
-                        kofiUrl: 'https://ko-fi.com/magicschoolai'
+                        kofiUrl: 'https://ko-fi.com/blueli10830'
                     });
                 }
 
