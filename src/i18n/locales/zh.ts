@@ -385,6 +385,7 @@ export default {
     userId: '用户ID',
     email: '邮箱',
     accountType: '账户类型',
+    planType: '计划类型',
     newUser: '新用户',
     regularUser: '常规用户',
     lastUpdate: '最后更新',

@@ -385,6 +385,7 @@ export default {
     userId: 'User ID',
     email: 'Email',
     accountType: 'Account Type',
+    planType: 'Plan Type',
     newUser: 'New User',
     regularUser: 'Regular User',
     lastUpdate: 'Last Update',

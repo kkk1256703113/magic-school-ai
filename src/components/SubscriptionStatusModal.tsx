@@ -44,7 +44,16 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
       console.log('✅ API使用量数据获取成功:', usageResponse.data)
       const usageData = usageResponse.data
 
-      setUsage(usageData)
+      // 根据API结构重新映射数据
+      const mappedUsage = {
+        plan: 'free',
+        apiCallsToday: usageData.breakdown?.total - usageData.apiCallsRemaining || 0,
+        apiCallsRemaining: usageData.apiCallsRemaining || 0,
+        dailyLimit: usageData.breakdown?.total || 10,
+        resetTime: new Date().toISOString()
+      }
+
+      setUsage(mappedUsage)
       // 移除stats的使用，简化代码
     } catch (error) {
       console.error('❌ 获取使用量数据失败:', error)
