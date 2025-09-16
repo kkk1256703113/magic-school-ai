@@ -97,29 +97,39 @@ export class AuthManager {
 
   /**
    * 验证认证和限制
-   * 🔧 修复：生产环境下放宽限制，避免误判
+   * 🔧 修复：所有环境都进行正确的API限制检查
    */
   async validateAuthAndLimit(): Promise<void> {
-    // 🔧 生产环境特殊处理
     const isProduction = typeof window !== 'undefined' && window.location?.hostname?.includes('magicschoolai.net')
-    
-    if (isProduction) {
-      logger.info('🎭 生产环境模式：跳过认证验证，依赖Functions中间件处理')
-      return
-    }
-    
-    // 开发环境正常验证
+
+    // 🔐 统一的认证检查（开发环境和生产环境）
     if (!this.isAuthenticated()) {
-      logger.warn('⚠️ 开发环境：用户未登录')
+      const errorMsg = isProduction ? '请登录后使用API功能' : '⚠️ 开发环境：用户未登录'
+      logger.warn(errorMsg)
       throw new AuthError('用户未登录，无法使用API功能')
     }
 
-    const { canUse, remaining } = await this.checkAPILimit()
-    if (!canUse) {
-      throw new AuthError(`API调用次数已达上限，剩余次数：${remaining}`)
-    }
+    // 🔍 统一的API限制检查（开发环境和生产环境）
+    try {
+      const { canUse, remaining } = await this.checkAPILimit()
+      if (!canUse) {
+        const errorMsg = `API调用次数已用完，剩余次数：${remaining}`
+        logger.warn('🚫 API限制阻止调用', { remaining, isProduction })
+        throw new AuthError(errorMsg)
+      }
 
-    logger.info('认证和限制验证通过', { remaining })
+      logger.info('✅ 认证和限制验证通过', {
+        remaining,
+        environment: isProduction ? 'production' : 'development'
+      })
+    } catch (error) {
+      // 如果是AuthError就直接抛出，否则包装一下
+      if (error instanceof AuthError) {
+        throw error
+      }
+      logger.error('❌ API限制检查失败', { error: error instanceof Error ? error.message : String(error) })
+      throw new AuthError('无法验证API使用限制，请稍后重试')
+    }
   }
 
   /**
