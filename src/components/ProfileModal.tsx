@@ -11,7 +11,7 @@ interface ProfileModalProps {
 
 export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
   const { user, isAuthenticated } = useAuth()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   
   // 表单状态
   const [formData, setFormData] = useState({
@@ -26,13 +26,27 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
   // 初始化表单数据
   useEffect(() => {
     if (user && isOpen) {
+      // 格式化注册时间，跟随语言设置
+      let formattedJoinDate = ''
+      if (user.created_at) {
+        const joinDate = new Date(user.created_at)
+        formattedJoinDate = joinDate.toLocaleDateString(
+          i18n.language === 'zh' ? 'zh-CN' : 'en-US',
+          {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }
+        )
+      }
+
       setFormData({
         username: user.username || '',
         email: user.email || '',
-        joinDate: user.created_at ? new Date(user.created_at).toLocaleDateString() : ''
+        joinDate: formattedJoinDate
       })
     }
-  }, [user, isOpen])
+  }, [user, isOpen, i18n.language])
 
   // 处理输入变化
   const handleInputChange = (field: string, value: string) => {
@@ -78,10 +92,24 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
   // 取消编辑
   const handleCancel = () => {
     if (user) {
+      // 格式化注册时间，跟随语言设置
+      let formattedJoinDate = ''
+      if (user.created_at) {
+        const joinDate = new Date(user.created_at)
+        formattedJoinDate = joinDate.toLocaleDateString(
+          i18n.language === 'zh' ? 'zh-CN' : 'en-US',
+          {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }
+        )
+      }
+
       setFormData({
         username: user.username || '',
         email: user.email || '',
-        joinDate: user.created_at ? new Date(user.created_at).toLocaleDateString() : ''
+        joinDate: formattedJoinDate
       })
     }
     setIsEditing(false)

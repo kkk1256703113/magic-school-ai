@@ -382,6 +382,7 @@ export default {
     totalUsage: 'Total Usage',
     totalUsed: 'Total Used',
     accountInfo: 'Account Information',
+    userId: 'User ID',
     email: 'Email',
     accountType: 'Account Type',
     newUser: 'New User',

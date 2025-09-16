@@ -382,6 +382,7 @@ export default {
     totalUsage: '总使用量',
     totalUsed: '累计使用',
     accountInfo: '账户信息',
+    userId: '用户ID',
     email: '邮箱',
     accountType: '账户类型',
     newUser: '新用户',

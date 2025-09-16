@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { X, Zap, TrendingUp, Calendar, Plus, RefreshCw } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useTranslation } from 'react-i18next'
@@ -18,20 +18,14 @@ interface UsageData {
   resetTime: string
 }
 
-interface UsageStats {
-  todayUsed: number
-  remainingToday: number
-  dailyLimit: number
-  lastRefreshDate: string
-}
 
 export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: SubscriptionStatusModalProps) => {
   const { user, token } = useAuth()
   const { t } = useTranslation()
   const [usage, setUsage] = useState<UsageData | null>(null)
-  const [stats, setStats] = useState<UsageStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const intervalRef = useRef<number | null>(null)
 
   const fetchData = async () => {
     if (!token) {
@@ -51,12 +45,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
       const usageData = usageResponse.data
 
       setUsage(usageData)
-      setStats({
-        todayUsed: usageData.apiCallsToday || 0,
-        remainingToday: usageData.apiCallsRemaining || 0,
-        dailyLimit: usageData.dailyLimit || 10,
-        lastRefreshDate: new Date().toLocaleDateString()
-      })
+      // 移除stats的使用，简化代码
     } catch (error) {
       console.error('❌ 获取使用量数据失败:', error)
 
@@ -68,12 +57,6 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
         dailyLimit: 10,
         resetTime: new Date().toISOString()
       })
-      setStats({
-        todayUsed: 0,
-        remainingToday: 0,
-        dailyLimit: 10,
-        lastRefreshDate: new Date().toLocaleDateString()
-      })
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -83,6 +66,25 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
   useEffect(() => {
     if (isOpen) {
       fetchData()
+
+      // 设置30秒自动刷新
+      intervalRef.current = setInterval(() => {
+        fetchData()
+      }, 30000)
+    } else {
+      // 关闭弹窗时清除定时器
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+
+    // 清理函数
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
     }
   }, [isOpen, token])
 
@@ -195,7 +197,11 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                 </span>
               </div>
               <div className="text-2xl font-bold text-purple-600 capitalize">
-                {loading ? '-' : (usage?.plan || 'free')}
+                {loading ? '-' : (
+                  t(`subscription.plans.${usage?.plan || 'free'}.name`) ||
+                  t(`userMenu.plans.${usage?.plan || 'free'}`) ||
+                  t('userMenu.plans.default')
+                )}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
                 每日 {usage?.dailyLimit || 10} 次
@@ -230,15 +236,9 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                   {t('subscription.accountType') || '账户类型'}:
                 </span>
                 <span className="text-gray-900 dark:text-white capitalize">
-                  {usage?.plan || 'free'} 用户
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {t('subscription.lastUpdate') || '最后更新'}:
-                </span>
-                <span className="text-gray-900 dark:text-white">
-                  {stats?.lastRefreshDate}
+                  {t(`subscription.plans.${usage?.plan || 'free'}.name`) ||
+                   t(`userMenu.plans.${usage?.plan || 'free'}`) ||
+                   t('userMenu.plans.default')}
                 </span>
               </div>
             </div>
