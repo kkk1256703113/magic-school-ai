@@ -45,7 +45,9 @@ export const ChatInput = ({
   }
 
   const handleUploadClick = () => {
-    console.log('🔄 文件上传按钮被点击')
+    console.log('🔄 文件上传按钮被点击 - Chrome兼容性增强版')
+
+    // 立即设置按钮状态，确保在用户手势上下文中
     setIsUploadButtonActive(true)
 
     try {
@@ -59,19 +61,42 @@ export const ChatInput = ({
 
       console.log('✅ 文件输入框引用存在，尝试触发点击')
 
-      // 尝试触发文件选择框
-      fileInputRef.current.click()
+      // Chrome兼容性修复：确保在用户手势的同步上下文中立即触发
+      // 不使用任何异步操作或延迟
+      const fileInput = fileInputRef.current
 
-      // 设置一个定时器来重置按钮状态
-      setTimeout(() => {
+      // 重置文件输入框以确保可以重复选择相同文件
+      fileInput.value = ''
+
+      // 立即触发点击，保持在用户手势上下文中
+      fileInput.click()
+
+      console.log('📁 文件选择器已触发 (Chrome兼容模式)')
+
+      // 延迟重置按钮状态，但不影响文件选择
+      const resetTimer = setTimeout(() => {
         setIsUploadButtonActive(false)
-      }, 1000)
+      }, 2000) // 给用户更多时间选择文件
 
-      console.log('📁 文件选择器已触发')
+      // 如果文件选择成功，提前重置状态
+      const handleSuccessReset = () => {
+        clearTimeout(resetTimer)
+        setIsUploadButtonActive(false)
+      }
+
+      // 临时存储重置函数，在文件选择成功时调用
+      ;(fileInput as any)._successReset = handleSuccessReset
 
     } catch (error) {
       console.error('❌ 触发文件选择时发生错误:', error)
-      toast.error(t('chat.fileUploadError') || '无法打开文件选择器，请尝试直接拖拽文件到此区域')
+
+      // 检查是否是Chrome的安全限制
+      const isChrome = /Chrome/.test(navigator.userAgent)
+      const errorMessage = isChrome
+        ? t('chat.chromeFileUploadError') || '检测到Chrome浏览器限制，请直接拖拽文件到输入框区域，或尝试其他浏览器'
+        : t('chat.fileUploadError') || '无法打开文件选择器，请尝试直接拖拽文件到此区域'
+
+      toast.error(errorMessage, { duration: 5000 })
       setIsUploadButtonActive(false)
     }
   }
@@ -220,10 +245,19 @@ export const ChatInput = ({
             onChange={(e) => {
               console.log('📂 文件输入框onChange触发，选择的文件:', e.target.files?.length || 0)
               handleFileSelect(e.target.files)
+
+              // 调用成功重置函数（如果存在）
+              const fileInput = e.target as HTMLInputElement
+              if ((fileInput as any)._successReset) {
+                (fileInput as any)._successReset()
+                delete (fileInput as any)._successReset
+              } else {
+                // 备用重置方案
+                setIsUploadButtonActive(false)
+              }
+
               // 重置input value以允许重复选择相同文件
               e.target.value = ''
-              // 重置按钮状态
-              setIsUploadButtonActive(false)
             }}
             onFocus={() => {
               console.log('🎯 文件输入框获得焦点')
@@ -312,6 +346,11 @@ export const ChatInput = ({
 
         <div className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
           {t('chat.supportedFormats')}
+          {/Chrome/.test(navigator.userAgent) && (
+            <div className="mt-1 text-blue-600 dark:text-blue-400">
+              Chrome用户建议：如上传按钮无响应，请直接拖拽文件到此区域
+            </div>
+          )}
         </div>
       </div>
     </div>
