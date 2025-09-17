@@ -433,7 +433,7 @@ export default {
     hero: {
       description: 'AI-powered document visualization platform that makes complexity simple',
       cta: 'Start Free',
-      ctaSubtitle: 'Daily free quota',
+      ctaSubtitle: '5 free tries for new users',
       demo: 'View Demo',
       secure: 'Data Security',
       fast: 'Fast Processing',
@@ -545,7 +545,7 @@ export default {
       subtitle: 'Join thousands of users, let AI help you simplify complexity',
       button: 'Start Free Now',
       feature1: '30-second quick signup',
-      feature2: 'Daily free quota',
+      feature2: '5 free tries for new users',
       feature3: 'Upgrade anytime',
       feature4: 'Experience dual AI power now'
     }
