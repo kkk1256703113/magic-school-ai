@@ -433,7 +433,7 @@ export default {
     hero: {
       description: 'AI 驱动的文档可视化平台，让复杂变简单',
       cta: '免费开始',
-      ctaSubtitle: '每日免费额度',
+      ctaSubtitle: '新用户5次免费',
       demo: '查看演示',
       secure: '数据安全',
       fast: '快速处理',
@@ -484,7 +484,7 @@ export default {
       free: {
         name: '免费版',
         price: '¥0',
-        feature1: '每日 2 次转换',
+        feature1: '新用户5次尝试',
         feature2: '基础文档格式',
         feature3: '标准处理速度',
         feature4: '社区支持',
@@ -545,7 +545,7 @@ export default {
       subtitle: '加入数千位用户，让 AI 帮你把复杂变简单',
       button: '立即免费开始',
       feature1: '30秒快速注册',
-      feature2: '每日免费额度',
+      feature2: '新用户5次免费',
       feature3: '随时可以升级',
       feature4: '立即体验双 AI 能力'
     }

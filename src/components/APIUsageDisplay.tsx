@@ -48,6 +48,18 @@ export const APIUsageDisplay = ({ onUpgradeClick }: APIUsageDisplayProps) => {
 
   useEffect(() => {
     fetchUsage()
+
+    // 监听API使用更新事件
+    const handleApiUsageUpdate = () => {
+      console.log('🔄 API使用状态更新，刷新显示...')
+      fetchUsage()
+    }
+
+    window.addEventListener('apiUsageUpdated', handleApiUsageUpdate)
+
+    return () => {
+      window.removeEventListener('apiUsageUpdated', handleApiUsageUpdate)
+    }
   }, [token])
 
   if (loading) {

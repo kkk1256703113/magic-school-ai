@@ -78,7 +78,7 @@ export const LanguageSwitcher = ({ className = '', dropdownAlign = 'right' }: La
           </motion.span>
 
           <span className="hidden sm:inline font-medium">
-            {currentLanguage.name}
+            {i18n.language === 'zh' ? '语言' : 'Language'}
           </span>
 
           <motion.div
@@ -162,7 +162,7 @@ export const LanguageSwitcher = ({ className = '', dropdownAlign = 'right' }: La
 
                     {/* 悬停效果 */}
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"
                       layoutId={`hover-${language.code}`}
                     />
                   </motion.button>

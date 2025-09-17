@@ -70,7 +70,10 @@ export abstract class AIServiceBase {
       
       // 记录成功的使用
       await this.recordUsage(endpoint, cost, true)
-      
+
+      // 触发使用数据更新事件
+      window.dispatchEvent(new CustomEvent('apiUsageUpdated'))
+
       return result
     } catch (error) {
       // 🔧 详细错误追踪

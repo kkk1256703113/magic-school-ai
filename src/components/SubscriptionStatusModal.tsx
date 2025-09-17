@@ -80,16 +80,26 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
       intervalRef.current = setInterval(() => {
         fetchData()
       }, 30000)
+
+      // 监听API使用更新事件
+      const handleApiUsageUpdate = () => {
+        console.log('🔄 检测到API使用更新，刷新订阅数据...')
+        fetchData()
+      }
+
+      window.addEventListener('apiUsageUpdated', handleApiUsageUpdate)
+
+      return () => {
+        // 清理定时器
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current)
+          intervalRef.current = null
+        }
+        // 清理事件监听器
+        window.removeEventListener('apiUsageUpdated', handleApiUsageUpdate)
+      }
     } else {
       // 关闭弹窗时清除定时器
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
-    }
-
-    // 清理函数
-    return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
         intervalRef.current = null
@@ -213,7 +223,9 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                 )}
               </div>
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                每日 {usage?.dailyLimit || 10} 次
+                {usage?.plan === 'free'
+                  ? '新用户一共5次尝试'
+                  : `每日 ${usage?.dailyLimit || 10} 次`}
               </div>
             </div>
           </div>
