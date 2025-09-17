@@ -5,6 +5,9 @@ PASSWORDS.md
 OAUTH_SECRETS.md
 *_SECRETS.md
 
+# Backup directory
+backup/
+
 # Logs
 logs
 *.log
