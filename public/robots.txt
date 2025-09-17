@@ -1,0 +1,48 @@
+User-agent: *
+Allow: /
+
+# 允许搜索引擎访问所有内容
+Allow: /assets/
+Allow: /favicon_io/
+
+# 阻止访问特定开发文件和敏感目录
+Disallow: /src/
+Disallow: /.env*
+Disallow: /node_modules/
+Disallow: /dist/
+Disallow: /*.log
+Disallow: /package*.json
+Disallow: /vite.config.*
+Disallow: /tsconfig.*
+
+# 网站地图位置
+Sitemap: https://eduvisualizer.com/sitemap.xml
+Sitemap: https://eduvisualizer.com/sitemap-en.xml
+Sitemap: https://eduvisualizer.com/sitemap-zh.xml
+
+# 爬取延迟设置 (为了防止过度爬取)
+Crawl-delay: 1
+
+# 针对不同搜索引擎的特定设置
+# Google
+User-agent: Googlebot
+Allow: /
+
+# Baidu (针对中文市场)
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2
+
+# Bing
+User-agent: bingbot
+Allow: /
+
+# 阻止常见的垃圾爬虫
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
