@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { Send, Paperclip, X, StopCircle } from 'lucide-react'
 import { useLanguage } from '../../context/LanguageContext'
+import toast from 'react-hot-toast'
 
 interface ChatInputProps {
   inputText: string
@@ -22,6 +23,7 @@ export const ChatInput = ({
   const { t } = useLanguage()
   const [files, setFiles] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
+  const [isUploadButtonActive, setIsUploadButtonActive] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -39,6 +41,38 @@ export const ChatInput = ({
         textareaRef.current.style.height = 'auto'
         textareaRef.current.style.height = '40px'
       }
+    }
+  }
+
+  const handleUploadClick = () => {
+    console.log('🔄 文件上传按钮被点击')
+    setIsUploadButtonActive(true)
+
+    try {
+      // 检查 fileInputRef 是否存在
+      if (!fileInputRef.current) {
+        console.error('❌ 文件输入框引用不存在')
+        toast.error(t('chat.fileUploadError') || '文件上传功能暂时不可用，请刷新页面重试')
+        setIsUploadButtonActive(false)
+        return
+      }
+
+      console.log('✅ 文件输入框引用存在，尝试触发点击')
+
+      // 尝试触发文件选择框
+      fileInputRef.current.click()
+
+      // 设置一个定时器来重置按钮状态
+      setTimeout(() => {
+        setIsUploadButtonActive(false)
+      }, 1000)
+
+      console.log('📁 文件选择器已触发')
+
+    } catch (error) {
+      console.error('❌ 触发文件选择时发生错误:', error)
+      toast.error(t('chat.fileUploadError') || '无法打开文件选择器，请尝试直接拖拽文件到此区域')
+      setIsUploadButtonActive(false)
     }
   }
 
@@ -184,9 +218,22 @@ export const ChatInput = ({
             accept=".txt,.md,.pdf,.csv,.json,.html,.doc,.docx,.xls,.xlsx,text/plain,text/markdown,application/pdf,application/json,text/csv,text/html,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             className="hidden"
             onChange={(e) => {
+              console.log('📂 文件输入框onChange触发，选择的文件:', e.target.files?.length || 0)
               handleFileSelect(e.target.files)
               // 重置input value以允许重复选择相同文件
               e.target.value = ''
+              // 重置按钮状态
+              setIsUploadButtonActive(false)
+            }}
+            onFocus={() => {
+              console.log('🎯 文件输入框获得焦点')
+            }}
+            onBlur={() => {
+              console.log('🔍 文件输入框失去焦点')
+              // 延迟重置按钮状态，给用户一些时间选择文件
+              setTimeout(() => {
+                setIsUploadButtonActive(false)
+              }, 500)
             }}
           />
 
@@ -215,12 +262,16 @@ export const ChatInput = ({
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={handleUploadClick}
                 disabled={isProcessing}
-                className="h-8 w-8 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className={`h-8 w-8 flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-full ${
+                  isUploadButtonActive
+                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
                 title={t('chat.uploadFile')}
               >
-                <Paperclip className="h-4 w-4" />
+                <Paperclip className={`h-4 w-4 ${isUploadButtonActive ? 'animate-pulse' : ''}`} />
               </button>
 
               {isProcessing ? (
