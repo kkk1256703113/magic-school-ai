@@ -4,57 +4,57 @@
 
   <!-- Chinese Homepage -->
   <url>
-    <loc>https://eduvisualizer.com?lang=zh</loc>
+    <loc>https://www.magicschoolai.net?lang=zh</loc>
     <lastmod>2025-09-17T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://eduvisualizer.com" />
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://eduvisualizer.com?lang=zh" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://eduvisualizer.com" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.magicschoolai.net" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.magicschoolai.net?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.magicschoolai.net" />
   </url>
 
   <!-- Chinese Chat Interface -->
   <url>
-    <loc>https://eduvisualizer.com/chat?lang=zh</loc>
+    <loc>https://www.magicschoolai.net/chat?lang=zh</loc>
     <lastmod>2025-09-17T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://eduvisualizer.com/chat" />
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://eduvisualizer.com/chat?lang=zh" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://eduvisualizer.com/chat" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.magicschoolai.net/chat" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.magicschoolai.net/chat?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.magicschoolai.net/chat" />
   </url>
 
   <!-- Chinese Dashboard -->
   <url>
-    <loc>https://eduvisualizer.com/dashboard?lang=zh</loc>
+    <loc>https://www.magicschoolai.net/dashboard?lang=zh</loc>
     <lastmod>2025-09-17T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://eduvisualizer.com/dashboard" />
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://eduvisualizer.com/dashboard?lang=zh" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://eduvisualizer.com/dashboard" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.magicschoolai.net/dashboard" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.magicschoolai.net/dashboard?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.magicschoolai.net/dashboard" />
   </url>
 
   <!-- Chinese Pricing -->
   <url>
-    <loc>https://eduvisualizer.com/pricing?lang=zh</loc>
+    <loc>https://www.magicschoolai.net/pricing?lang=zh</loc>
     <lastmod>2025-09-17T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://eduvisualizer.com/pricing" />
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://eduvisualizer.com/pricing?lang=zh" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://eduvisualizer.com/pricing" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.magicschoolai.net/pricing" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.magicschoolai.net/pricing?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.magicschoolai.net/pricing" />
   </url>
 
   <!-- Chinese Profile -->
   <url>
-    <loc>https://eduvisualizer.com/profile?lang=zh</loc>
+    <loc>https://www.magicschoolai.net/profile?lang=zh</loc>
     <lastmod>2025-09-17T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://eduvisualizer.com/profile" />
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://eduvisualizer.com/profile?lang=zh" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://eduvisualizer.com/profile" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.magicschoolai.net/profile" />
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://www.magicschoolai.net/profile?lang=zh" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.magicschoolai.net/profile" />
   </url>
 
 </urlset>

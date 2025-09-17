@@ -16,9 +16,9 @@ Disallow: /vite.config.*
 Disallow: /tsconfig.*
 
 # 网站地图位置
-Sitemap: https://eduvisualizer.com/sitemap.xml
-Sitemap: https://eduvisualizer.com/sitemap-en.xml
-Sitemap: https://eduvisualizer.com/sitemap-zh.xml
+Sitemap: https://www.magicschoolai.net/sitemap.xml
+Sitemap: https://www.magicschoolai.net/sitemap-en.xml
+Sitemap: https://www.magicschoolai.net/sitemap-zh.xml
 
 # 爬取延迟设置 (为了防止过度爬取)
 Crawl-delay: 1
