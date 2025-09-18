@@ -116,12 +116,13 @@ export class APIClient {
         logger.info(`轮询尝试 ${attempt}/${maxAttempts}, 状态: ${result.status}`)
 
         switch (result.status) {
-          case 'succeeded':
+          case 'succeeded': {
             logger.success('预测完成')
-            const output = Array.isArray(result.output) 
-              ? result.output.join('') 
+            const output = Array.isArray(result.output)
+              ? result.output.join('')
               : result.output
             return output
+          }
             
           case 'failed':
             logger.error('预测失败', { error: result.error })

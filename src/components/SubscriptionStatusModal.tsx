@@ -56,15 +56,15 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
       console.log('✅ API使用量数据获取成功:', usageResponse.data)
       const usageData = usageResponse.data
 
-      // 🔧 使用新的API响应结构
+      // 🔧 修复API响应结构映射 - 使用服务器实际返回的字段名
       const mappedUsage = {
-        remaining: usageData.remaining || 0,
+        remaining: usageData.apiCallsRemaining || usageData.remaining || 0,  // 优先使用apiCallsRemaining
         rechargeHistory: usageData.rechargeHistory || [],
         usageHistory: usageData.usageHistory || [],
         breakdown: usageData.breakdown || {
-          bonusCalls: 0,
+          bonusCalls: usageData.apiCallsRemaining || 0,
           isFirstTimeUser: false,
-          total: 0
+          total: usageData.apiCallsRemaining || 0
         }
       }
 

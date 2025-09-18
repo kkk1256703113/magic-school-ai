@@ -204,7 +204,7 @@ export const useChatInput = ({
 
     // 处理所有类型文件
     let fileContent = ''  // 保留用于AI分析
-    let parsedFiles: Array<{content: string, metadata?: any}> = []  // 存储解析结果供UI展示
+    const parsedFiles: Array<{content: string, metadata?: any}> = []  // 存储解析结果供UI展示
     let processedFilesCount = 0
     let failedFilesCount = 0
     

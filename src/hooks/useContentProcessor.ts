@@ -37,7 +37,7 @@ export const useContentProcessor = ({
     const apiService = getAPIService()
     const results: any = {}
     let hasErrors = false
-    let errorDetails: string[] = []
+    const errorDetails: string[] = []
     
     console.log('🚀 开始处理用户输入:', {
       userContent,
