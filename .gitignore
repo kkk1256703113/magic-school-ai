@@ -94,6 +94,11 @@ pids
 tmp/
 temp/
 
+# Playwright test artifacts
+.playwright-mcp/
+playwright-report/
+test-results/
+
 # Gatsby files
 # public (removed - needed for Vite static assets)
 
