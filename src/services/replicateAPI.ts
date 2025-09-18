@@ -405,6 +405,11 @@ export class MagicSchoolAIService {
           hasSVG: !!result.codeOptions.svg
         }, 'Visualization')
 
+        // 记录API使用
+        if (apiUsageRecorder) {
+          await apiUsageRecorder('generateVisualization', selectedModel, 1, true)
+        }
+
         return result
       } catch (error) {
         logger.error('可视化生成失败，使用降级方案', { error }, 'Visualization')
@@ -668,6 +673,11 @@ export class MagicSchoolAIService {
           tagsCount: analysisResult.tags?.length || 0,
           confidence: analysisResult.confidence || 1
         }, 'Analysis')
+
+        // 记录API使用
+        if (apiUsageRecorder) {
+          await apiUsageRecorder('analyzeContentWithClaude', 'claude4', 1, true)
+        }
 
         return analysisResult
       } catch (error) {
@@ -1114,6 +1124,11 @@ export class MagicSchoolAIService {
           contentLength: htmlContent.length,
           fileSize: htmlResponse.fileSize
         }, 'HTMLGeneration')
+
+        // 记录API使用
+        if (apiUsageRecorder) {
+          await apiUsageRecorder('generateHTML', selectedModel, 1, true)
+        }
 
         return htmlResponse
       } catch (error) {
