@@ -426,6 +426,20 @@ export default {
     history: 'Subscription History',
     activeSince: 'Active Since',
     unknown: 'Unknown',
+    // History related
+    rechargeHistory: 'Recharge History',
+    usageHistory: 'Usage History',
+    currentAvailable: 'Current Available Balance',
+    loading: 'Loading...',
+    noRechargeHistory: 'No recharge history',
+    noUsageHistory: 'No usage history',
+    credits: 'calls',
+    amount: 'Amount',
+    date: 'Date',
+    action: 'Action',
+    model: 'Model',
+    consumed: 'Consumed',
+    zeroBalanceWarning: 'Current balance is 0, please recharge to continue using AI features',
     plans: {
       free: {
         name: 'Free Plan',

@@ -426,6 +426,20 @@ export default {
     history: '订阅历史',
     activeSince: '激活时间',
     unknown: '未知',
+    // 历史记录相关
+    rechargeHistory: '充值历史',
+    usageHistory: '使用历史',
+    currentAvailable: '当前可用额度',
+    loading: '加载中...',
+    noRechargeHistory: '暂无充值记录',
+    noUsageHistory: '暂无使用记录',
+    credits: '次',
+    amount: '金额',
+    date: '日期',
+    action: '操作',
+    model: '模型',
+    consumed: '消耗',
+    zeroBalanceWarning: '当前余额为0，请充值后继续使用AI功能',
     plans: {
       free: {
         name: '免费版',

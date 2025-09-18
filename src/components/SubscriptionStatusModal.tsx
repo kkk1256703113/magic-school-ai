@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { X, Zap, Plus, RefreshCw, DollarSign, Activity, Clock } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useTranslation } from 'react-i18next'
+import { useLanguage } from '@/context/LanguageContext'
 import axios from 'axios'
 
 interface SubscriptionStatusModalProps {
@@ -34,10 +35,30 @@ interface UsageData {
 export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: SubscriptionStatusModalProps) => {
   const { token } = useAuth()
   const { t } = useTranslation()
+  const { language } = useLanguage()
   const [usage, setUsage] = useState<UsageData | null>(null)
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const intervalRef = useRef<number | null>(null)
+
+  // 日期格式化函数，根据语言设置显示不同格式
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const locale = language === 'zh' ? 'zh-CN' : 'en-US'
+
+    const dateStr = date.toLocaleDateString(locale, {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    })
+
+    const timeStr = date.toLocaleTimeString(locale, {
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+
+    return language === 'zh' ? `${dateStr.replace(/\//g, '-')} ${timeStr}` : `${dateStr} ${timeStr}`
+  }
 
   const fetchData = async () => {
     if (!token) {
@@ -178,7 +199,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                当前可用额度
+                {t('subscription.currentAvailable')}
               </p>
             </div>
             <button
@@ -209,7 +230,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                 <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
               <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                充值历史
+                {t('subscription.rechargeHistory')}
               </h4>
             </div>
 
@@ -217,7 +238,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <RefreshCw className="h-5 w-5 text-green-600 animate-spin" />
-                  <span className="ml-2 text-sm text-gray-500">加载中...</span>
+                  <span className="ml-2 text-sm text-gray-500">{t('subscription.loading')}</span>
                 </div>
               ) : usage?.rechargeHistory && usage.rechargeHistory.length > 0 ? (
                 usage.rechargeHistory.slice(0, 10).map((record, index) => (
@@ -229,19 +250,12 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {new Date(record.date).toLocaleDateString('zh-CN', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit'
-                          }).replace(/\//g, '-')} {new Date(record.date).toLocaleTimeString('zh-CN', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                          {formatDate(record.date)}
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-semibold text-green-600 dark:text-green-400">
-                          +{record.calls}次
+                          +{record.calls}{t('subscription.credits')}
                         </div>
                         {record.message && (
                           <div className="text-xs text-gray-400 mt-1 max-w-[80px] truncate">
@@ -257,7 +271,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                   <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3">
                     <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">暂无充值记录</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('subscription.noRechargeHistory')}</p>
                 </div>
               )}
             </div>
@@ -270,7 +284,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                 <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                使用历史
+                {t('subscription.usageHistory')}
               </h4>
             </div>
 
@@ -278,7 +292,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <RefreshCw className="h-5 w-5 text-blue-600 animate-spin" />
-                  <span className="ml-2 text-sm text-gray-500">加载中...</span>
+                  <span className="ml-2 text-sm text-gray-500">{t('subscription.loading')}</span>
                 </div>
               ) : usage?.usageHistory && usage.usageHistory.length > 0 ? (
                 usage.usageHistory.slice(0, 10).map((record, index) => (
@@ -290,19 +304,12 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {new Date(record.date).toLocaleDateString('zh-CN', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit'
-                          }).replace(/\//g, '-')} {new Date(record.date).toLocaleTimeString('zh-CN', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                          {formatDate(record.date)}
                         </div>
                       </div>
                       <div className="text-right ml-2">
                         <div className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                          -1次
+                          -1{t('subscription.credits')}
                         </div>
                         <div className="text-xs text-gray-400 mt-1 capitalize">
                           {record.model}
@@ -316,7 +323,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                   <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-3">
                     <Activity className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">暂无使用记录</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('subscription.noUsageHistory')}</p>
                 </div>
               )}
             </div>
@@ -331,7 +338,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                 <RefreshCw className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                当前余额为0，请充值后继续使用AI功能
+                {t('subscription.zeroBalanceWarning')}
               </p>
             </div>
           </div>
