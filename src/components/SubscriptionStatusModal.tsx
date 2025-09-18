@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { X, Zap, Calendar, Plus, RefreshCw, DollarSign, Activity, Clock } from 'lucide-react'
+import { X, Zap, Plus, RefreshCw, DollarSign, Activity, Clock } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
@@ -32,7 +32,7 @@ interface UsageData {
 
 
 export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: SubscriptionStatusModalProps) => {
-  const { user, token } = useAuth()
+  const { token } = useAuth()
   const { t } = useTranslation()
   const [usage, setUsage] = useState<UsageData | null>(null)
   const [loading, setLoading] = useState(true)
