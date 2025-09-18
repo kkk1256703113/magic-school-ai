@@ -55,7 +55,8 @@ export const ChatContainer = () => {
     updateMessage,
     getAPIService,
     selectedModel,
-    language
+    language,
+    t
   })
 
   // 聊天输入处理

@@ -60,6 +60,7 @@ export default {
     times: '次',
     upgradeAvailable: '可升级',
     featureInDevelopment: '{{feature}}功能开发中...',
+    proBadge: '专业版',
     plans: {
       free: '免费版用户',
       monthly: '月费用户',
@@ -162,6 +163,24 @@ export default {
       processingError: '抱歉，处理过程中出现错误：{{error}}',
       unknownError: '未知错误'
     }
+  },
+
+  // API额度友好提示信息
+  apiLimit: {
+    noCreditsTitle: '🎯 AI分析次数已用完',
+    noCreditsMessage: '您的AI分析次数已经使用完毕！别担心，获取更多次数快速又简单。',
+    noCreditsMessageWithRemaining: '您的AI分析次数即将用完，剩余 {{remaining}} 次。',
+    upgradePrompt: '💎 **获取更多次数**：立即充值，继续您的AI智能工作',
+    upgradeButton: '立即充值',
+    paymentError: '💳 支付处理暂时不可用，请稍后重试。',
+    authError: '🔐 身份验证失败，请重新登录后继续。',
+    networkError: '🌐 网络连接异常，请检查网络后重试。',
+    serverError: '⚠️ AI服务暂时不可用，请稍后重试。',
+    contactSupport: '💬 需要帮助？联系我们的客服团队获取协助。',
+    processingFailed: '⚡ AI处理失败，这可能是临时问题，请重试。',
+    configError: '⚙️ 服务配置错误，请刷新页面后重试。',
+    retryPrompt: '您可以重试，或者充值更多次数来继续使用我们的AI功能。',
+    helpText: '每次充值获得的额度可用于AI分析，永不过期，支持所有AI模型。'
   },
 
   // 侧边栏
@@ -308,6 +327,8 @@ export default {
     email: '邮箱地址',
     emailCannotChange: '邮箱地址不可修改',
     joinDate: '注册时间',
+    userId: '用户ID',
+    userIdTip: '用于技术支持和问题反馈',
     subscriptionInfo: '订阅信息',
     loginRequired: '请先登录查看个人资料',
     notAuthenticated: '用户未认证',

@@ -11,6 +11,22 @@ import { logger } from '@/utils/logger'
 // 缓存相关的导入已移除，因为当前使用简化的API调用方式
 import { temporaryStorage } from '@/utils/temporaryStorage'
 import { cleanHTMLContent, isValidHTMLDocument } from '@/utils/contentAnalysis'
+import { APIErrorType } from '@/utils/apiErrorHandler'
+
+/**
+ * 带有错误类型的自定义错误类
+ */
+class APIError extends Error {
+  public errorType: APIErrorType
+  public remaining?: number
+
+  constructor(message: string, errorType: APIErrorType, remaining?: number) {
+    super(message)
+    this.name = 'APIError'
+    this.errorType = errorType
+    this.remaining = remaining
+  }
+}
 
 // 用户认证和API使用限制检查
 let authToken: string | null = null
@@ -327,16 +343,16 @@ export class MagicSchoolAIService {
     
     // 强制检查用户认证和API使用限制
     if (!authToken) {
-      throw new Error('用户未登录，无法使用API功能')
+      throw new APIError('USER_NOT_AUTHENTICATED', APIErrorType.AUTH_ERROR)
     }
-    
+
     if (!apiLimitChecker) {
-      throw new Error('API使用限制检查器未配置')
+      throw new APIError('API_LIMIT_CHECKER_NOT_CONFIGURED', APIErrorType.CONFIG_ERROR)
     }
-    
+
     const { canUse, remaining } = await apiLimitChecker()
     if (!canUse) {
-      throw new Error(`API调用次数已达上限，剩余次数：${remaining}`)
+      throw new APIError('NO_API_CALLS_REMAINING', APIErrorType.NO_CREDITS, remaining)
     }
     logger.info('可视化生成用户验证和API限制检查通过', { remaining }, 'Visualization')
     
@@ -476,16 +492,16 @@ export class MagicSchoolAIService {
     
     // 强制检查用户认证和API使用限制
     if (!authToken) {
-      throw new Error('用户未登录，无法使用API功能')
+      throw new APIError('USER_NOT_AUTHENTICATED', APIErrorType.AUTH_ERROR)
     }
-    
+
     if (!apiLimitChecker) {
-      throw new Error('API使用限制检查器未配置')
+      throw new APIError('API_LIMIT_CHECKER_NOT_CONFIGURED', APIErrorType.CONFIG_ERROR)
     }
-    
+
     const { canUse, remaining } = await apiLimitChecker()
     if (!canUse) {
-      throw new Error(`API调用次数已达上限，剩余次数：${remaining}`)
+      throw new APIError('NO_API_CALLS_REMAINING', APIErrorType.NO_CREDITS, remaining)
     }
     logger.info('Claude用户验证和API限制检查通过', { remaining }, 'Analysis')
     
@@ -717,16 +733,16 @@ export class MagicSchoolAIService {
     
     // 强制检查用户认证和API使用限制
     if (!authToken) {
-      throw new Error('用户未登录，无法使用API功能')
+      throw new APIError('USER_NOT_AUTHENTICATED', APIErrorType.AUTH_ERROR)
     }
-    
+
     if (!apiLimitChecker) {
-      throw new Error('API使用限制检查器未配置')
+      throw new APIError('API_LIMIT_CHECKER_NOT_CONFIGURED', APIErrorType.CONFIG_ERROR)
     }
-    
+
     const { canUse, remaining } = await apiLimitChecker()
     if (!canUse) {
-      throw new Error(`API调用次数已达上限，剩余次数：${remaining}`)
+      throw new APIError('NO_API_CALLS_REMAINING', APIErrorType.NO_CREDITS, remaining)
     }
     logger.info('用户验证和API限制检查通过', { remaining }, 'Analysis')
 
@@ -935,16 +951,16 @@ export class MagicSchoolAIService {
     
     // 强制检查用户认证和API使用限制
     if (!authToken) {
-      throw new Error('用户未登录，无法使用API功能')
+      throw new APIError('USER_NOT_AUTHENTICATED', APIErrorType.AUTH_ERROR)
     }
-    
+
     if (!apiLimitChecker) {
-      throw new Error('API使用限制检查器未配置')
+      throw new APIError('API_LIMIT_CHECKER_NOT_CONFIGURED', APIErrorType.CONFIG_ERROR)
     }
-    
+
     const { canUse, remaining } = await apiLimitChecker()
     if (!canUse) {
-      throw new Error(`API调用次数已达上限，剩余次数：${remaining}`)
+      throw new APIError('NO_API_CALLS_REMAINING', APIErrorType.NO_CREDITS, remaining)
     }
     logger.info('HTML生成用户验证和API限制检查通过', { remaining }, 'HTMLGeneration')
     

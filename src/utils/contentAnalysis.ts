@@ -1,6 +1,8 @@
 import { ContentType } from '@/types/chat'
 import { logger } from './logger'
 import { aiService } from '@/services/ai'
+import { getFriendlyErrorMessage, detectAPIErrorType, logAPIError } from './apiErrorHandler'
+import type { TFunction } from 'react-i18next'
 
 export const detectContentType = (content: string): ContentType => {
   const hasFormula = /[+\-*/=()x²³¹²³⁰⁴⁵⁶⁷⁸⁹∫∑√]|[a-zA-Z]\s*=|y\s*=|f\(|sin|cos|tan|log|ln|exp|\^|x\^/.test(content)
@@ -224,24 +226,57 @@ export const generateResponseContent = (
   return response
 }
 
-export const handleAPIError = (error: any): { message: string, details: string } => {
-  let errorMessage = '未知错误'
-  
-  if (error instanceof Error) {
-    errorMessage = error.message
-    
-    // 特定错误处理
-    if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
-      errorMessage = 'API密钥无效或已过期'
-    } else if (errorMessage.includes('402') || errorMessage.includes('Payment Required')) {
-      errorMessage = 'API余额不足，请充值'
-    } else if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
-      errorMessage = '网络连接失败，请检查网络或API服务状态'
-    } else if (errorMessage.includes('API Token未配置')) {
-      errorMessage = 'API Token未配置，请在.env.local文件中添加VITE_REPLICATE_API_TOKEN'
+/**
+ * 处理API错误 - 使用友好的国际化错误信息
+ * @param error 错误对象
+ * @param t 翻译函数（可选，如果没有提供则使用英文fallback）
+ * @param remaining 剩余次数（可选）
+ * @returns 友好的错误信息
+ */
+export const handleAPIError = (
+  error: any,
+  t?: TFunction,
+  remaining?: number
+): { message: string, details: string } => {
+  // 记录错误日志
+  logAPIError(error, 'ContentAnalysis')
+
+  let errorMessage: string
+
+  if (t) {
+    // 如果有翻译函数，使用友好的国际化错误信息
+    errorMessage = getFriendlyErrorMessage(error, t, remaining)
+  } else {
+    // Fallback：使用英文错误信息
+    const errorType = detectAPIErrorType(error, remaining)
+
+    switch (errorType.toString()) {
+      case 'NO_CREDITS':
+        errorMessage = '🎯 Out of AI Credits\n\nYour AI analysis credits have been used up! Don\'t worry, getting more is quick and easy.\n\n💎 Get More Credits: Add credits instantly to continue your AI-powered work'
+        break
+      case 'AUTH_ERROR':
+        errorMessage = '🔐 Authentication failed. Please sign in again to continue.'
+        break
+      case 'NETWORK_ERROR':
+        errorMessage = '🌐 Network connection issue. Please check your internet and try again.'
+        break
+      case 'SERVER_ERROR':
+        errorMessage = '⚠️ Our AI service is temporarily unavailable. Please try again in a few moments.'
+        break
+      case 'PAYMENT_ERROR':
+        errorMessage = '💳 Payment processing unavailable. Please try again later.'
+        break
+      case 'CONFIG_ERROR':
+        errorMessage = '⚙️ Service configuration error. Please refresh the page and try again.'
+        break
+      case 'PROCESSING_ERROR':
+        errorMessage = '⚡ AI processing failed. This might be a temporary issue - please try again.'
+        break
+      default:
+        errorMessage = error instanceof Error ? error.message : String(error)
     }
   }
-  
+
   return {
     message: errorMessage,
     details: error instanceof Error ? error.stack || '' : String(error)

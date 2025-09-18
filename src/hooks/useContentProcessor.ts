@@ -1,25 +1,29 @@
 import { logger } from '@/utils/logger'
-import { 
-  detectContentType, 
-  analyzeFormulaText, 
+import {
+  detectContentType,
+  analyzeFormulaText,
   generateResponseContent,
   handleAPIError
 } from '@/utils/contentAnalysis'
 import { createStatusUpdater, sleep } from '@/utils/chatHelpers'
+import { getFriendlyErrorMessage, detectAPIErrorType } from '@/utils/apiErrorHandler'
 import type { ContentType } from '@/types/chat'
+import type { TFunction } from 'react-i18next'
 
 interface UseContentProcessorProps {
   updateMessage: (messageId: string, updates: any) => void
   getAPIService: () => any
   selectedModel: 'gpt5' | 'claude4'
   language: 'zh' | 'en'
+  t: TFunction
 }
 
 export const useContentProcessor = ({
   updateMessage,
   getAPIService,
   selectedModel,
-  language
+  language,
+  t
 }: UseContentProcessorProps) => {
 
   const processUserInput = async (
@@ -202,8 +206,12 @@ export const useContentProcessor = ({
     } catch (error) {
       console.error('💥 处理过程中出现严重错误:', error)
       logger.error('处理用户输入失败', { error }, 'ContentProcessor')
+
+      // 使用友好的国际化错误信息
+      const friendlyErrorMessage = getFriendlyErrorMessage(error, t)
+
       updateMessage(aiMessageId, {
-        content: `处理过程中出现严重错误：\n\n❌ ${error instanceof Error ? error.message : '未知错误'}\n\n请检查网络连接和API配置。`,
+        content: friendlyErrorMessage,
         status: 'error'
       })
     }

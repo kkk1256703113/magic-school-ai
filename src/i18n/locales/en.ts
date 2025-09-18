@@ -60,6 +60,7 @@ export default {
     times: 'times',
     upgradeAvailable: 'Upgrade available',
     featureInDevelopment: '{{feature}} coming soon...',
+    proBadge: 'PRO',
     plans: {
       free: 'Free Plan',
       monthly: 'Monthly Plan',
@@ -162,6 +163,24 @@ export default {
       processingError: 'Sorry, an error occurred: {{error}}',
       unknownError: 'Unknown error'
     }
+  },
+
+  // API Limit Friendly Messages
+  apiLimit: {
+    noCreditsTitle: '🎯 Out of AI Credits',
+    noCreditsMessage: 'Your AI analysis credits have been used up! Don\'t worry, getting more is quick and easy.',
+    noCreditsMessageWithRemaining: 'Your AI credits are running low. You have {{remaining}} calls remaining.',
+    upgradePrompt: '💎 **Get More Credits**: Add credits instantly to continue your AI-powered work',
+    upgradeButton: 'Add Credits Now',
+    paymentError: '💳 Payment processing unavailable. Please try again later.',
+    authError: '🔐 Authentication failed. Please sign in again to continue.',
+    networkError: '🌐 Network connection issue. Please check your internet and try again.',
+    serverError: '⚠️ Our AI service is temporarily unavailable. Please try again in a few moments.',
+    contactSupport: '💬 Need help? Contact our support team for assistance.',
+    processingFailed: '⚡ AI processing failed. This might be a temporary issue - please try again.',
+    configError: '⚙️ Service configuration error. Please refresh the page and try again.',
+    retryPrompt: 'You can try again, or add more credits to continue using our AI features.',
+    helpText: 'Each credit gives you one AI analysis. Credits never expire and work across all our AI models.'
   },
 
   // Sidebar
@@ -308,6 +327,8 @@ export default {
     email: 'Email Address',
     emailCannotChange: 'Email address cannot be changed',
     joinDate: 'Join Date',
+    userId: 'User ID',
+    userIdTip: 'Used for technical support and feedback',
     subscriptionInfo: 'Subscription Info',
     loginRequired: 'Please sign in to view your profile',
     notAuthenticated: 'User not authenticated',

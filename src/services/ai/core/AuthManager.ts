@@ -1,5 +1,6 @@
 import { logger } from '@/utils/logger'
 import { AuthConfig, AuthError } from '../types/ai.types'
+import { APIErrorType } from '@/utils/apiErrorHandler'
 
 /**
  * 认证管理器（单例模式）
@@ -68,7 +69,9 @@ export class AuthManager {
       return result
     } catch (error) {
       logger.error('API限制检查失败', { error })
-      throw new AuthError('无法检查API使用限制')
+      const configError = new AuthError('API_LIMIT_CHECKER_FAILED')
+      ;(configError as any).errorType = APIErrorType.CONFIG_ERROR
+      throw configError
     }
   }
 
@@ -97,25 +100,31 @@ export class AuthManager {
 
   /**
    * 验证认证和限制
-   * 🔧 修复：所有环境都进行正确的API限制检查
+   * 🔧 修复：使用国际化友好错误信息
    */
   async validateAuthAndLimit(): Promise<void> {
     const isProduction = typeof window !== 'undefined' && window.location?.hostname?.includes('magicschoolai.net')
 
     // 🔐 统一的认证检查（开发环境和生产环境）
     if (!this.isAuthenticated()) {
-      const errorMsg = isProduction ? '请登录后使用API功能' : '⚠️ 开发环境：用户未登录'
+      const errorMsg = isProduction ? 'Authentication required' : '⚠️ Dev Environment: User not authenticated'
       logger.warn(errorMsg)
-      throw new AuthError('用户未登录，无法使用API功能')
+      // 使用标准化的错误类型，让上层处理国际化
+      const authError = new AuthError('USER_NOT_AUTHENTICATED')
+      ;(authError as any).errorType = APIErrorType.AUTH_ERROR
+      throw authError
     }
 
     // 🔍 统一的API限制检查（开发环境和生产环境）
     try {
       const { canUse, remaining } = await this.checkAPILimit()
       if (!canUse) {
-        const errorMsg = `API调用次数已用完，剩余次数：${remaining}`
         logger.warn('🚫 API限制阻止调用', { remaining, isProduction })
-        throw new AuthError(errorMsg)
+        // 使用标准化的错误类型和数据，让上层处理国际化
+        const limitError = new AuthError('NO_API_CALLS_REMAINING')
+        ;(limitError as any).errorType = APIErrorType.NO_CREDITS
+        ;(limitError as any).remaining = remaining
+        throw limitError
       }
 
       logger.info('✅ 认证和限制验证通过', {
@@ -128,7 +137,9 @@ export class AuthManager {
         throw error
       }
       logger.error('❌ API限制检查失败', { error: error instanceof Error ? error.message : String(error) })
-      throw new AuthError('无法验证API使用限制，请稍后重试')
+      const configError = new AuthError('API_LIMIT_CHECK_FAILED')
+      ;(configError as any).errorType = APIErrorType.CONFIG_ERROR
+      throw configError
     }
   }
 
