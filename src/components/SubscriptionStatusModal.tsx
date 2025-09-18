@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { X, Zap, TrendingUp, Calendar, Plus, RefreshCw } from 'lucide-react'
+import { X, Zap, Calendar, Plus, RefreshCw, DollarSign, Activity, Clock } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
@@ -11,11 +11,23 @@ interface SubscriptionStatusModalProps {
 }
 
 interface UsageData {
-  plan: string
-  apiCallsToday: number
-  apiCallsRemaining: number
-  dailyLimit: number
-  resetTime: string
+  remaining: number
+  rechargeHistory: Array<{
+    date: string
+    amount: number
+    calls: number
+    message: string
+  }>
+  usageHistory: Array<{
+    date: string
+    action: string
+    model: string
+  }>
+  breakdown: {
+    bonusCalls: number
+    isFirstTimeUser: boolean
+    total: number
+  }
 }
 
 
@@ -44,13 +56,16 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
       console.log('✅ API使用量数据获取成功:', usageResponse.data)
       const usageData = usageResponse.data
 
-      // 根据API结构重新映射数据
+      // 🔧 使用新的API响应结构
       const mappedUsage = {
-        plan: 'free',
-        apiCallsToday: usageData.breakdown?.total - usageData.apiCallsRemaining || 0,
-        apiCallsRemaining: usageData.apiCallsRemaining || 0,
-        dailyLimit: usageData.breakdown?.total || 10,
-        resetTime: new Date().toISOString()
+        remaining: usageData.remaining || 0,
+        rechargeHistory: usageData.rechargeHistory || [],
+        usageHistory: usageData.usageHistory || [],
+        breakdown: usageData.breakdown || {
+          bonusCalls: 0,
+          isFirstTimeUser: false,
+          total: 0
+        }
       }
 
       setUsage(mappedUsage)
@@ -60,11 +75,14 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
 
       // 错误时显示安全的默认值
       setUsage({
-        plan: 'free',
-        apiCallsToday: 0,
-        apiCallsRemaining: 0,
-        dailyLimit: 10,
-        resetTime: new Date().toISOString()
+        remaining: 0,
+        rechargeHistory: [],
+        usageHistory: [],
+        breakdown: {
+          bonusCalls: 0,
+          isFirstTimeUser: false,
+          total: 0
+        }
       })
     } finally {
       setLoading(false)
@@ -117,13 +135,11 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
   if (!isOpen) return null
 
   const getStatusColor = () => {
-    const remaining = usage?.apiCallsRemaining || 0
-    const limit = usage?.dailyLimit || 10
-    const percentage = (remaining / limit) * 100
+    const remaining = usage?.remaining || 0
 
-    if (percentage > 60) return 'text-green-600 dark:text-green-400'
-    if (percentage > 30) return 'text-blue-600 dark:text-blue-400'
-    if (percentage > 0) return 'text-amber-600 dark:text-amber-400'
+    if (remaining > 10) return 'text-green-600 dark:text-green-400'
+    if (remaining > 5) return 'text-blue-600 dark:text-blue-400'
+    if (remaining > 0) return 'text-amber-600 dark:text-amber-400'
     return 'text-red-600 dark:text-red-400'
   }
 
@@ -146,24 +162,24 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
           </button>
         </div>
 
-        {/* 当前余额 */}
+        {/* 🔥 核心指标：剩余次数 */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                {t('subscription.remainingCalls') || '剩余调用次数'}
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                {t('subscription.remainingCalls') || '剩余次数'}
               </h3>
-              <div className="flex items-center gap-2 mt-1">
-                <span className={`text-3xl font-bold ${getStatusColor()}`}>
-                  {loading ? '...' : (usage?.apiCallsRemaining || 0)}
+              <div className="flex items-center gap-3">
+                <span className={`text-4xl font-bold ${getStatusColor()}`}>
+                  {loading ? '...' : (usage?.remaining || 0)}
                 </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
+                <span className="text-lg text-gray-500 dark:text-gray-400">
                   {t('subscription.times') || '次'}
                 </span>
-                <span className="text-xs text-gray-400 dark:text-gray-500">
-                  / {usage?.dailyLimit || 10}
-                </span>
               </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {usage?.breakdown?.isFirstTimeUser ? '新用户免费额度' : '当前可用额度'}
+              </p>
             </div>
             <button
               onClick={fetchData}
@@ -184,100 +200,93 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
           </button>
         </div>
 
-        {/* 使用统计 */}
+        {/* 🔥 两个辅助信息卡片 */}
         <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            {t('subscription.usageStats') || '使用统计'}
-          </h3>
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* 今日使用 */}
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {t('subscription.todayUsed') || '今日已用'}
-                </span>
-              </div>
-              <div className="text-2xl font-bold text-blue-600">
-                {loading ? '-' : (usage?.apiCallsToday || 0)}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {t('subscription.times') || '次'}
-              </div>
+          {/* 充值历史 */}
+          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <DollarSign className="h-4 w-4 text-green-600" />
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                充值历史
+              </h4>
             </div>
 
-            {/* 计划类型 */}
-            <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="h-4 w-4 text-purple-600" />
-                <span className="text-sm font-medium text-gray-900 dark:text-white">
-                  {t('subscription.planType') || '计划类型'}
-                </span>
+            {loading ? (
+              <div className="text-sm text-gray-500">加载中...</div>
+            ) : usage?.rechargeHistory && usage.rechargeHistory.length > 0 ? (
+              <div className="space-y-2">
+                {usage.rechargeHistory.map((record, index) => (
+                  <div key={index} className="flex justify-between items-center py-1">
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        ${record.amount} → +{record.calls}次
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {new Date(record.date).toLocaleDateString('zh-CN')}
+                      </div>
+                    </div>
+                    {record.message && (
+                      <div className="text-xs text-gray-400 max-w-[100px] truncate">
+                        {record.message}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
-              <div className="text-2xl font-bold text-purple-600 capitalize">
-                {loading ? '-' : (
-                  t(`subscription.plans.${usage?.plan || 'free'}.name`) ||
-                  t(`userMenu.plans.${usage?.plan || 'free'}`) ||
-                  t('userMenu.plans.default')
-                )}
+            ) : (
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                暂无充值记录
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                {usage?.plan === 'free'
-                  ? '新用户一共5次尝试'
-                  : `每日 ${usage?.dailyLimit || 10} 次`}
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* 账户信息 */}
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-              {t('subscription.accountInfo') || '账户信息'}
-            </h4>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {t('subscription.userId') || '用户ID'}:
-                </span>
-                <span className="text-gray-900 dark:text-white font-mono text-xs">
-                  #{user?.id || 'N/A'}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {t('subscription.email') || '邮箱'}:
-                </span>
-                <span className="text-gray-900 dark:text-white">
-                  {user?.email}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-400">
-                  {t('subscription.accountType') || '账户类型'}:
-                </span>
-                <span className="text-gray-900 dark:text-white capitalize">
-                  {t(`subscription.plans.${usage?.plan || 'free'}.name`) ||
-                   t(`userMenu.plans.${usage?.plan || 'free'}`) ||
-                   t('userMenu.plans.default')}
-                </span>
-              </div>
+          {/* 消耗历史 */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Activity className="h-4 w-4 text-blue-600" />
+              <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                使用历史
+              </h4>
             </div>
+
+            {loading ? (
+              <div className="text-sm text-gray-500">加载中...</div>
+            ) : usage?.usageHistory && usage.usageHistory.length > 0 ? (
+              <div className="space-y-2">
+                {usage.usageHistory.map((record, index) => (
+                  <div key={index} className="flex justify-between items-center py-1">
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-900 dark:text-white">
+                        {record.action}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {new Date(record.date).toLocaleString('zh-CN', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-400 capitalize">
+                      {record.model}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                暂无使用记录
+              </div>
+            )}
           </div>
 
-          {/* 使用提示 */}
-          {usage?.plan === 'free' && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
-                💡 {t('subscription.freeUserTip') || '免费用户每天享有10次API调用，如需更多请考虑升级计划。'}
-              </p>
-            </div>
-          )}
-
-          {usage?.apiCallsRemaining === 0 && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-4">
+          {/* 简化的状态提示 */}
+          {usage?.remaining === 0 && (
+            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3">
               <p className="text-sm text-amber-800 dark:text-amber-200">
-                ⚠️ {t('subscription.noCreditsWarning') || '您今日的API调用次数已用完，明天会自动重置。'}
+                ⚠️ 当前余额为0，请充值后继续使用
               </p>
             </div>
           )}

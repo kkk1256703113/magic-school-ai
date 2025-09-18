@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, User, Mail, Calendar, Save, AlertCircle } from 'lucide-react'
+import { X, User, Mail, Calendar, Save, AlertCircle, Hash } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import toast from 'react-hot-toast'
@@ -211,6 +211,25 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
                     className="w-full pl-10 pr-4 py-2 border rounded-lg text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                   />
                 </div>
+              </div>
+
+              {/* 用户ID */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('profile.userId') || '用户ID'}
+                </label>
+                <div className="relative">
+                  <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={user?.id ? `#${user.id}` : ''}
+                    disabled={true}
+                    className="w-full pl-10 pr-4 py-2 border rounded-lg text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 font-mono text-sm"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {t('profile.userIdTip') || '用于技术支持和问题反馈'}
+                </p>
               </div>
 
               {/* 订阅信息 */}
