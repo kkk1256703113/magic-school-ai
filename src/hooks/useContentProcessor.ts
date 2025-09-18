@@ -115,9 +115,9 @@ export const useContentProcessor = ({
           statusUpdater.stop()
           console.error('❌ API调用失败 - 选择的模型:', selectedModel)
           console.error('❌ 详细错误信息:', apiError)
-          
-          // 不允许静默降级，直接抛出错误让用户知道具体问题
-          throw new Error(`${selectedModel.toUpperCase()} API调用失败: ${apiError instanceof Error ? apiError.message : '未知错误'}`)
+
+          // 直接抛出原始错误，保留errorType用于友好提示
+          throw apiError
         }
         
         // 显示成功状态
@@ -127,9 +127,8 @@ export const useContentProcessor = ({
       } catch (error) {
         console.error('❌ 内容分析失败:', error)
         console.error('❌ 失败的模型:', selectedModel)
-        hasErrors = true
 
-        // 重新抛出原始错误，让最终的catch块处理国际化
+        // 不设置hasErrors，直接抛出让最终catch处理
         throw error
       }
       
