@@ -330,7 +330,7 @@ app.get('/api/auth/status', async (req, res) => {
             
             // 获取用户信息
             const result = await pool.query(
-                'SELECT id, email, username, plan_type, api_calls_today FROM users WHERE id = $1',
+                'SELECT id, email, username, plan_type, api_calls_today, created_at FROM users WHERE id = $1',
                 [decoded.id]
             );
             
@@ -350,6 +350,7 @@ app.get('/api/auth/status', async (req, res) => {
                     email: user.email,
                     username: user.username,
                     plan: user.plan_type,
+                    created_at: user.created_at,
                     apiCallsToday: user.api_calls_today || 0,
                     apiCallsRemaining: user.plan_type === 'free' ? 10 - (user.api_calls_today || 0) : 1000
                 }

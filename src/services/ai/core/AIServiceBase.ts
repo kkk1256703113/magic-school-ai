@@ -69,7 +69,9 @@ export abstract class AIServiceBase {
       console.log('✅ API操作成功完成')
       
       // 记录成功的使用
+      console.log('🔥 准备记录API使用:', { endpoint, modelType: this.modelType, cost, success: true })
       await this.recordUsage(endpoint, cost, true)
+      console.log('✅ API使用记录完成')
 
       // 触发使用数据更新事件
       window.dispatchEvent(new CustomEvent('apiUsageUpdated'))

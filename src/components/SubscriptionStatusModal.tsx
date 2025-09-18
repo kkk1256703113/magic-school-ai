@@ -146,7 +146,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
       <div
-        className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-4xl w-full mx-4 max-h-[95vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
@@ -213,7 +213,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
               </h4>
             </div>
 
-            <div className="space-y-3 max-h-64 overflow-y-auto">
+            <div className="space-y-3 max-h-80 overflow-y-auto">
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <RefreshCw className="h-5 w-5 text-green-600 animate-spin" />
@@ -274,7 +274,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
               </h4>
             </div>
 
-            <div className="space-y-3 max-h-64 overflow-y-auto">
+            <div className="space-y-3 max-h-80 overflow-y-auto">
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <RefreshCw className="h-5 w-5 text-blue-600 animate-spin" />

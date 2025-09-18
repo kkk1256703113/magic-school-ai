@@ -215,17 +215,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // 记录API使用
   const recordAPIUsage = async (endpoint: string, model: string, cost: number, success: boolean) => {
-    if (!token) return
-    
+    console.log('🚀 AuthContext.recordAPIUsage 被调用:', { endpoint, model, cost, success, hasToken: !!token })
+
+    if (!token) {
+      console.warn('❌ 没有token，跳过API使用记录')
+      return
+    }
+
     try {
-      await axios.post(API_ROUTES.USAGE.RECORD, {
+      console.log('📤 发送API使用记录请求到:', API_ROUTES.USAGE.RECORD)
+      const response = await axios.post(API_ROUTES.USAGE.RECORD, {
         endpoint,
         model,
         cost,
         success
       })
-    } catch (error) {
-      console.error('记录API使用失败:', error)
+      console.log('✅ API使用记录成功:', response.data)
+    } catch (error: any) {
+      console.error('❌ 记录API使用失败:', error)
+      if (error.response) {
+        console.error('❌ 后端错误响应:', error.response.data)
+        console.error('❌ 状态码:', error.response.status)
+      }
     }
   }
 
