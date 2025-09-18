@@ -66,6 +66,8 @@ export default {
       yearly: '年费用户',
       default: '免费用户'
     },
+    memberSince: '注册时间',
+    registrationDate: '注册日期',
     apiUsage: '今日已使用: {{count}} 次'
   },
 

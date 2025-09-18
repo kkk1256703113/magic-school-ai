@@ -1073,7 +1073,7 @@ app.post('/api/webhooks/kofi', async (req, res) => {
 
 // ==================== 使用量路由 ====================
 
-// 检查使用量（改进版 - 支持Ko-fi充值系统）
+// 检查使用量（改进版 - 支持Ko-fi充值系统和历史数据）
 app.get('/api/usage/check', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
@@ -1083,6 +1083,8 @@ app.get('/api/usage/check', async (req, res) => {
                 apiCallsRemaining: 0,
                 bonusCalls: 0,
                 isFirstTimeUser: false,
+                rechargeHistory: [],
+                usageHistory: [],
                 message: 'Authentication required'
             });
         }
@@ -1092,23 +1094,64 @@ app.get('/api/usage/check', async (req, res) => {
         try {
             const decoded = jwt.verify(token, JWT_SECRET);
 
-            const result = await pool.query(
+            // 获取用户基本信息
+            const userResult = await pool.query(
                 'SELECT email, bonus_api_calls, is_first_time_user, created_at FROM users WHERE id = $1',
                 [decoded.id]
             );
 
-            if (result.rows.length === 0) {
+            if (userResult.rows.length === 0) {
                 return res.status(404).json({
                     error: 'User not found'
                 });
             }
 
-            const user = result.rows[0];
+            const user = userResult.rows[0];
             const bonusCalls = user.bonus_api_calls || 0;
+
+            // 🔥 获取充值历史（Ko-fi支付记录）
+            const rechargeResult = await pool.query(
+                `SELECT amount, bonus_calls_awarded as calls, created_at as date,
+                        CONCAT('Ko-fi支付 +', bonus_calls_awarded, '次调用') as message
+                 FROM kofi_payments
+                 WHERE user_id = $1
+                 ORDER BY created_at DESC
+                 LIMIT 20`,
+                [decoded.id]
+            );
+
+            // 🔥 获取使用历史（API调用记录）
+            const usageResult = await pool.query(
+                `SELECT endpoint as action, model, created_at as date
+                 FROM api_usage_logs
+                 WHERE user_id = $1 AND success = true
+                 ORDER BY created_at DESC
+                 LIMIT 20`,
+                [decoded.id]
+            );
+
+            // 格式化充值历史
+            const rechargeHistory = rechargeResult.rows.map(record => ({
+                date: record.date.toISOString(),
+                amount: parseFloat(record.amount),
+                calls: record.calls,
+                message: record.message || `+${record.calls}次调用`
+            }));
+
+            // 格式化使用历史
+            const usageHistory = usageResult.rows.map(record => ({
+                date: record.date.toISOString(),
+                action: record.action || 'AI调用',
+                model: record.model || 'AI模型'
+            }));
+
+            console.log(`[API] 返回使用量数据 - 用户: ${user.email}, 剩余: ${bonusCalls}, 充值记录: ${rechargeHistory.length}, 使用记录: ${usageHistory.length}`);
 
             res.json({
                 success: true,
                 apiCallsRemaining: bonusCalls,
+                rechargeHistory: rechargeHistory,
+                usageHistory: usageHistory,
                 breakdown: {
                     bonusCalls: bonusCalls,
                     isFirstTimeUser: user.is_first_time_user || false,

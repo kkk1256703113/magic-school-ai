@@ -190,6 +190,20 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
                       </p>
                     </div>
                   )}
+
+                  {/* 注册时间显示 */}
+                  <div className="mt-2 flex items-center justify-between">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      {t('userMenu.memberSince')}
+                    </p>
+                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                      {user?.created_at ? new Date(user.created_at).toLocaleDateString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit'
+                      }).replace(/\//g, '-') : '--'}
+                    </p>
+                  </div>
                 </div>
 
                 {/* 用户功能菜单 */}

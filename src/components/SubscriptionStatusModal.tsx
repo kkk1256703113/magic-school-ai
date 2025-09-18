@@ -178,7 +178,7 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {usage?.breakdown?.isFirstTimeUser ? '新用户免费额度' : '当前可用额度'}
+                当前可用额度
               </p>
             </div>
             <button
@@ -200,97 +200,142 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
           </button>
         </div>
 
-        {/* 🔥 两个辅助信息卡片 */}
-        <div className="space-y-4">
+        {/* 🔥 并列历史记录卡片 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* 充值历史 */}
-          <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <DollarSign className="h-4 w-4 text-green-600" />
-              <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl p-5 border border-green-100 dark:border-green-800/30">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg shadow-sm">
+                <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                 充值历史
               </h4>
             </div>
 
-            {loading ? (
-              <div className="text-sm text-gray-500">加载中...</div>
-            ) : usage?.rechargeHistory && usage.rechargeHistory.length > 0 ? (
-              <div className="space-y-2">
-                {usage.rechargeHistory.map((record, index) => (
-                  <div key={index} className="flex justify-between items-center py-1">
-                    <div className="flex-1">
-                      <div className="text-sm text-gray-900 dark:text-white">
-                        ${record.amount} → +{record.calls}次
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="h-5 w-5 text-green-600 animate-spin" />
+                  <span className="ml-2 text-sm text-gray-500">加载中...</span>
+                </div>
+              ) : usage?.rechargeHistory && usage.rechargeHistory.length > 0 ? (
+                usage.rechargeHistory.slice(0, 10).map((record, index) => (
+                  <div key={index} className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border border-green-100/50 dark:border-green-800/20">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                          ${record.amount}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(record.date).toLocaleDateString('zh-CN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                          }).replace(/\//g, '-')} {new Date(record.date).toLocaleTimeString('zh-CN', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(record.date).toLocaleDateString('zh-CN')}
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-green-600 dark:text-green-400">
+                          +{record.calls}次
+                        </div>
+                        {record.message && (
+                          <div className="text-xs text-gray-400 mt-1 max-w-[80px] truncate">
+                            {record.message}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    {record.message && (
-                      <div className="text-xs text-gray-400 max-w-[100px] truncate">
-                        {record.message}
-                      </div>
-                    )}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                暂无充值记录
-              </div>
-            )}
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-3">
+                    <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">暂无充值记录</p>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* 消耗历史 */}
-          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Activity className="h-4 w-4 text-blue-600" />
-              <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+          {/* 使用历史 */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-5 border border-blue-100 dark:border-blue-800/30">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg shadow-sm">
+                <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                 使用历史
               </h4>
             </div>
 
-            {loading ? (
-              <div className="text-sm text-gray-500">加载中...</div>
-            ) : usage?.usageHistory && usage.usageHistory.length > 0 ? (
-              <div className="space-y-2">
-                {usage.usageHistory.map((record, index) => (
-                  <div key={index} className="flex justify-between items-center py-1">
-                    <div className="flex-1">
-                      <div className="text-sm text-gray-900 dark:text-white">
-                        {record.action}
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="h-5 w-5 text-blue-600 animate-spin" />
+                  <span className="ml-2 text-sm text-gray-500">加载中...</span>
+                </div>
+              ) : usage?.usageHistory && usage.usageHistory.length > 0 ? (
+                usage.usageHistory.slice(0, 10).map((record, index) => (
+                  <div key={index} className="bg-white/60 dark:bg-gray-800/60 rounded-lg p-3 border border-blue-100/50 dark:border-blue-800/20">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {record.action}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(record.date).toLocaleDateString('zh-CN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                          }).replace(/\//g, '-')} {new Date(record.date).toLocaleTimeString('zh-CN', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {new Date(record.date).toLocaleString('zh-CN', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                      <div className="text-right ml-2">
+                        <div className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                          -1次
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1 capitalize">
+                          {record.model}
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-xs text-gray-400 capitalize">
-                      {record.model}
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                暂无使用记录
-              </div>
-            )}
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-3">
+                    <Activity className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">暂无使用记录</p>
+                </div>
+              )}
+            </div>
           </div>
+        </div>
 
-          {/* 简化的状态提示 */}
-          {usage?.remaining === 0 && (
-            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg p-3">
-              <p className="text-sm text-amber-800 dark:text-amber-200">
-                ⚠️ 当前余额为0，请充值后继续使用
+        {/* 余额为0的状态提示 */}
+        {usage?.remaining === 0 && (
+          <div className="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800/30">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                <RefreshCw className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                当前余额为0，请充值后继续使用AI功能
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   )

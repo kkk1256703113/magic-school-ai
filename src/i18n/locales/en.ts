@@ -66,6 +66,8 @@ export default {
       yearly: 'Annual Plan',
       default: 'Free User'
     },
+    memberSince: 'Member Since',
+    registrationDate: 'Registration Date',
     apiUsage: 'Used today: {{count}} calls'
   },
 
