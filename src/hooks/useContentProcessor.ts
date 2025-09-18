@@ -5,7 +5,7 @@ import {
   generateResponseContent
 } from '@/utils/contentAnalysis'
 import { createStatusUpdater, sleep } from '@/utils/chatHelpers'
-import { getFriendlyErrorMessage } from '@/utils/apiErrorHandler'
+import { getFriendlyErrorMessage, APIErrorType } from '@/utils/apiErrorHandler'
 import type { ContentType } from '@/types/chat'
 import type { TFunction } from 'i18next'
 
@@ -198,12 +198,18 @@ export const useContentProcessor = ({
       console.error('💥 处理过程中出现严重错误:', error)
       logger.error('处理用户输入失败', { error }, 'ContentProcessor')
 
-      // 使用友好的国际化错误信息
-      const friendlyErrorMessage = getFriendlyErrorMessage(error, t)
+      // 使用友好的国际化错误信息，传递剩余次数（如果有的话）
+      const remaining = (error as any)?.remaining
+      const friendlyErrorMessage = getFriendlyErrorMessage(error, t, remaining)
 
       updateMessage(aiMessageId, {
         content: friendlyErrorMessage,
-        status: 'error'
+        status: 'error',
+        data: {
+          errorType: (error as any)?.errorType,
+          remaining,
+          showUpgrade: (error as any)?.errorType === APIErrorType.NO_CREDITS
+        }
       })
     }
   }

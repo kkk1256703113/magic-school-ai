@@ -167,11 +167,11 @@ export default {
 
   // API额度友好提示信息
   apiLimit: {
-    noCreditsTitle: '🎯 AI分析次数已用完',
-    noCreditsMessage: '您的AI分析次数已经使用完毕！别担心，获取更多次数快速又简单。',
-    noCreditsMessageWithRemaining: '您的AI分析次数即将用完，剩余 {{remaining}} 次。',
-    upgradePrompt: '💎 **获取更多次数**：立即充值，继续您的AI智能工作',
-    upgradeButton: '立即充值',
+    noCreditsTitle: '🎉 免费次数已用完',
+    noCreditsMessage: '您的免费AI分析次数已经用完啦！',
+    noCreditsMessageWithRemaining: '您还剩余 {{remaining}} 次免费使用机会，要珍惜哦！',
+    upgradePrompt: '💎 充值后立即解锁更多次数，继续您的AI创作之旅！',
+    upgradeButton: '立即充值解锁',
     paymentError: '💳 支付处理暂时不可用，请稍后重试。',
     authError: '🔐 身份验证失败，请重新登录后继续。',
     networkError: '🌐 网络连接异常，请检查网络后重试。',

@@ -37,10 +37,16 @@ export interface FriendlyErrorResponse {
  * @returns 错误类型
  */
 export function detectAPIErrorType(error: any, remaining?: number): APIErrorType {
+  // 优先检查error对象上的errorType属性（AuthManager设置的）
+  if (error?.errorType) {
+    return error.errorType
+  }
+
   const errorStr = error instanceof Error ? error.message : String(error).toLowerCase()
 
   // 检查API次数相关错误
   if (errorStr.includes('no api calls remaining') ||
+      errorStr.includes('no_api_calls_remaining') ||
       errorStr.includes('api调用次数已用完') ||
       errorStr.includes('api调用次数已达上限') ||
       errorStr.includes('余额不足') ||

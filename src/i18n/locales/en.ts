@@ -167,11 +167,11 @@ export default {
 
   // API Limit Friendly Messages
   apiLimit: {
-    noCreditsTitle: '🎯 Out of AI Credits',
-    noCreditsMessage: 'Your AI analysis credits have been used up! Don\'t worry, getting more is quick and easy.',
-    noCreditsMessageWithRemaining: 'Your AI credits are running low. You have {{remaining}} calls remaining.',
-    upgradePrompt: '💎 **Get More Credits**: Add credits instantly to continue your AI-powered work',
-    upgradeButton: 'Add Credits Now',
+    noCreditsTitle: '🎉 Free Credits Used Up',
+    noCreditsMessage: 'You\'ve used all your free AI analysis credits!',
+    noCreditsMessageWithRemaining: 'You have {{remaining}} free credits left. Use them wisely!',
+    upgradePrompt: '💎 Add credits now to unlock more AI features and continue your creative journey!',
+    upgradeButton: 'Unlock More Credits',
     paymentError: '💳 Payment processing unavailable. Please try again later.',
     authError: '🔐 Authentication failed. Please sign in again to continue.',
     networkError: '🌐 Network connection issue. Please check your internet and try again.',
