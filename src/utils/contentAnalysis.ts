@@ -2,7 +2,7 @@ import { ContentType } from '@/types/chat'
 import { logger } from './logger'
 import { aiService } from '@/services/ai'
 import { getFriendlyErrorMessage, detectAPIErrorType, logAPIError } from './apiErrorHandler'
-import type { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 export const detectContentType = (content: string): ContentType => {
   const hasFormula = /[+\-*/=()x²³¹²³⁰⁴⁵⁶⁷⁸⁹∫∑√]|[a-zA-Z]\s*=|y\s*=|f\(|sin|cos|tan|log|ln|exp|\^|x\^/.test(content)

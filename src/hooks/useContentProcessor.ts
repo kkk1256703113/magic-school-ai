@@ -2,13 +2,12 @@ import { logger } from '@/utils/logger'
 import {
   detectContentType,
   analyzeFormulaText,
-  generateResponseContent,
-  handleAPIError
+  generateResponseContent
 } from '@/utils/contentAnalysis'
 import { createStatusUpdater, sleep } from '@/utils/chatHelpers'
-import { getFriendlyErrorMessage, detectAPIErrorType } from '@/utils/apiErrorHandler'
+import { getFriendlyErrorMessage } from '@/utils/apiErrorHandler'
 import type { ContentType } from '@/types/chat'
-import type { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 interface UseContentProcessorProps {
   updateMessage: (messageId: string, updates: any) => void
@@ -129,17 +128,9 @@ export const useContentProcessor = ({
         console.error('❌ 内容分析失败:', error)
         console.error('❌ 失败的模型:', selectedModel)
         hasErrors = true
-        
-        const { message: errorMessage } = handleAPIError(error)
-        errorDetails.push(`${selectedModel.toUpperCase()}模型调用失败: ${errorMessage}`)
-        logger.error(`${selectedModel.toUpperCase()}模型内容分析失败`, { 
-          error, 
-          selectedModel,
-          modelEndpoint: selectedModel === 'claude4' ? 'anthropic/claude-4-sonnet' : 'openai/gpt-5'
-        }, 'ContentProcessor')
-        
-        // 不提供降级分析，直接抛出错误让用户知道具体问题
-        throw new Error(`${selectedModel.toUpperCase()}模型API调用失败: ${errorMessage}。请检查模型可用性和API配置。`)
+
+        // 重新抛出原始错误，让最终的catch块处理国际化
+        throw error
       }
       
       // 步骤4: 可视化生成（对于公式）
