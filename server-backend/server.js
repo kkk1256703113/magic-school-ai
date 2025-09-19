@@ -1115,11 +1115,11 @@ app.get('/api/usage/check', async (req, res) => {
 
             // 🔥 获取充值历史（Ko-fi支付记录）
             const rechargeResult = await pool.query(
-                `SELECT amount, bonus_calls_awarded as calls, created_at as date,
+                `SELECT amount, bonus_calls_awarded as calls, processed_at as date,
                         CONCAT('Ko-fi支付 +', bonus_calls_awarded, '次调用') as message
                  FROM kofi_payments
                  WHERE user_id = $1
-                 ORDER BY created_at DESC
+                 ORDER BY processed_at DESC
                  LIMIT 20`,
                 [decoded.id]
             );
