@@ -221,13 +221,13 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
                   {t('profile.subscriptionInfo')}
                 </h3>
                 <p className="text-sm text-purple-700 dark:text-purple-400">
-                  {user?.plan_type === 'free' ? t('userMenu.plans.free') : 
-                   user?.plan_type === 'monthly' ? t('userMenu.plans.monthly') :
-                   user?.plan_type === 'yearly' ? t('userMenu.plans.yearly') : t('userMenu.plans.default')}
+                  {user?.plan === 'free' ? t('userMenu.plans.free') :
+                   user?.plan === 'monthly' ? t('userMenu.plans.monthly') :
+                   user?.plan === 'yearly' ? t('userMenu.plans.yearly') : t('userMenu.plans.default')}
                 </p>
-                {user?.api_calls_today !== undefined && (
+                {user?.apiCallsToday !== undefined && (
                   <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                    {t('userMenu.apiUsage', { count: user.api_calls_today })}
+                    {t('userMenu.apiUsage', { count: user.apiCallsToday })}
                   </p>
                 )}
               </div>

@@ -8,10 +8,10 @@ interface User {
   id: number
   email: string
   username: string
-  plan_type: string
+  plan: string
   created_at?: string
-  api_calls_today?: number
-  api_calls_total?: number
+  apiCallsToday?: number
+  apiCallsRemaining?: number
 }
 
 interface AuthContextType {
@@ -302,8 +302,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           id: 999,
           email: mockEmail,
           username: mockUser,
-          plan_type: 'free',
-          api_calls_today: 0
+          plan: 'free',
+          apiCallsToday: 0
         }
         
         setToken(mockToken)

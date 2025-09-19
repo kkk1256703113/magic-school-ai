@@ -170,23 +170,23 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
                   </p>
                   <div className="flex items-center justify-between mt-1">
                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                      {user?.plan_type === 'free' ? t('userMenu.plans.free') : 
-                       user?.plan_type === 'monthly' ? t('userMenu.plans.monthly') :
-                       user?.plan_type === 'yearly' ? t('userMenu.plans.yearly') : t('userMenu.plans.default')}
+                      {user?.plan === 'free' ? t('userMenu.plans.free') :
+                       user?.plan === 'monthly' ? t('userMenu.plans.monthly') :
+                       user?.plan === 'yearly' ? t('userMenu.plans.yearly') : t('userMenu.plans.default')}
                     </p>
-                    {user?.plan_type !== 'free' && (
+                    {user?.plan !== 'free' && (
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400">
                         {t('userMenu.proBadge')}
                       </span>
                     )}
                   </div>
-                  {user?.api_calls_today !== undefined && (
+                  {user?.apiCallsToday !== undefined && (
                     <div className="mt-2 flex items-center justify-between">
                       <p className="text-xs text-gray-600 dark:text-gray-400">
                         {t('userMenu.todayUsage')}
                       </p>
                       <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                        {user.api_calls_today} {t('userMenu.times')}
+                        {user.apiCallsToday} {t('userMenu.times')}
                       </p>
                     </div>
                   )}
@@ -236,7 +236,7 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
                     </div>
                     <div className="flex flex-col items-start">
                       <span className="font-medium">{t('userMenu.subscriptionManagement')}</span>
-                      {user?.plan_type === 'free' && (
+                      {user?.plan === 'free' && (
                         <span className="text-xs text-amber-600 dark:text-amber-400">
                           {t('userMenu.upgradeAvailable')}
                         </span>

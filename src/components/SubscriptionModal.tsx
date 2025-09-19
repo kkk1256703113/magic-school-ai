@@ -101,7 +101,7 @@ export const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) =
     }
   }
 
-  const currentPlan = getPlanInfo(user?.plan_type || 'free')
+  const currentPlan = getPlanInfo(user?.plan || 'free')
 
   // 计算使用百分比
   const getDailyUsagePercentage = () => {
@@ -187,7 +187,7 @@ export const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) =
                     </span>
                   )}
                 </div>
-                {user?.plan_type === 'free' && (
+                {user?.plan === 'free' && (
                   <button
                     onClick={() => handleUpgrade()}
                     className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
@@ -214,7 +214,7 @@ export const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) =
                   <>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {usageStats?.daily_used || user?.api_calls_today || 0}
+                        {usageStats?.daily_used || user?.apiCallsToday || 0}
                       </span>
                       <span className="text-sm text-gray-500 dark:text-gray-400">
                         / {currentPlan.dailyLimit === -1 ? t('subscription.unlimited') : currentPlan.dailyLimit}
@@ -247,7 +247,7 @@ export const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) =
                   <>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                        {usageStats?.total_used || user?.api_calls_total || 0}
+                        {usageStats?.total_used || 0}
                       </span>
                       <span className="text-sm text-gray-500 dark:text-gray-400">
                         / {currentPlan.totalLimit === -1 ? t('subscription.unlimited') : currentPlan.totalLimit}
@@ -270,7 +270,7 @@ export const SubscriptionModal = ({ isOpen, onClose }: SubscriptionModalProps) =
             </div>
 
             {/* 升级选项 */}
-            {user?.plan_type === 'free' && (
+            {user?.plan === 'free' && (
               <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-6">
                 <div className="text-center mb-4">
                   <Star className="mx-auto h-8 w-8 text-yellow-500 mb-2" />
