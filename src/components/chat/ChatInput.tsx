@@ -348,7 +348,7 @@ export const ChatInput = ({
           {t('chat.supportedFormats')}
           {/Chrome/.test(navigator.userAgent) && (
             <div className="mt-1 text-blue-600 dark:text-blue-400">
-              Chrome用户建议：如上传按钮无响应，请直接拖拽文件到此区域
+              {t('chat.chromeUploadHint')}
             </div>
           )}
         </div>

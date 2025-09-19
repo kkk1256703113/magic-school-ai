@@ -125,6 +125,7 @@ export default {
     cancelProcessing: 'Cancel processing',
     supportedFormats: 'Supports TXT, MD, PDF, CSV, JSON, HTML, Word, Excel · Enter to send · Shift+Enter for new line',
     dragDropHint: 'Drop files here to upload',
+    chromeUploadHint: 'Chrome users: If upload button is unresponsive, please drag and drop files directly to this area',
     processing: 'Processing...',
     thinking: '✨ Analyzing your content...',
     generatingHTML: '🎨 Creating interactive page for you...',

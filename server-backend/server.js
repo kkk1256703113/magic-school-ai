@@ -226,6 +226,7 @@ app.post('/api/auth/login', async (req, res) => {
                 email: user.email,
                 username: user.username,
                 plan: user.plan_type,
+                created_at: user.created_at,
                 apiCallsToday: user.api_calls_today || 0,
                 apiCallsRemaining: user.plan_type === 'free' ? 10 - (user.api_calls_today || 0) : 1000
             }
@@ -272,7 +273,7 @@ app.post('/api/auth/register', async (req, res) => {
         const result = await pool.query(
             `INSERT INTO users (email, password_hash, username, plan_type, api_calls_today, bonus_api_calls, is_first_time_user, created_at)
              VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-             RETURNING id, email, username, plan_type, bonus_api_calls`,
+             RETURNING id, email, username, plan_type, bonus_api_calls, created_at`,
             [email, passwordHash, username || email.split('@')[0], 'free', 0, 5, true]
         );
         
@@ -297,6 +298,7 @@ app.post('/api/auth/register', async (req, res) => {
                 email: newUser.email,
                 username: newUser.username,
                 plan: newUser.plan_type,
+                created_at: newUser.created_at,
                 apiCallsToday: 0,
                 apiCallsRemaining: 10
             }
@@ -787,7 +789,7 @@ app.post('/api/auth/google', async (req, res) => {
                 const createResult = await pool.query(
                     `INSERT INTO users (email, username, plan_type, api_calls_today, bonus_api_calls, is_first_time_user, created_at)
                      VALUES ($1, $2, $3, $4, $5, $6, NOW())
-                     RETURNING id, email, username, plan_type, api_calls_today, bonus_api_calls`,
+                     RETURNING id, email, username, plan_type, api_calls_today, bonus_api_calls, created_at`,
                     [MOCK_GOOGLE_EMAIL, MOCK_GOOGLE_USER, 'free', 0, 5, true]
                 );
                 user = createResult.rows[0];
@@ -814,6 +816,7 @@ app.post('/api/auth/google', async (req, res) => {
                     email: user.email,
                     username: user.username,
                     plan: user.plan_type,
+                    created_at: user.created_at,
                     apiCallsToday: user.api_calls_today || 0,
                     apiCallsRemaining: user.plan_type === 'free' ? 10 - (user.api_calls_today || 0) : 1000
                 }

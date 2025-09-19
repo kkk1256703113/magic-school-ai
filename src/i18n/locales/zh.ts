@@ -125,6 +125,7 @@ export default {
     cancelProcessing: '终止处理',
     supportedFormats: '支持 TXT, MD, PDF, CSV, JSON, HTML, Word, Excel · Enter 发送 · Shift+Enter 换行',
     dragDropHint: '拖拽文件到这里上传',
+    chromeUploadHint: 'Chrome用户建议：如上传按钮无响应，请直接拖拽文件到此区域',
     processing: '处理中...',
     thinking: '✨ 正在分析您的内容...',
     generatingHTML: '🎨 正在为您创建交互式页面...',
