@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import { useLanguage } from '@/context/LanguageContext'
 import axios from 'axios'
+import toast from 'react-hot-toast'
 
 interface SubscriptionStatusModalProps {
   isOpen: boolean
@@ -63,6 +64,8 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
   const fetchData = async () => {
     if (!token) {
       setLoading(false)
+      console.log('❌ 无认证token，请重新登录')
+      toast.error(t('subscription.pleaseLogin') || '请先登录')
       return
     }
 
@@ -91,10 +94,20 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
 
       setUsage(mappedUsage)
       // 移除stats的使用，简化代码
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ 获取使用量数据失败:', error)
 
-      // 错误时显示安全的默认值
+      // 特殊处理401认证错误
+      if (error?.response?.status === 401) {
+        console.log('🔑 认证失败，Token可能已过期')
+        toast.error(t('subscription.sessionExpired') || 'Session expired. Please login again.')
+
+        // 关闭弹窗
+        onClose()
+        return
+      }
+
+      // 其他错误时显示安全的默认值
       setUsage({
         remaining: 0,
         rechargeHistory: [],
@@ -105,6 +118,8 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
           total: 0
         }
       })
+
+      toast.error(t('subscription.fetchError') || '获取数据失败，请稍后重试')
     } finally {
       setLoading(false)
       setRefreshing(false)

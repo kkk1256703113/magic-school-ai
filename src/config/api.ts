@@ -63,6 +63,23 @@ export const configureAxios = (axios: any): void => {
       if (error.response) {
         // 服务器返回错误
         console.error('API Error:', error.response.status, error.response.data)
+
+        // 处理401认证错误
+        if (error.response.status === 401) {
+          // 清除无效的token
+          localStorage.removeItem('token')
+          delete axios.defaults.headers.common['Authorization']
+
+          // 如果不是在登录页，跳转到首页让用户重新登录
+          if (!window.location.pathname.includes('/welcome') &&
+              !window.location.pathname.includes('/') &&
+              !window.location.pathname.includes('/reset-password')) {
+            // 发送自定义事件通知token失效
+            window.dispatchEvent(new CustomEvent('tokenExpired', {
+              detail: { message: 'Session expired. Please login again.' }
+            }))
+          }
+        }
       } else if (error.request) {
         // 请求发送失败
         console.error('Network Error:', error.message)
