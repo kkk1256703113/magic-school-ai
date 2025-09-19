@@ -97,17 +97,12 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
     } catch (error: any) {
       console.error('❌ 获取使用量数据失败:', error)
 
-      // 特殊处理401认证错误
+      // 401错误不关闭弹窗，让用户看到默认值
       if (error?.response?.status === 401) {
-        console.log('🔑 认证失败，Token可能已过期')
-        toast.error(t('subscription.sessionExpired') || 'Session expired. Please login again.')
-
-        // 关闭弹窗
-        onClose()
-        return
+        console.log('🔑 Token验证失败，但继续显示弹窗')
       }
 
-      // 其他错误时显示安全的默认值
+      // 显示安全的默认值
       setUsage({
         remaining: 0,
         rechargeHistory: [],
@@ -118,8 +113,6 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
           total: 0
         }
       })
-
-      toast.error(t('subscription.fetchError') || '获取数据失败，请稍后重试')
     } finally {
       setLoading(false)
       setRefreshing(false)

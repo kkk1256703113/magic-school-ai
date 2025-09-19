@@ -84,17 +84,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     verifyToken()
 
-    // 监听token过期事件
-    const handleTokenExpired = (event: CustomEvent) => {
-      console.log('Token expired, logging out...', event.detail)
-      logout()
-      toast.error('Session expired. Please login again.')
-    }
-
-    window.addEventListener('tokenExpired', handleTokenExpired as any)
-    return () => {
-      window.removeEventListener('tokenExpired', handleTokenExpired as any)
-    }
+    // 移除了token过期自动登出，让用户自己决定
   }, [])
 
   // 登录
