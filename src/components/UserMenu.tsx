@@ -19,7 +19,7 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
   const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const { user, isAuthenticated, logout, isLoading } = useAuth()
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const menuRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   
@@ -191,24 +191,6 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
                     </div>
                   )}
 
-                  {/* 注册时间显示（跟随语言设置） */}
-                  <div className="mt-2 flex items-center justify-between">
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      {t('userMenu.memberSince')}
-                    </p>
-                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                      {user?.created_at
-                        ? new Date(user.created_at).toLocaleDateString(
-                            i18n.language === 'zh' ? 'zh-CN' : 'en-US',
-                            {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                            }
-                          )
-                        : '--'}
-                    </p>
-                  </div>
                 </div>
 
                 {/* 用户功能菜单 */}

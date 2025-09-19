@@ -65,7 +65,7 @@ export default {
       free: 'Free Plan',
       monthly: 'Monthly Plan',
       yearly: 'Annual Plan',
-      default: 'Free User'
+      default: 'Version Type'
     },
     memberSince: 'Member Since',
     registrationDate: 'Registration Date',
@@ -328,7 +328,6 @@ export default {
     emailCannotChange: 'Email address cannot be changed',
     joinDate: 'Join Date',
     userId: 'User ID',
-    userIdTip: 'Used for technical support and feedback',
     subscriptionInfo: 'Subscription Info',
     loginRequired: 'Please sign in to view your profile',
     notAuthenticated: 'User not authenticated',

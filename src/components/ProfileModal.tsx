@@ -26,18 +26,11 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
   // 初始化表单数据
   useEffect(() => {
     if (user && isOpen) {
-      // 格式化注册时间，跟随语言设置
+      // 格式化注册时间为YYYY-MM-DD格式
       let formattedJoinDate = ''
       if (user.created_at) {
         const joinDate = new Date(user.created_at)
-        formattedJoinDate = joinDate.toLocaleDateString(
-          i18n.language === 'zh' ? 'zh-CN' : 'en-US',
-          {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          }
-        )
+        formattedJoinDate = joinDate.toISOString().split('T')[0]
       }
 
       setFormData({
@@ -92,18 +85,11 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
   // 取消编辑
   const handleCancel = () => {
     if (user) {
-      // 格式化注册时间，跟随语言设置
+      // 格式化注册时间为YYYY-MM-DD格式
       let formattedJoinDate = ''
       if (user.created_at) {
         const joinDate = new Date(user.created_at)
-        formattedJoinDate = joinDate.toLocaleDateString(
-          i18n.language === 'zh' ? 'zh-CN' : 'en-US',
-          {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          }
-        )
+        formattedJoinDate = joinDate.toISOString().split('T')[0]
       }
 
       setFormData({
@@ -227,9 +213,6 @@ export const ProfileModal = ({ isOpen, onClose }: ProfileModalProps) => {
                     className="w-full pl-10 pr-4 py-2 border rounded-lg text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 font-mono text-sm"
                   />
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {t('profile.userIdTip') || '用于技术支持和问题反馈'}
-                </p>
               </div>
 
               {/* 订阅信息 */}

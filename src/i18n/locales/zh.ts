@@ -65,7 +65,7 @@ export default {
       free: '免费版用户',
       monthly: '月费用户',
       yearly: '年费用户',
-      default: '免费用户'
+      default: '版本类型'
     },
     memberSince: '注册时间',
     registrationDate: '注册日期',
@@ -328,7 +328,6 @@ export default {
     emailCannotChange: '邮箱地址不可修改',
     joinDate: '注册时间',
     userId: '用户ID',
-    userIdTip: '用于技术支持和问题反馈',
     subscriptionInfo: '订阅信息',
     loginRequired: '请先登录查看个人资料',
     notAuthenticated: '用户未认证',
