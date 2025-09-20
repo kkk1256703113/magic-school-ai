@@ -5,7 +5,7 @@
 
 SERVER_HOST="45.77.86.20"
 SERVER_USER="root"
-SERVER_PATH="/root/eduvisualizer-backend"
+SERVER_PATH="/opt/magic-school-api"
 LOCAL_PATH="./server-backend"
 
 echo "🚀 开始部署服务器后端代码..."
@@ -21,7 +21,7 @@ scp -i ~/.ssh/id_rsa server-backend.tar.gz ${SERVER_USER}@${SERVER_HOST}:/tmp/
 # 3. 在服务器上解压和部署
 echo "🔧 在服务器上部署代码..."
 ssh -i ~/.ssh/id_rsa ${SERVER_USER}@${SERVER_HOST} << 'EOF'
-    cd /root/eduvisualizer-backend
+    cd /opt/magic-school-api
     
     # 停止PM2服务
     echo "⏸️ 停止服务..."
@@ -29,11 +29,10 @@ ssh -i ~/.ssh/id_rsa ${SERVER_USER}@${SERVER_HOST} << 'EOF'
     
     # 备份当前代码
     echo "💾 备份当前代码..."
-    cp -r api api_backup_$(date +%Y%m%d_%H%M%S)
-    
+    cp -r . backup_$(date +%Y%m%d_%H%M%S)
+
     # 解压新代码
     echo "📂 部署新代码..."
-    cd api
     tar -xzf /tmp/server-backend.tar.gz
     
     # 安装依赖

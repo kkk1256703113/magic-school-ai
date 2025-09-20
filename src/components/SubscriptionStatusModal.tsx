@@ -64,21 +64,31 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
   const fetchData = async () => {
     if (!token) {
       setLoading(false)
-      console.log('❌ 无认证token，请重新登录')
+      console.log('❌ [前端] 无认证token，请重新登录')
       toast.error(t('subscription.pleaseLogin') || '请先登录')
       return
     }
 
     try {
       setRefreshing(true)
-      console.log('🔍 获取API使用量数据...')
+      console.log('🔍 [前端] 开始获取API使用量数据...')
+      console.log('🔍 [前端] Token长度:', token.length)
 
       const usageResponse = await axios.get('/api/usage/check', {
         headers: { Authorization: `Bearer ${token}` }
       })
 
-      console.log('✅ API使用量数据获取成功:', usageResponse.data)
+      console.log('✅ [前端] API响应状态:', usageResponse.status)
+      console.log('✅ [前端] API原始响应数据:', JSON.stringify(usageResponse.data, null, 2))
       const usageData = usageResponse.data
+
+      // 验证关键字段是否存在
+      console.log('🔍 [前端] 检查关键字段:')
+      console.log('  - apiCallsRemaining:', usageData.apiCallsRemaining)
+      console.log('  - remaining:', usageData.remaining)
+      console.log('  - rechargeHistory长度:', usageData.rechargeHistory?.length || 0)
+      console.log('  - usageHistory长度:', usageData.usageHistory?.length || 0)
+      console.log('  - breakdown:', usageData.breakdown)
 
       // 🔧 修复API响应结构映射 - 使用服务器实际返回的字段名
       const mappedUsage = {
@@ -92,18 +102,35 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
         }
       }
 
+      console.log('🔧 [前端] 映射后的数据:', JSON.stringify(mappedUsage, null, 2))
+      console.log('📊 [前端] 设置usage状态，剩余次数:', mappedUsage.remaining)
+
       setUsage(mappedUsage)
-      // 移除stats的使用，简化代码
+
+      // 验证状态设置是否成功
+      setTimeout(() => {
+        console.log('⏰ [前端] 500ms后检查usage状态是否更新...')
+      }, 500)
+
     } catch (error: any) {
-      console.error('❌ 获取使用量数据失败:', error)
+      console.error('❌ [前端] 获取使用量数据失败:', error)
+      console.error('❌ [前端] 错误详情:', {
+        message: error.message,
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data
+      })
 
       // 401错误不关闭弹窗，让用户看到默认值
       if (error?.response?.status === 401) {
-        console.log('🔑 Token验证失败，但继续显示弹窗')
+        console.log('🔑 [前端] Token验证失败，但继续显示弹窗')
+        toast.error('认证失败，请重新登录')
+      } else {
+        toast.error(`获取数据失败: ${error.message}`)
       }
 
       // 显示安全的默认值
-      setUsage({
+      const defaultUsage = {
         remaining: 0,
         rechargeHistory: [],
         usageHistory: [],
@@ -112,10 +139,13 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
           isFirstTimeUser: false,
           total: 0
         }
-      })
+      }
+      console.log('🔧 [前端] 设置默认值:', defaultUsage)
+      setUsage(defaultUsage)
     } finally {
       setLoading(false)
       setRefreshing(false)
+      console.log('🏁 [前端] fetchData函数执行完成')
     }
   }
 

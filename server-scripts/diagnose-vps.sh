@@ -93,7 +93,7 @@ POSSIBLE_DIRS=(
     "/opt/magic-school-api"
     "/opt/eduvisualizer-api"
     "/root/magic-school-api"
-    "/root/eduvisualizer-api"
+    "/root/eduvisualizer-api-old"
 )
 
 PROJECT_DIR=""
