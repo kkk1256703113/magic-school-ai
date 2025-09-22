@@ -89,7 +89,7 @@ export const PDFViewer: React.FC<PDFViewerProps> = ({ file, onTextExtracted }) =
             <div className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
               <img 
                 src={preview} 
-                alt="PDF首页预览" 
+                alt="PDF document first page preview - Magic School AI visualization" 
                 className="w-full max-h-64 object-contain bg-gray-50 dark:bg-gray-700"
               />
             </div>

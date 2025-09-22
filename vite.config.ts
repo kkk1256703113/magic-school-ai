@@ -38,6 +38,18 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
+    // 压缩优化
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // 生产环境移除console
+        drop_debugger: true, // 移除debugger
+        pure_funcs: ['console.log', 'console.info', 'console.debug'], // 移除特定函数
+      },
+      format: {
+        comments: false, // 移除注释
+      },
+    },
     rollupOptions: {
       // 确保React Context正确初始化
       external: [],
