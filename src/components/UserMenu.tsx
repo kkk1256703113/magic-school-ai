@@ -180,17 +180,6 @@ export const UserMenu = ({ onShowAuthModal }: UserMenuProps) => {
                       </span>
                     )}
                   </div>
-                  {user?.apiCallsToday !== undefined && (
-                    <div className="mt-2 flex items-center justify-between">
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        {t('userMenu.todayUsage')}
-                      </p>
-                      <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                        {user.apiCallsToday} {t('userMenu.times')}
-                      </p>
-                    </div>
-                  )}
-
                 </div>
 
                 {/* 用户功能菜单 */}
