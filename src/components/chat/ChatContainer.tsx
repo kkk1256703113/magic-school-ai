@@ -6,6 +6,7 @@ import { useLanguage } from '@/context/LanguageContext'
 import { logger } from '@/utils/logger'
 import { ChevronDown, Sparkles } from 'lucide-react'
 import { setAuthConfig } from '@/services/ai'
+import toast from 'react-hot-toast'
 
 import { useChatMessages } from '@/hooks/useChatMessages'
 import { useAPIService } from '@/hooks/useAPIService'
@@ -159,7 +160,17 @@ export const ChatContainer = () => {
           <div className="flex items-center gap-3">
             {/* 升级按钮 */}
             <button
-              onClick={() => setShowUpgradeModal(true)}
+              onClick={() => {
+                toast(t('subscription.paymentUnavailable'), {
+                  icon: '📢',
+                  duration: 5000,
+                  style: {
+                    background: theme === 'dark' ? '#1f2937' : '#ffffff',
+                    color: theme === 'dark' ? '#f9fafb' : '#1f2937',
+                    border: theme === 'dark' ? '1px solid #374151' : '1px solid #e5e7eb',
+                  },
+                })
+              }}
               className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg text-sm font-medium transition-colors"
             >
               <Sparkles className="h-4 w-4" />

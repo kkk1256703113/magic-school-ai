@@ -399,6 +399,7 @@ export default {
     remainingCalls: '剩余调用次数',
     times: '次',
     addCredits: '充值更多次数',
+    paymentUnavailable: '支付系统暂时无法使用，如有问题请发送邮件至：m13067923691@163.com',
     usageStats: '使用统计',
     dailyUsage: '今日使用量',
     todayUsed: '今日已用',

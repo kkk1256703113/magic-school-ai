@@ -33,7 +33,7 @@ interface UsageData {
 }
 
 
-export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: SubscriptionStatusModalProps) => {
+export const SubscriptionStatusModal = ({ isOpen, onClose }: SubscriptionStatusModalProps) => {
   const { token } = useAuth()
   const { t } = useTranslation()
   const { language } = useLanguage()
@@ -185,10 +185,16 @@ export const SubscriptionStatusModal = ({ isOpen, onClose, onOpenUpgrade }: Subs
   }, [isOpen, token])
 
   const handleUpgradeClick = () => {
-    onClose()
-    if (onOpenUpgrade) {
-      onOpenUpgrade()
-    }
+    // 显示支付不可用提示
+    toast(t('subscription.paymentUnavailable'), {
+      icon: '📢',
+      duration: 5000,
+      style: {
+        background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+        color: document.documentElement.classList.contains('dark') ? '#f9fafb' : '#1f2937',
+        border: document.documentElement.classList.contains('dark') ? '1px solid #374151' : '1px solid #e5e7eb',
+      },
+    })
   }
 
   if (!isOpen) return null

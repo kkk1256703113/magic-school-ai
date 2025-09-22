@@ -399,6 +399,7 @@ export default {
     remainingCalls: 'Remaining API Calls',
     times: 'calls',
     addCredits: 'Add More Credits',
+    paymentUnavailable: 'Payment system is temporarily unavailable. For inquiries, please email: m13067923691@163.com',
     usageStats: 'Usage Statistics',
     dailyUsage: 'Daily Usage',
     todayUsed: 'Today Used',

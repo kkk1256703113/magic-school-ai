@@ -1,6 +1,7 @@
 import { X, ExternalLink, Gift, Zap, Coffee } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useTranslation } from 'react-i18next'
+import toast from 'react-hot-toast'
 
 interface UpgradeModalProps {
   isOpen: boolean
@@ -52,7 +53,19 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
     }
   ]
 
-  const kofiUrl = 'https://ko-fi.com/blueli10830'
+  // 处理点击支付按钮
+  const handlePaymentClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    toast(t('subscription.paymentUnavailable'), {
+      icon: '📢',
+      duration: 5000,
+      style: {
+        background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff',
+        color: document.documentElement.classList.contains('dark') ? '#f9fafb' : '#1f2937',
+        border: document.documentElement.classList.contains('dark') ? '1px solid #374151' : '1px solid #e5e7eb',
+      },
+    })
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
@@ -142,16 +155,14 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
                 </div>
               </div>
 
-              <a
-                href={`${kofiUrl}?amount=${pkg.amount}`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                onClick={handlePaymentClick}
                 className="block w-full py-2 bg-[#FF5E5B] hover:bg-[#FF4E4A] text-white rounded-lg font-medium transition-colors text-center"
               >
                 <span className="flex items-center justify-center gap-2">
                   ☕ {t('upgrade.kofi.supportButton') || `Support $${pkg.amount}`}
                 </span>
-              </a>
+              </button>
             </div>
           ))}
         </div>
@@ -169,15 +180,13 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
 
         {/* 直接Ko-fi链接 */}
         <div className="text-center">
-          <a
-            href={kofiUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={handlePaymentClick}
             className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline"
           >
             {t('upgrade.kofi.visitPage') || 'Visit our Ko-fi page'}
             <ExternalLink className="h-4 w-4" />
-          </a>
+          </button>
         </div>
 
         <div className="mt-4 text-center text-xs text-gray-500 dark:text-gray-400">
