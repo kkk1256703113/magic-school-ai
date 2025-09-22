@@ -6,7 +6,7 @@ BEGIN;
 
 -- 1. 扩展用户表，添加支付相关字段
 ALTER TABLE users
-ADD COLUMN IF NOT EXISTS bonus_api_calls INTEGER DEFAULT 5,  -- 新用户初始5次免费调用
+ADD COLUMN IF NOT EXISTS bonus_api_calls INTEGER DEFAULT 20,  -- 新用户初始20次免费调用
 ADD COLUMN IF NOT EXISTS kofi_email VARCHAR(255),            -- Ko-fi支付邮箱
 ADD COLUMN IF NOT EXISTS is_first_time_user BOOLEAN DEFAULT true;  -- 首次用户标识
 
@@ -57,7 +57,7 @@ CREATE INDEX IF NOT EXISTS idx_api_usage_logs_created_at ON api_usage_logs(creat
 UPDATE users
 SET bonus_api_calls = CASE
     WHEN api_calls_today > 0 THEN 0  -- 已使用过的用户不给免费次数
-    ELSE 5                            -- 未使用过的用户给5次免费
+    ELSE 20                            -- 未使用过的用户给20次免费
 END
 WHERE bonus_api_calls IS NULL;
 

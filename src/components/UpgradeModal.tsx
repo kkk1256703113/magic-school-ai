@@ -93,7 +93,7 @@ export const UpgradeModal = ({ isOpen, onClose }: UpgradeModalProps) => {
               {t('upgrade.kofi.newUserPolicy') || 'New User Benefits'}
             </h3>
             <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-              <li>{t('upgrade.kofi.newUser1') || '🆓 5 free calls for new users'}</li>
+              <li>{t('upgrade.kofi.newUser1') || '🆓 20 free calls for new users'}</li>
               <li>{t('upgrade.kofi.newUser2') || '🎯 Test all features before paying'}</li>
               <li>{t('upgrade.kofi.newUser3') || '💎 Upgrade anytime for more calls'}</li>
             </ul>

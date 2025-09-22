@@ -135,7 +135,7 @@ export const APIUsageDisplay = ({ onUpgradeClick }: APIUsageDisplayProps) => {
                 {t('usage.welcomeBonus') || 'Welcome Bonus!'}
               </p>
               <p className="text-blue-700 dark:text-blue-300 mt-0.5">
-                {t('usage.newUserGift') || 'You have 5 free API calls to try our service'}
+                {t('usage.newUserGift') || 'You have 20 free API calls to try our service'}
               </p>
             </div>
           </div>

@@ -269,12 +269,12 @@ app.post('/api/auth/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
         
-        // 创建用户 - 新用户获得5次免费调用
+        // 创建用户 - 新用户获得20次免费调用
         const result = await pool.query(
             `INSERT INTO users (email, password_hash, username, plan_type, api_calls_today, bonus_api_calls, is_first_time_user, created_at)
              VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
              RETURNING id, email, username, plan_type, bonus_api_calls, created_at`,
-            [email, passwordHash, username || email.split('@')[0], 'free', 0, 5, true]
+            [email, passwordHash, username || email.split('@')[0], 'free', 0, 20, true]
         );
         
         const newUser = result.rows[0];
@@ -300,7 +300,7 @@ app.post('/api/auth/register', async (req, res) => {
                 plan: newUser.plan_type,
                 created_at: newUser.created_at,
                 apiCallsToday: 0,
-                apiCallsRemaining: 10
+                apiCallsRemaining: 20
             }
         });
     } catch (error) {
@@ -785,12 +785,12 @@ app.post('/api/auth/google', async (req, res) => {
             
             let user;
             if (result.rows.length === 0) {
-                // 创建新用户 - OAuth新用户也获得5次免费调用
+                // 创建新用户 - OAuth新用户也获得20次免费调用
                 const createResult = await pool.query(
                     `INSERT INTO users (email, username, plan_type, api_calls_today, bonus_api_calls, is_first_time_user, created_at)
                      VALUES ($1, $2, $3, $4, $5, $6, NOW())
                      RETURNING id, email, username, plan_type, api_calls_today, bonus_api_calls, created_at`,
-                    [MOCK_GOOGLE_EMAIL, MOCK_GOOGLE_USER, 'free', 0, 5, true]
+                    [MOCK_GOOGLE_EMAIL, MOCK_GOOGLE_USER, 'free', 0, 20, true]
                 );
                 user = createResult.rows[0];
             } else {
