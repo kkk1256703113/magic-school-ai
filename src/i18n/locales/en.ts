@@ -399,7 +399,7 @@ export default {
     remainingCalls: 'Remaining API Calls',
     times: 'calls',
     addCredits: 'Recharge',
-    paymentUnavailable: 'Payment system is temporarily unavailable. For inquiries, please email: m13067923691@163.com',
+    paymentUnavailable: 'Payment system is temporarily unavailable. For inquiries, please email: magics@magicschoolai.net',
     usageStats: 'Usage Statistics',
     dailyUsage: 'Daily Usage',
     todayUsed: 'Today Used',
